@@ -68,7 +68,7 @@ public final class TrainControlsBlock extends Block {
             return true;
         }
         if(!world.isRemote && player instanceof EntityPlayerMP serverPlayer) {
-            if(carriage.startDriving(serverPlayer))
+            if(carriage.startDriving(serverPlayer,pos))
                 ModNetwork.CHANNEL.sendTo(new TrainControlClientPacket(carriage.getEntityId(),pos),serverPlayer);
             else player.sendStatusMessage(new TextComponentTranslation("cogworkbridge.train.controls_busy"),true);
         }

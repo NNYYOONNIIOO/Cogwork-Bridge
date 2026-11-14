@@ -37,8 +37,8 @@ dependencies {
 
     // Unimined equivalent of fg.deobf: remap the mod for both compilation and
     // development runtime, without embedding its jar in the Cogwork Bridge jar.
-    modCompileOnly 'curse.maven:farmers-future-delight-1637097:9521358'
-    modRuntimeOnly 'curse.maven:farmers-future-delight-1637097:9521358'
+    modCompileOnly 'curse.maven:farmers-future-delight-1637097:9594118'
+    modRuntimeOnly 'curse.maven:farmers-future-delight-1637097:9594118'
 
     // Standalone, optional tutorial runtime. Remap its SRG API for development;
     // do not embed Ponder or its assets into the Cogwork Bridge distribution.

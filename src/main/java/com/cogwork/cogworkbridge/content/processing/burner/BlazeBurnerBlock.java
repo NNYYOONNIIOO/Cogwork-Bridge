@@ -1,6 +1,7 @@
 package com.cogwork.cogworkbridge.content.processing.burner;
 
 import net.minecraft.block.BlockContainer;
+import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -13,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSpade;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
@@ -29,16 +31,18 @@ import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.items.ItemHandlerHelper;
+import com.cogwork.cogworkbridge.content.processing.burner.BlazeBurnerTileEntity.FlameType;
+import xy177.farmersfuturedelight.core.FFDSoulFireHooks;
 import java.util.List;
 import javax.annotation.Nullable;
 
 public final class BlazeBurnerBlock extends BlockContainer {
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    public static final IUnlistedProperty<Boolean> LIT = new IUnlistedProperty<Boolean>() {
-        @Override public String getName() { return "lit"; }
-        @Override public boolean isValid(Boolean value) { return value != null; }
-        @Override public Class<Boolean> getType() { return Boolean.class; }
-        @Override public String valueToString(Boolean value) { return value.toString(); }
+    public static final IUnlistedProperty<FlameType> FLAME_TYPE = new IUnlistedProperty<FlameType>() {
+        @Override public String getName() { return "flame_type"; }
+        @Override public boolean isValid(FlameType value) { return value != null; }
+        @Override public Class<FlameType> getType() { return FlameType.class; }
+        @Override public String valueToString(FlameType value) { return value.name(); }
     };
     private static final AxisAlignedBB SHAPE = new AxisAlignedBB(1 / 16D, 0, 1 / 16D, 15 / 16D, 14 / 16D, 15 / 16D);
     private static final AxisAlignedBB BASE = new AxisAlignedBB(0, 0, 0, 1, 4 / 16D, 1);
@@ -78,7 +82,7 @@ public final class BlazeBurnerBlock extends BlockContainer {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty<?>[]{FACING}, new IUnlistedProperty<?>[]{LIT});
+        return new ExtendedBlockState(this, new IProperty<?>[]{FACING}, new IUnlistedProperty<?>[]{FLAME_TYPE});
     }
 
     @Override public IBlockState getStateFromMeta(int meta) {
@@ -107,14 +111,19 @@ public final class BlazeBurnerBlock extends BlockContainer {
     @Override
     public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
         TileEntity tile = world.getTileEntity(pos);
-        boolean lit = tile instanceof BlazeBurnerTileEntity burner && burner.isEmptyLit();
-        return ((IExtendedBlockState) state).withProperty(LIT, lit);
+        FlameType flame = tile instanceof BlazeBurnerTileEntity burner ? burner.getEmptyFlame() : FlameType.NONE;
+        return ((IExtendedBlockState) state).withProperty(FLAME_TYPE, flame);
     }
 
     @Override
     public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos) {
         TileEntity tile = world.getTileEntity(pos);
         if (!(tile instanceof BlazeBurnerTileEntity burner)) return occupied ? 8 : 0;
+        if (!occupied) return switch (burner.getEmptyFlame()) {
+            case NONE -> 0;
+            case REGULAR -> 12;
+            case SOUL -> 9;
+        };
         return switch (burner.getHeatLevel()) {
             case NONE -> 0;
             case SMOULDERING -> 8;
@@ -137,11 +146,32 @@ public final class BlazeBurnerBlock extends BlockContainer {
         }
         if (held.isEmpty()) return false;
         if (!occupied) {
+            if (burner.isEmptyLit()) {
+                if (held.getItem() instanceof ItemSpade) {
+                    if (!world.isRemote) {
+                        burner.setEmptyFlame(FlameType.NONE);
+                        if (!player.capabilities.isCreativeMode) held.damageItem(1, player);
+                        world.playSound(null, pos, SoundEvents.BLOCK_FIRE_EXTINGUISH,
+                                SoundCategory.BLOCKS, 0.5F, 2.0F);
+                    }
+                    return true;
+                }
+                if (burner.getEmptyFlame() == FlameType.REGULAR && FFDSoulFireHooks.isSoulBase(
+                        Block.getBlockFromItem(held.getItem()).getDefaultState())) {
+                    if (!world.isRemote) {
+                        burner.setEmptyFlame(FlameType.SOUL);
+                        world.playSound(null, pos, SoundEvents.BLOCK_SAND_PLACE,
+                                SoundCategory.BLOCKS, 1.0F, world.rand.nextFloat() * 0.4F + 0.8F);
+                    }
+                    return true;
+                }
+                return false;
+            }
             boolean flint = held.getItem() == Items.FLINT_AND_STEEL;
             boolean charge = held.getItem() == Items.FIRE_CHARGE;
-            if ((!flint && !charge) || burner.isEmptyLit()) return false;
+            if (!flint && !charge) return false;
             if (!world.isRemote) {
-                burner.igniteEmpty();
+                burner.setEmptyFlame(FlameType.REGULAR);
                 if (!player.capabilities.isCreativeMode) {
                     if (flint) held.damageItem(1, player);
                     else held.shrink(1);

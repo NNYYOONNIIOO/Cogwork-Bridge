@@ -304,6 +304,19 @@ public final class UpstreamProcessingRecipes {
             if (!item.isEmpty()) result.add(item);
         } else if (json.has("tag")) {
             String tag = json.get("tag").getAsString();
+            if (tag.equals("minecraft:sand") || tag.equals("c:sands")) {
+                for (ItemStack stack : OreDictionary.getOres("sand")) result.add(stack.copy());
+                result.add(new ItemStack(Blocks.SAND));
+                result.add(new ItemStack(Blocks.SAND, 1, 1));
+                return result;
+            }
+            if (tag.equals("minecraft:dirt")) {
+                for (ItemStack stack : OreDictionary.getOres("dirt")) result.add(stack.copy());
+                for (String name : new String[]{"dirt", "coarse_dirt", "podzol", "grass_block", "mycelium",
+                        "rooted_dirt", "moss_block", "mud", "muddy_mangrove_roots"})
+                    addAvailable(result, "minecraft:" + name);
+                return result;
+            }
             if (tag.startsWith("create:stone_types/")) {
                 addStoneTypes(result, tag.substring("create:stone_types/".length()));
                 return result;
@@ -390,6 +403,12 @@ public final class UpstreamProcessingRecipes {
         return name.toString();
     }
     public static ItemStack resolve(String id) {
+        String[] stoneBricks = {"stone_bricks", "mossy_stone_bricks", "cracked_stone_bricks", "chiseled_stone_bricks"};
+        for (int i = 0; i < stoneBricks.length; i++)
+            if (id.equals("minecraft:" + stoneBricks[i])) return new ItemStack(Blocks.STONEBRICK, 1, i);
+        String[] infested = {"stone", "cobblestone", "stone_bricks", "mossy_stone_bricks", "cracked_stone_bricks", "chiseled_stone_bricks"};
+        for (int i = 0; i < infested.length; i++)
+            if (id.equals("minecraft:infested_" + infested[i])) return new ItemStack(Blocks.MONSTER_EGG, 1, i);
         if (id.equals("minecraft:andesite")) return new ItemStack(Blocks.STONE, 1, BlockStone.EnumType.ANDESITE.getMetadata());
         if (id.equals("minecraft:granite")) return new ItemStack(Blocks.STONE, 1, BlockStone.EnumType.GRANITE.getMetadata());
         if (id.equals("minecraft:diorite")) return new ItemStack(Blocks.STONE, 1, BlockStone.EnumType.DIORITE.getMetadata());

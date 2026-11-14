@@ -26,12 +26,13 @@ public final class BlazeBurnerTileEntity extends TileEntity implements ITickable
     private static final int COOLDOWN_DURATION = 5000;
 
     public enum HeatLevel { NONE, SMOULDERING, FADING, KINDLED, SEETHING }
+    public enum FlameType { NONE, REGULAR, SOUL }
 
     private final FuelInventory inventory = new FuelInventory();
     private int remainingFuel;
     private boolean specialFuel;
     private boolean creativeFuel;
-    private boolean emptyLit;
+    private FlameType emptyFlame = FlameType.NONE;
     private boolean goggles;
     private boolean tutorialConductor;
     public boolean isTutorialConductor() { return tutorialConductor; }
@@ -49,7 +50,7 @@ public final class BlazeBurnerTileEntity extends TileEntity implements ITickable
     }
 
     public HeatLevel getHeatLevel() {
-        if (!isOccupied()) return emptyLit ? HeatLevel.KINDLED : HeatLevel.NONE;
+        if (!isOccupied()) return isEmptyLit() ? HeatLevel.KINDLED : HeatLevel.NONE;
         if (creativeFuel || specialFuel && remainingFuel > 0) return HeatLevel.SEETHING;
         if (remainingFuel <= 0) return HeatLevel.SMOULDERING;
         return remainingFuel <= AUTO_FUEL_THRESHOLD ? HeatLevel.FADING : HeatLevel.KINDLED;
@@ -65,13 +66,13 @@ public final class BlazeBurnerTileEntity extends TileEntity implements ITickable
         };
     }
 
-    public boolean isEmptyLit() { return emptyLit; }
+    public boolean isEmptyLit() { return emptyFlame != FlameType.NONE; }
+    public FlameType getEmptyFlame() { return emptyFlame; }
 
-    public void igniteEmpty() {
-        if (emptyLit || isOccupied()) return;
-        HeatLevel previous = getHeatLevel();
-        emptyLit = true;
-        changed(previous);
+    public void setEmptyFlame(FlameType flame) {
+        if (emptyFlame == flame || isOccupied()) return;
+        emptyFlame = flame;
+        changed(true);
     }
 
     public boolean canFeed(ItemStack stack) {
@@ -137,10 +138,14 @@ public final class BlazeBurnerTileEntity extends TileEntity implements ITickable
     }
 
     private void changed(HeatLevel previous) {
+        changed(previous != getHeatLevel());
+    }
+
+    private void changed(boolean lightingChanged) {
         markDirty();
         if (world == null || world.isRemote) return;
         IBlockState state = world.getBlockState(pos);
-        if (previous != getHeatLevel()) {
+        if (lightingChanged) {
             world.checkLight(pos);
             world.notifyNeighborsOfStateChange(pos, state.getBlock(), false);
         }
@@ -168,7 +173,8 @@ public final class BlazeBurnerTileEntity extends TileEntity implements ITickable
         tag.setInteger("Fuel", remainingFuel);
         tag.setBoolean("SpecialFuel", specialFuel);
         tag.setBoolean("CreativeFuel", creativeFuel);
-        tag.setBoolean("EmptyLit", emptyLit);
+        tag.setBoolean("EmptyLit", isEmptyLit());
+        tag.setBoolean("EmptySoulFire", emptyFlame == FlameType.SOUL);
         tag.setBoolean("Goggles", goggles);
         if (tutorialConductor) tag.setBoolean("TutorialConductor", true);
         tag.setTag("Inventory", inventory.serializeNBT());
@@ -181,7 +187,8 @@ public final class BlazeBurnerTileEntity extends TileEntity implements ITickable
         remainingFuel = Math.max(0, Math.min(MAX_FUEL, tag.getInteger("Fuel")));
         specialFuel = tag.getBoolean("SpecialFuel");
         creativeFuel = tag.getBoolean("CreativeFuel");
-        emptyLit = tag.getBoolean("EmptyLit");
+        emptyFlame = !tag.getBoolean("EmptyLit") ? FlameType.NONE
+                : tag.getBoolean("EmptySoulFire") ? FlameType.SOUL : FlameType.REGULAR;
         goggles = tag.getBoolean("Goggles");
         tutorialConductor = tag.getBoolean("TutorialConductor");
         if (tag.hasKey("Inventory", 10)) inventory.deserializeNBT(tag.getCompoundTag("Inventory"));
@@ -190,9 +197,10 @@ public final class BlazeBurnerTileEntity extends TileEntity implements ITickable
     @Override public NBTTagCompound getUpdateTag() { return writeToNBT(new NBTTagCompound()); }
     @Override
     public void handleUpdateTag(NBTTagCompound tag) {
-        boolean wasLit = emptyLit;
+        FlameType previousFlame = emptyFlame;
         readFromNBT(tag);
-        if (world != null && world.isRemote && wasLit != emptyLit) {
+        if (world != null && world.isRemote && previousFlame != emptyFlame) {
+            world.checkLight(pos);
             if (world instanceof com.cogwork.cogworkbridge.vendor.movingworld.common.chunk.mobilechunk.world.FakeWorld fake) {
                 fake.getMobileChunk().setChunkModified();
             } else {

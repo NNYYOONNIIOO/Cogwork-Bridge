@@ -6,12 +6,21 @@ import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.passive.EntityHorse;
+import net.minecraft.entity.passive.EntitySkeletonHorse;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -151,6 +160,14 @@ public final class AirFlow {
     }
 
     private static void affectWithMedium(Entity entity, EncasedFanTileEntity.Medium medium) {
+        if (medium == EncasedFanTileEntity.Medium.HAUNTING) {
+            if (entity instanceof EntityLivingBase living) {
+                living.addPotionEffect(new PotionEffect(MobEffects.BLINDNESS, 30, 0, false, false));
+                living.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 20, 1, false, false));
+            }
+            if (entity instanceof EntityHorse horse) hauntHorse(horse);
+            return;
+        }
         if (medium == EncasedFanTileEntity.Medium.NONE || entity.isImmuneToFire()) {
             return;
         }
@@ -161,6 +178,28 @@ public final class AirFlow {
             entity.setFire(2);
             entity.attackEntityFrom(FAN_FIRE_DAMAGE, 2.0F);
         }
+    }
+
+    private static void hauntHorse(EntityHorse horse) {
+        int progress = horse.getEntityData().getInteger("CogworkBridgeHaunting");
+        if (progress < 100) {
+            if (progress % 10 == 0) horse.world.playSound(null, horse.getPosition(),
+                    xy177.farmersfuturedelight.common.registry.FFDSounds.SOUL_ESCAPE,
+                    SoundCategory.NEUTRAL, 1F, 1.5F * progress / 100F);
+            horse.getEntityData().setInteger("CogworkBridgeHaunting", progress + 1);
+            return;
+        }
+        NBTTagCompound data = horse.writeToNBT(new NBTTagCompound());
+        data.removeTag("UUIDMost");
+        data.removeTag("UUIDLeast");
+        EntitySkeletonHorse skeleton = new EntitySkeletonHorse(horse.world);
+        skeleton.readFromNBT(data);
+        if (!horse.world.spawnEntity(skeleton)) return;
+        ItemStack armor = new ItemStack(data.getCompoundTag("ArmorItem"));
+        if (!armor.isEmpty()) horse.entityDropItem(armor, 0F);
+        horse.world.playSound(null, horse.getPosition(), SoundEvents.BLOCK_FIRE_EXTINGUISH,
+                SoundCategory.NEUTRAL, 1.25F, .65F);
+        horse.setDead();
     }
 
     static void applyVelocity(Entity entity, double x, double y, double z) {

@@ -98,16 +98,20 @@ public final class TrackCursor {
     }
     @Nullable static RailwayNetworkData.Travel choose(World world,RailwayNetworkData graph,
             RailwayNetworkData.Node at,RailwayNetworkData.Node previous,BlockPos incoming,Vec3d tangent,int steering) {
-        RailwayNetworkData.Travel best=null;double bestScore=-Double.MAX_VALUE;
+        RailwayNetworkData.Travel best=null;double bestScore=Double.MAX_VALUE,bestAlignment=-Double.MAX_VALUE;
+        Vec3d right=new Vec3d(-tangent.z,0D,tangent.x);
         for(RailwayNetworkData.Travel candidate:graph.edges(at)) {
             if(candidate.to().equals(previous)||!usable(world,candidate)
                     ||!graph.permitsTransition(incoming,at,tangent,candidate))continue;
-            Vec3d direction=candidate.tangent(0D).normalize();
-            double dot=tangent.dotProduct(direction);
-            if(dot<-.95D)continue;
-            double turn=tangent.x*direction.z-tangent.z*direction.x;
-            double score=dot+(steering==0?0D:Math.signum(steering)*turn*.85D);
-            if(score>bestScore){bestScore=score;best=candidate;}
+            double alignment=tangent.dotProduct(candidate.tangent(0D).normalize());
+            if(alignment<-.95D)continue;
+            // Smooth branches share an entry tangent. Upstream samples into the edge
+            // and selects the trajectory closest to left (-1), straight (0), right (1).
+            Vec3d direction=candidate.point(.25D).subtract(candidate.point(0D)).normalize();
+            double score=Math.abs(Math.signum(steering)-right.dotProduct(direction));
+            if(score<bestScore||score==bestScore&&alignment>bestAlignment){
+                bestScore=score;bestAlignment=alignment;best=candidate;
+            }
         }
         return best;
     }

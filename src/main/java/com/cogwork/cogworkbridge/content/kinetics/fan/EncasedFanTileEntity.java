@@ -9,9 +9,12 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import xy177.farmersfuturedelight.common.block.BlockCampfire;
+import xy177.farmersfuturedelight.common.block.BlockSoulFire;
+import xy177.farmersfuturedelight.common.registry.FFDBlocks;
 
 public final class EncasedFanTileEntity extends KineticTileEntity {
-    public enum Medium { NONE, SPLASHING, BLASTING, SMOKING }
+    public enum Medium { NONE, SPLASHING, BLASTING, SMOKING, HAUNTING }
 
     private float currentRange;
     private float previousSpeed;
@@ -86,9 +89,14 @@ public final class EncasedFanTileEntity extends KineticTileEntity {
         IBlockState state = world.getBlockState(current);
         if (state.getMaterial() == Material.WATER) return Medium.SPLASHING;
         if (state.getMaterial() == Material.LAVA) return Medium.BLASTING;
-        if (isFFDCampfire(state) && net.minecraftforge.fml.common.Loader.isModLoaded("farmers_future_delight")
-                && xy177.farmersfuturedelight.common.block.BlockCampfire.isLit(state, world, current)) return Medium.SMOKING;
+        if (state.getBlock() instanceof BlockSoulFire) return Medium.HAUNTING;
+        if (isFFDCampfire(state)) {
+            if (!BlockCampfire.isLit(state, world, current)) return Medium.NONE;
+            return state.getBlock() == FFDBlocks.SOUL_CAMPFIRE ? Medium.HAUNTING : Medium.SMOKING;
+        }
         if (world.getTileEntity(current) instanceof BlazeBurnerTileEntity burner) {
+            if (!burner.isOccupied() && burner.getEmptyFlame() == BlazeBurnerTileEntity.FlameType.SOUL)
+                return Medium.HAUNTING;
             return switch (burner.getHeatLevel()) {
                 case NONE -> Medium.NONE;
                 case SMOULDERING -> Medium.SMOKING;
@@ -99,7 +107,6 @@ public final class EncasedFanTileEntity extends KineticTileEntity {
     }
 
     static boolean isFFDCampfire(IBlockState state) {
-        return new net.minecraft.util.ResourceLocation("farmers_future_delight", "campfire")
-                .equals(state.getBlock().getRegistryName());
+        return state.getBlock() instanceof BlockCampfire;
     }
 }

@@ -96,15 +96,33 @@ public final class FluidTankRenderer extends TileEntitySpecialRenderer<FluidTank
         GlStateManager.popMatrix();
     }
 
+    private static IBakedModel fluidModel(Minecraft minecraft, Fluid fluid) {
+        return MODELS.computeIfAbsent(fluid, key -> new ModelFluid(key).bake(
+                TRSRTransformation.identity(), DefaultVertexFormats.ITEM,
+                texture -> minecraft.getTextureMapBlocks().getAtlasSprite(texture.toString())));
+    }
+
+    /** Renders GUI fluid quads through the native item path, including its animated-sprite tracking. */
+    public static void renderGuiFluid(Fluid fluid) {
+        Minecraft minecraft = Minecraft.getMinecraft();
+        IBakedModel model = fluidModel(minecraft, fluid);
+        minecraft.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
+        for (EnumFacing face : EnumFacing.values()) {
+            minecraft.getRenderItem().renderQuads(buffer, model.getQuads(FLUID_STATE, face, 0L), -1, ItemStack.EMPTY);
+        }
+        tessellator.draw();
+    }
+
     static void renderFluidBox(FluidStack fluidStack, double x, double y, double z,
                                double width, double height, double depth) {
         if (fluidStack == null || fluidStack.amount <= 0 || width <= 0 || height <= 0 || depth <= 0) return;
         Fluid fluid = fluidStack.getFluid();
         if (fluid.getStill() == null || fluid.getFlowing() == null) return;
         Minecraft mc = Minecraft.getMinecraft();
-        IBakedModel model = MODELS.computeIfAbsent(fluid, key -> new ModelFluid(key).bake(
-                TRSRTransformation.identity(), DefaultVertexFormats.ITEM,
-                texture -> mc.getTextureMapBlocks().getAtlasSprite(texture.toString())));
+        IBakedModel model = fluidModel(mc, fluid);
         int color = fluid.getColor(fluidStack);
         float red = ((color >>> 16) & 255) / 255.0F;
         float green = ((color >>> 8) & 255) / 255.0F;

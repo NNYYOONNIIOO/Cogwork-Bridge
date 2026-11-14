@@ -1,5 +1,6 @@
 package com.cogwork.cogworkbridge.content.kinetics.fan;
 
+import com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
@@ -9,14 +10,23 @@ import net.minecraft.nbt.NBTTagCompound;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Fan processing for 1.12 furnace recipes on transported items. */
+/** Fan processing shared by loose items, belts and depots. */
 public final class FanItemProcessing {
     private FanItemProcessing() { }
 
+    private static String recipeType(EncasedFanTileEntity.Medium medium) {
+        return switch (medium) {
+            case SPLASHING -> "splashing";
+            case HAUNTING -> "haunting";
+            default -> null;
+        };
+    }
+
     private static ItemStack result(EncasedFanTileEntity.Medium medium, ItemStack input) {
         if (input.isEmpty()) return ItemStack.EMPTY;
-        if (medium == EncasedFanTileEntity.Medium.SPLASHING) {
-            var recipe = com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes.find("splashing", input);
+        String type = recipeType(medium);
+        if (type != null) {
+            var recipe = UpstreamProcessingRecipes.find(type, input);
             return recipe == null ? ItemStack.EMPTY : recipe.outputs().get(0).stack().copy();
         }
         ItemStack result = FurnaceRecipes.instance().getSmeltingResult(input);
@@ -32,8 +42,9 @@ public final class FanItemProcessing {
     }
     /** Maximum possible outputs, for checking storage before rolling chance. */
     public static List<ItemStack> possible(EncasedFanTileEntity.Medium medium, ItemStack input) {
-        if (medium != EncasedFanTileEntity.Medium.SPLASHING) return results(medium, input);
-        var recipe = com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes.find("splashing", input);
+        String type = recipeType(medium);
+        if (type == null) return results(medium, input);
+        var recipe = UpstreamProcessingRecipes.find(type, input);
         List<ItemStack> outputs = new ArrayList<>();
         if (recipe == null) return outputs;
         for (var result : recipe.outputs()) {
@@ -47,8 +58,9 @@ public final class FanItemProcessing {
         return outputs;
     }
     public static List<ItemStack> results(EncasedFanTileEntity.Medium medium, ItemStack input, java.util.Random random) {
-        if (medium == EncasedFanTileEntity.Medium.SPLASHING) {
-            var recipe = com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes.find("splashing", input);
+        String type = recipeType(medium);
+        if (type != null) {
+            var recipe = UpstreamProcessingRecipes.find(type, input);
             List<ItemStack> outputs = new ArrayList<>();
             if (recipe == null) return outputs;
             for (int i = 0; i < input.getCount(); i++) for (ItemStack stack : recipe.roll(random)) {

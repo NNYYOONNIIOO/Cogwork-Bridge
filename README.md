@@ -26,7 +26,7 @@ Some recipes and interactions between machines are still incomplete.
 | Minecraft | 1.12.2 |
 | Mod loader | **Cleanroom Loader is required**; the project uses `0.6.13-alpha` as its build baseline |
 | Java | Java 25; the current build uses Java 25 bytecode |
-| Required mod | **Farmer's Future Delight**, mod ID: `farmers_future_delight` |
+| Required mod | **Farmer's Future Delight 1.6.0+**, mod ID: `farmers_future_delight` |
 | Required upstream JAR | **Create for Minecraft 1.21.1**, installed separately in `mods/` |
 | Optional mod | **JEI**, for supported machine recipes and item information |
 | Optional tutorial runtime | **Ponder Legacy 1.7.1+**, installed as a separate JAR to enable Ponder scenes |
@@ -86,7 +86,7 @@ See the [third-party notices](src/main/resources/META-INF/licenses/THIRD-PARTY-N
 | 游戏版本 | Minecraft 1.12.2 |
 | 模组加载器 | **必须使用 Cleanroom Loader**；项目以 `0.6.13-alpha` 为构建基线 |
 | Java | Java 25；当前构建产物使用 Java 25 字节码 |
-| 必需模组 | **未世之乐（Farmer's Future Delight）**，模组 ID：`farmers_future_delight` |
+| 必需模组 | **未世之乐（Farmer's Future Delight）1.6.0+**，模组 ID：`farmers_future_delight` |
 | 必需原版文件 | 适用于 **Minecraft 1.21.1 的 Create 原版 JAR**，单独放入 `mods/` |
 | 可选模组 | **JEI**，用于查看已接入的机器处理配方和物品信息 |
 | 可选思索运行库 | **Ponder Legacy 1.7.1+**，单独安装 JAR 后启用思索场景 |

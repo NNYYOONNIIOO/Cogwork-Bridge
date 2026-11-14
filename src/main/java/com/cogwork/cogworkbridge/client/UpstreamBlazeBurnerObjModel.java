@@ -42,6 +42,7 @@ final class UpstreamBlazeBurnerObjModel implements IModel {
                 || path.equals("block/blaze_burner/block")
                 || path.equals("block/blaze_burner/block_with_blaze")
                 || path.equals("block/blaze_burner/block_with_fire")
+                || path.equals("block/blaze_burner/block_with_soul_fire")
                 || path.equals("block/blaze_burner/rods_small")
                 || path.equals("block/blaze_burner/rods_large")
                 || path.equals("block/blaze_burner/superheated_rods_small")
@@ -60,7 +61,8 @@ final class UpstreamBlazeBurnerObjModel implements IModel {
         String path = normalized(location);
         boolean item = path.startsWith("item/");
         boolean filled = path.endsWith("block_with_blaze") || path.equals("item/blaze_burner");
-        boolean fire = path.endsWith("block_with_fire");
+        boolean soulFire = path.endsWith("block_with_soul_fire");
+        boolean fire = soulFire || path.endsWith("block_with_fire");
         boolean rods = path.endsWith("rods_small") || path.endsWith("rods_large");
         boolean flame = path.endsWith("/flame");
         String obj = rods ? (path.endsWith("rods_small") ? "blaze_rods_small" : "blaze_rods_large")
@@ -72,10 +74,12 @@ final class UpstreamBlazeBurnerObjModel implements IModel {
         }
         String primaryTexture = rods
                 ? path.contains("superheated_") ? "create:block/blaze_super" : "create:block/blaze_active"
-                : flame ? "create:block/blaze_burner_flame" : "create:block/blaze_heater_brazier";
+                : flame ? "create:block/blaze_burner_flame"
+                : soulFire ? "create:block/blaze_heater_brazier_soul" : "create:block/blaze_heater_brazier";
         IModel model = parsed.process(ImmutableMap.of("flip-v", "true"))
                 .retexture(ImmutableMap.of("#0", primaryTexture,
-                        "#1", fire ? "minecraft:blocks/fire_layer_0" : "create:block/blaze_idle"));
+                        "#1", soulFire ? "farmers_future_delight:blocks/soul_campfire_fire"
+                                : fire ? "farmers_future_delight:blocks/campfire_fire" : "create:block/blaze_idle"));
         ItemCameraTransforms transforms = item ? loadItemTransforms(resources, location) : null;
         return new UpstreamBlazeBurnerObjModel(model, parsed.getMatLib().getGroups().keySet(), transforms);
     }

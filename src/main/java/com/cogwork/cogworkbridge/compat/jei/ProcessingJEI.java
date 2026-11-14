@@ -9,6 +9,7 @@ import com.cogwork.cogworkbridge.content.processing.mixer.MixingRecipes;
 import com.cogwork.cogworkbridge.content.processing.press.PressingRecipes;
 import com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes;
 import com.cogwork.cogworkbridge.client.render.FastStateRendering;
+import com.cogwork.cogworkbridge.client.render.FluidTankRenderer;
 import com.cogwork.cogworkbridge.client.BlazeBurnerModels;
 import com.cogwork.cogworkbridge.kinetic.KineticBlock;
 import com.cogwork.cogworkbridge.registry.RenderPartBlock;
@@ -25,8 +26,13 @@ import mezz.jei.api.recipe.IRecipeCategoryRegistration;
 import mezz.jei.api.recipe.IRecipeWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -44,13 +50,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
+import xy177.farmersfuturedelight.common.registry.FFDBlocks;
 
 /** Recipe views use the same lookup functions as the machines. */
 public final class ProcessingJEI {
     private static final ResourceLocation WIDGETS = new ResourceLocation("create", "textures/gui/jei/widgets.png");
     private static final String PRESS = "cogworkbridge.pressing", COMPACT = "cogworkbridge.compacting", MIX = "cogworkbridge.mixing", SAW = "cogworkbridge.cutting", CRUSH = "cogworkbridge.crushing", MILL = "cogworkbridge.milling", CASING = "cogworkbridge.casing", DEPLOY = "cogworkbridge.deploying", SPLASH = "cogworkbridge.splashing", FILL = "cogworkbridge.filling", EMPTY = "cogworkbridge.emptying", SMOKE = "cogworkbridge.smoking", BLAST = "cogworkbridge.blasting";
-    private static final String POLISH = "cogworkbridge.sandpaper_polishing";
+    private static final String POLISH = "cogworkbridge.sandpaper_polishing", HAUNT = "cogworkbridge.haunting";
     private ProcessingJEI() { }
+    private static boolean isFanCategory(String id) {
+        return id.equals(SPLASH) || id.equals(SMOKE) || id.equals(BLAST) || id.equals(HAUNT);
+    }
     public static void categories(IRecipeCategoryRegistration registration) {
         IGuiHelper helper = registration.getJeiHelpers().getGuiHelper();
         registration.addRecipeCategories(new Category(helper, PRESS),
@@ -64,12 +75,13 @@ public final class ProcessingJEI {
                 new Category(helper, DEPLOY),
                 new Category(helper, SPLASH),
                 new Category(helper, SMOKE),
+                new Category(helper, HAUNT),
                 new Category(helper, BLAST),
                 new Category(helper, FILL),
                 new Category(helper, EMPTY));
     }
     public static void register(IModRegistry registry) {
-        for (String id : new String[]{PRESS, COMPACT, MIX, SAW, MILL, CRUSH, CASING, POLISH, DEPLOY, SPLASH, SMOKE, BLAST, FILL, EMPTY}) registry.handleRecipes(Recipe.class, r -> r, id);
+        for (String id : new String[]{PRESS, COMPACT, MIX, SAW, MILL, CRUSH, CASING, POLISH, DEPLOY, SPLASH, SMOKE, HAUNT, BLAST, FILL, EMPTY}) registry.handleRecipes(Recipe.class, r -> r, id);
         List<Recipe> press = new ArrayList<>(), mixing = new ArrayList<>(), cutting = new ArrayList<>(), milling = new ArrayList<>(), casing = new ArrayList<>();
         List<ItemStack> knownItems = new ArrayList<>(registry.getIngredientRegistry().getAllIngredients(VanillaTypes.ITEM));
         List<ItemStack> potionInputs = com.cogwork.cogworkbridge.content.fluids.PotionMixingRecipes.potionVariants(knownItems);
@@ -167,9 +179,10 @@ public final class ProcessingJEI {
                     .anyMatch(option -> OreDictionary.itemMatches(option, input, false))))
                 polishing.add(new Recipe(Collections.singletonList(input), output, false));
         }
-        List<Recipe> crushing = new ArrayList<>(), splashing = new ArrayList<>();
+        List<Recipe> crushing = new ArrayList<>(), splashing = new ArrayList<>(), haunting = new ArrayList<>();
         addUpstream(press, "pressing"); addUpstream(milling, "milling"); addUpstream(cutting, "cutting");
         addUpstream(crushing, "crushing"); addUpstream(splashing, "splashing");
+        addUpstream(haunting, "haunting");
         if (crushing.isEmpty()) {
             Recipe gravel = new Recipe(Collections.singletonList(new ItemStack(Blocks.GRAVEL)), new ItemStack(Blocks.SAND), false);
             gravel.outputs.add(new UpstreamProcessingRecipes.Output(new ItemStack(Items.FLINT), .1F));
@@ -273,12 +286,13 @@ public final class ProcessingJEI {
             recipe.superheated = upstream.heat() >= 2; recipe.mixing = true; compacting.add(recipe);
         }
         for (List<Recipe> recipes : Arrays.asList(press, mixing, cutting, milling, casing, deploying, crushing,
-                splashing, compacting, filling, emptying, smoking, blasting, polishing)) {
+                splashing, haunting, compacting, filling, emptying, smoking, blasting, polishing)) {
             recipes.removeIf(ProcessingJEI::isAssemblyIntermediateRecipe);
             mergeOreVariants(recipes);
         }
         registry.addRecipes(filling, FILL); registry.addRecipes(emptying, EMPTY);
         registry.addRecipes(splashing, SPLASH); registry.addRecipes(smoking, SMOKE); registry.addRecipes(blasting, BLAST);
+        registry.addRecipes(haunting, HAUNT);
         registry.addRecipes(crushing, CRUSH);
         registry.addRecipes(polishing, POLISH);
         registry.addRecipes(compacting, COMPACT);
@@ -298,7 +312,9 @@ public final class ProcessingJEI {
         registry.addRecipeCatalyst(new ItemStack(AllBlocks.DEPLOYER), DEPLOY);
         registry.addRecipeCatalyst(new ItemStack(AllBlocks.SPOUT), FILL);
         registry.addRecipeCatalyst(new ItemStack(AllBlocks.ITEM_DRAIN), EMPTY);
-        for (String id : new String[]{SPLASH, SMOKE, BLAST}) registry.addRecipeCatalyst(new ItemStack(AllBlocks.ENCASED_FAN), id);
+        for (String id : new String[]{SPLASH, SMOKE, HAUNT, BLAST}) registry.addRecipeCatalyst(new ItemStack(AllBlocks.ENCASED_FAN), id);
+        ItemStack soulCampfire = new ItemStack(xy177.farmersfuturedelight.common.registry.FFDBlocks.SOUL_CAMPFIRE);
+        if (!soulCampfire.isEmpty()) registry.addRecipeCatalyst(soulCampfire, HAUNT);
     }
     private static boolean isAssemblyIntermediateRecipe(Recipe recipe) {
         for (ItemStack input : recipe.inputs) if (isAssemblyIntermediate(input)) return true;
@@ -457,6 +473,7 @@ public final class ProcessingJEI {
         private boolean keepHeld, superheated, mixing, application;
         private FluidStack fluid, fluidOutput;
         private IRecipeLayout layout;
+        private int fanArrowX = -1;
         Recipe(List<ItemStack> inputs, ItemStack output, boolean heated) {
             this.inputs = inputs; this.heated = heated;
             if (!output.isEmpty()) outputs.add(new UpstreamProcessingRecipes.Output(output, 1F));
@@ -477,6 +494,10 @@ public final class ProcessingJEI {
             if (fluidOutput != null) ingredients.setOutput(VanillaTypes.FLUID, fluidOutput);
         }
         @Override public void drawInfo(Minecraft minecraft, int width, int height, int mouseX, int mouseY) {
+            if (fanArrowX >= 0) {
+                minecraft.getTextureManager().bindTexture(WIDGETS);
+                net.minecraft.client.gui.Gui.drawModalRectWithCustomSizedTexture(fanArrowX, 51, 19, 0, 71, 10, 256, 256);
+            }
             if (application) {
                 mezz.jei.api.gui.IGuiIngredient<ItemStack> ingredient = layout == null ? null : layout.getItemStacks().getGuiIngredients().get(0);
                 ItemStack shown = ingredient == null ? null : ingredient.getDisplayedIngredient();
@@ -575,24 +596,39 @@ public final class ProcessingJEI {
     }
     private static final class Category implements IRecipeCategory<Recipe> {
         private final String id;
-        private final IDrawable background, slot, chanceSlot, arrow, shortArrow, downArrow, shadow;
+        private final IDrawable background, icon, slot, chanceSlot, arrow, shortArrow, downArrow, shadow, light;
+        private final FluidStack fanFluid;
         Category(IGuiHelper helper, String id) {
             this.id = id;
-            background = helper.createBlankDrawable(177, id.equals(POLISH) ? 55 : id.equals(DEPLOY) ? 120 : id.equals(CRUSH) ? 110 : id.equals(MIX) || id.equals(COMPACT) ? 100 : 80);
+            background = helper.createBlankDrawable(isFanCategory(id) ? 178 : 177,
+                    isFanCategory(id) ? 72 : id.equals(POLISH) ? 55 : id.equals(DEPLOY) ? 120 : id.equals(CRUSH) ? 110 : id.equals(MIX) || id.equals(COMPACT) ? 100 : 80);
+            ItemStack iconOverlay = switch (id) {
+                case SPLASH -> new ItemStack(Items.WATER_BUCKET);
+                case SMOKE -> new ItemStack(FFDBlocks.CAMPFIRE);
+                case BLAST -> new ItemStack(Items.LAVA_BUCKET);
+                case HAUNT -> new ItemStack(FFDBlocks.SOUL_CAMPFIRE);
+                default -> ItemStack.EMPTY;
+            };
+            icon = iconOverlay.isEmpty() ? null : new DoubleItemIcon(helper, new ItemStack(AllItems.PROPELLER), iconOverlay);
+            fanFluid = id.equals(SPLASH) ? new FluidStack(FluidRegistry.WATER, 1000)
+                    : id.equals(BLAST) ? new FluidStack(FluidRegistry.LAVA, 1000) : null;
             slot = helper.createDrawable(WIDGETS, 0, 0, 18, 18);
             chanceSlot = helper.createDrawable(WIDGETS, 20, 156, 18, 18);
             arrow = helper.createDrawable(WIDGETS, 19, 0, 71, 10);
             shortArrow = helper.createDrawable(WIDGETS, 19, 10, 42, 10);
             downArrow = helper.createDrawable(WIDGETS, 0, 21, 18, 14);
             shadow = helper.createDrawable(WIDGETS, 0, 56, 52, 11);
+            light = helper.createDrawable(WIDGETS, 0, 42, 52, 11);
         }
         @Override public String getUid() { return id; }
         @Override public String getTitle() { return I18n.format("jei." + id); }
         @Override public String getModName() { return Reference.MOD_NAME; }
         @Override public IDrawable getBackground() { return background; }
-        @Override public IDrawable getIcon() { return null; }
+        @Override public IDrawable getIcon() { return icon; }
         @Override public void setRecipe(IRecipeLayout layout, Recipe recipe, IIngredients ingredients) {
             recipe.layout = layout;
+            int fanShift = id.equals(SPLASH) || id.equals(HAUNT) ? 1 - Math.min(3, recipe.outputs.size()) : 0;
+            recipe.fanArrowX = isFanCategory(id) ? 54 + 7 * fanShift : -1;
             for (int i = 0; i < recipe.inputs().size(); i++) {
                 int x = 27, y = 51;
                 if (id.equals(MIX) || id.equals(COMPACT)) { x = 17 + i % 3 * 19; y = 51 - i / 3 * 19; }
@@ -603,6 +639,10 @@ public final class ProcessingJEI {
                 else if ((id.equals(DEPLOY) || id.equals(CASING)) && i == 1) { x = 51; y = 5; }
                 else if (id.equals(CASING)) { x = 27; y = 38; }
                 else if (id.equals(POLISH)) { x = 27; y = 29; }
+                else if (isFanCategory(id)) {
+                    x = 21; y = 48;
+                    if (id.equals(SPLASH) || id.equals(HAUNT)) x += 5 * (1 - Math.min(3, recipe.outputs.size()));
+                }
                 else if (i > 0) x += i * 19;
                 layout.getItemStacks().init(i, true, x, y);
                 layout.getItemStacks().setBackground(i, slot);
@@ -645,6 +685,13 @@ public final class ProcessingJEI {
                 else if (id.equals(SAW)) { x = 118 + (i % 2) * 19; y = 48 - (i / 2) * 19; }
                 else if (id.equals(EMPTY)) { x = 132; y = 27; }
                 else if (id.equals(DEPLOY) && recipe.outputs.size() > 6) { x = 112 + i % 3 * 19; y = 55 + i / 3 * 19; }
+                else if (isFanCategory(id)) {
+                    x = 141; y = 48;
+                    if (id.equals(SPLASH) || id.equals(HAUNT)) {
+                        x += i % 3 * 19 + 9 * (1 - Math.min(3, recipe.outputs.size()));
+                        y += -(i / 3) * 19 + (recipe.outputs.size() > 9 ? 8 : 0);
+                    }
+                }
                 var output = recipe.outputs.get(i);
                 layout.getItemStacks().init(10 + i, false, x, y);
                 layout.getItemStacks().setBackground(10 + i, output.chance() < 1F ? chanceSlot : slot);
@@ -670,17 +717,25 @@ public final class ProcessingJEI {
                 GlStateManager.popMatrix();
                 return;
             }
-            if (id.equals(CRUSH)) downArrow.draw(mc, 72, 7);
-            else if (id.equals(MILL)) { downArrow.draw(mc, 43, 4); shortArrow.draw(mc, 85, 32); }
-            else if (id.equals(SAW) || id.equals(DEPLOY) || id.equals(CASING) || id.equals(FILL) || id.equals(EMPTY)) downArrow.draw(mc, 70, 6);
-            else arrow.draw(mc, 52, 54);
-            if (id.equals(MILL)) shadow.draw(mc, 32, 40);
-            else if (id.equals(PRESS)) shadow.draw(mc, 61, 41);
-            else if (!id.equals(CRUSH)) shadow.draw(mc, id.equals(SAW) ? 55 : 61, id.equals(MIX) ? 67 : id.equals(SAW) ? 55 : 58);
+            if (isFanCategory(id)) {
+                shadow.draw(mc, 46, 29);
+                (id.equals(SPLASH) ? shadow : light).draw(mc, 65, 39);
+            } else {
+                if (id.equals(CRUSH)) downArrow.draw(mc, 72, 7);
+                else if (id.equals(MILL)) { downArrow.draw(mc, 43, 4); shortArrow.draw(mc, 85, 32); }
+                else if (id.equals(SAW) || id.equals(DEPLOY) || id.equals(CASING) || id.equals(FILL) || id.equals(EMPTY)) downArrow.draw(mc, 70, 6);
+                else arrow.draw(mc, 52, 54);
+                if (id.equals(MILL)) shadow.draw(mc, 32, 40);
+                else if (id.equals(PRESS)) shadow.draw(mc, 61, 41);
+                else if (!id.equals(CRUSH)) shadow.draw(mc, id.equals(SAW) ? 55 : 61, id.equals(MIX) ? 67 : id.equals(SAW) ? 55 : 58);
+            }
             // JEI can enter this category with world lighting or a tinted colour still active.
             boolean lighting = GL11.glIsEnabled(GL11.GL_LIGHTING), depth = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
             boolean cull = GL11.glIsEnabled(GL11.GL_CULL_FACE);
             boolean rescale = GL11.glIsEnabled(32826 /* GL_RESCALE_NORMAL */);
+            boolean blend = GL11.glIsEnabled(GL11.GL_BLEND), alpha = GL11.glIsEnabled(GL11.GL_ALPHA_TEST);
+            int sourceRGB = GL11.glGetInteger(GL14.GL_BLEND_SRC_RGB), destinationRGB = GL11.glGetInteger(GL14.GL_BLEND_DST_RGB);
+            int sourceAlpha = GL11.glGetInteger(GL14.GL_BLEND_SRC_ALPHA), destinationAlpha = GL11.glGetInteger(GL14.GL_BLEND_DST_ALPHA);
             float oldLightX = OpenGlHelper.lastBrightnessX, oldLightY = OpenGlHelper.lastBrightnessY;
             GlStateManager.pushMatrix();
             try {
@@ -688,6 +743,7 @@ public final class ProcessingJEI {
                 GlStateManager.enableDepth();
                 GlStateManager.disableCull();
                 GlStateManager.enableRescaleNormal();
+                GlStateManager.enableAlpha();
                 RenderHelper.enableGUIStandardItemLighting();
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
                 if (!id.equals(CASING)) drawMachine(mc);
@@ -699,10 +755,15 @@ public final class ProcessingJEI {
                 if (depth) GlStateManager.enableDepth(); else GlStateManager.disableDepth();
                 if (rescale) GlStateManager.enableRescaleNormal(); else GlStateManager.disableRescaleNormal();
                 if (cull) GlStateManager.enableCull(); else GlStateManager.disableCull();
+                GlStateManager.tryBlendFuncSeparate(sourceRGB, destinationRGB, sourceAlpha, destinationAlpha);
+                if (blend) GlStateManager.enableBlend(); else GlStateManager.disableBlend();
+                if (alpha) GlStateManager.enableAlpha(); else GlStateManager.disableAlpha();
+                GlStateManager.color(1F, 1F, 1F, 1F);
             }
         }
         private void drawMachine(Minecraft mc) {
             float tick = (float) (Minecraft.getSystemTime() / 50D), angle = tick * 4F;
+            if (isFanCategory(id)) { drawFan(mc, angle); return; }
             GlStateManager.translate(id.equals(CRUSH) ? 64 : id.equals(MILL) ? 57 : id.equals(SAW) ? 84 : 86,
                     id.equals(CRUSH) ? 57 : id.equals(MILL) ? 39 : 36, 100);
             float scale = id.equals(CRUSH) || id.equals(MILL) ? 22F : id.equals(DEPLOY) ? 20F : id.equals(SAW) ? 25F : 23F;
@@ -757,8 +818,35 @@ public final class ProcessingJEI {
             }
             if (id.equals(FILL)) { draw(AllBlocks.SPOUT.getDefaultState()); return; }
             if (id.equals(EMPTY)) { draw(AllBlocks.ITEM_DRAIN.getDefaultState()); return; }
+        }
+        private void drawFan(Minecraft minecraft, float angle) {
+            GlStateManager.translate(56, 33, 100);
+            GlStateManager.scale(24F, -24F, 24F);
+            GlStateManager.rotate(12.5F, 1, 0, 0);
+            GlStateManager.rotate(22.5F, 0, 1, 0);
             draw(AllBlocks.ENCASED_FAN.getDefaultState().withProperty(com.cogwork.cogworkbridge.content.kinetics.fan.EncasedFanBlock.FACING, EnumFacing.SOUTH));
             rotatePart(AllBlocks.ENCASED_FAN_PROPELLER.getDefaultState().withProperty(RenderPartBlock.FACING, EnumFacing.NORTH), angle * 16, EnumFacing.Axis.Z);
+            GlStateManager.translate(0, 0, 2);
+            GlStateManager.disableLighting();
+            GlStateManager.color(1F, 1F, 1F, 1F);
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
+            if (fanFluid != null) FluidTankRenderer.renderGuiFluid(fanFluid.getFluid());
+            else {
+                IBlockState state = (id.equals(HAUNT) ? FFDBlocks.SOUL_FIRE : Blocks.FIRE).getDefaultState();
+                IBakedModel model = minecraft.getBlockRendererDispatcher().getModelForState(state);
+                minecraft.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+                Tessellator tessellator = Tessellator.getInstance();
+                BufferBuilder buffer = tessellator.getBuffer();
+                buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
+                // Keep the native item quad path: Actinium marks animated sprites as visible here.
+                for (EnumFacing face : EnumFacing.values()) {
+                    minecraft.getRenderItem().renderQuads(buffer, model.getQuads(state, face, 0L), -1, ItemStack.EMPTY);
+                }
+                minecraft.getRenderItem().renderQuads(buffer, model.getQuads(state, null, 0L), -1, ItemStack.EMPTY);
+                tessellator.draw();
+            }
         }
         private static void drawDownwardDeployerParts() {
             GlStateManager.pushMatrix();

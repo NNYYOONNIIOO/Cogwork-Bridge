@@ -617,6 +617,7 @@ jei.cogworkbridge.crushing_bonus=Flint 10%, clay 5%
 jei.cogworkbridge.chance=Chance: %s%%
 jei.cogworkbridge.splashing=Splashing
 jei.cogworkbridge.smoking=Smoking
+jei.cogworkbridge.haunting=Haunting
 jei.cogworkbridge.blasting=Fan Blasting
 jei.cogworkbridge.filling=Filling
 jei.cogworkbridge.held_not_consumed=Held item is not consumed

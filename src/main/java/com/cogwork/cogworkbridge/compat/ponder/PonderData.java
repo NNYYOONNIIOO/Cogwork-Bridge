@@ -387,7 +387,10 @@ final class PonderData {
             tag.setInteger("Fuel", text.equals("fading") ? 100 : text.equals("none") || text.equals("smouldering") ? 0 : 10000);
             tag.setBoolean("SpecialFuel", text.equals("seething"));
         }
-        if (property.equals("flame_type") && path.equals("empty_blaze_burner")) tag.setBoolean("EmptyLit", true);
+        if (property.equals("flame_type") && path.equals("empty_blaze_burner")) {
+            tag.setBoolean("EmptyLit", true);
+            tag.setBoolean("EmptySoulFire", text.equals("soul"));
+        }
         if (property.equals("open")) tag.setBoolean("Open", text.equals("true"));
         if (path.equals("nixie_tube") && property.equals("color")) tag.setInteger("Color", Math.max(0, Arrays.asList(COLORS).indexOf(text)));
         if (property.equals("calling")) tag.setBoolean("Calling", text.equals("true"));

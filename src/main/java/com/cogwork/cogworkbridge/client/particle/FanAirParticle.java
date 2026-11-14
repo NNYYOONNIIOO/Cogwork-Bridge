@@ -98,6 +98,13 @@ public final class FanAirParticle extends Particle {
                     if (rand.nextInt(32) == 0) extra(EnumParticleTypes.SMOKE_NORMAL, motion * 0.125D);
                     if (rand.nextInt(32) == 0) extra(EnumParticleTypes.SMOKE_LARGE, motion * 0.125D);
                 }
+                case HAUNTING -> {
+                    setMixedColor(0x000000, 0x126568);
+                    setAlphaF(1.0F);
+                    if (rand.nextInt(128) == 0)
+                        xy177.farmersfuturedelight.FarmerFutureDelight.proxy.spawnSoulFlameParticle(world, posX, posY, posZ);
+                    if (rand.nextInt(32) == 0) extra(EnumParticleTypes.SMOKE_NORMAL, motion * .125D);
+                }
                 default -> { }
             }
         }

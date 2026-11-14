@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -26,6 +27,8 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     @Nullable private UUID bodyId,driver;
     private double speed;
     private int controls;
+    private int driverDirection=1;
+    @Nullable private BlockPos driverControls;
     private long lastInput;
     @Nullable private TrainSchedule schedule;
     private int scheduleIndex,waitTicks;
@@ -56,7 +59,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     }
     void initializePortalCopy(RailwayCarriageEntity owner,BearingContraptionEntity copy) {
         portalProxy=true;portalPassage=owner.portalPassage;bodyId=copy.getUniqueID();portalBodyId=null;
-        driver=null;controls=0;trainPath=null;route=null;copyPortalPosition(owner);
+        clearDriving();trainPath=null;route=null;copyPortalPosition(owner);
     }
     void copyPortalPosition(RailwayCarriageEntity owner) {
         Vec3d at=owner.portalPassage.map(owner.getPositionVector());
@@ -209,6 +212,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     void transferredFrom(RailwayCarriageEntity old) {
         speed=old.speed;portalPending=false;route=old.route;destination=old.destination;automaticDirection=old.automaticDirection;nextRouteAttempt=0;
         driver=old.driver;driverCarriage=old.driverCarriage;controls=old.controls;lastInput=world.getTotalWorldTime();secondBogeyCursor=old.secondBogeyCursor;
+        driverDirection=old.driverDirection;driverControls=old.driverControls;
         routeStartedDistance=old.routeStartedDistance;previousTrainPath=old.previousTrainPath;
         previousRoute=old.previousRoute;
         expectedPosition=getPositionVector();previousCursor=old.previousCursor;previousSecondBogeyCursor=old.previousSecondBogeyCursor;
@@ -218,7 +222,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         var player=world.getMinecraftServer().getPlayerList().getPlayerByUUID(leader.driver);
         if(player!=null) {
             RailwayCarriageEntity controlled=player.world==world?this:portalCopy();
-            if(controlled!=null&&player.world==controlled.world)com.cogwork.cogworkbridge.network.ModNetwork.CHANNEL.sendTo(new TrainControlClientPacket(controlled.getEntityId()),player);
+            if(controlled!=null&&player.world==controlled.world)com.cogwork.cogworkbridge.network.ModNetwork.CHANNEL.sendTo(new TrainControlClientPacket(controlled.getEntityId(),leader.driverControls),player);
         }
     }
     void portalFailed() {
@@ -317,11 +321,19 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         }
         return false;
     }
-    public boolean startDriving(EntityPlayerMP player) {
+    public boolean startDriving(EntityPlayerMP player,BlockPos controlsPos) {
         BearingContraptionEntity structure=body();
         RailwayCarriageEntity leader = trainController();
         if(structure==null || leader==null || leader.trainCarriages()==null || leader.driver!=null&&!leader.driver.equals(player.getUniqueID())
                 || !structure.getEntityBoundingBox().grow(4D).contains(player.getPositionVector()))return false;
+        Vec3d heading=heading();
+        if(structure.getContraptionLocalWorld()==null||heading==null)return false;
+        var state=structure.getContraptionLocalWorld().getBlockState(controlsPos);
+        if(!(state.getBlock() instanceof TrainControlsBlock))return false;
+        // FACING points towards the operator; forward is away from that face.
+        Vec3d forward=structure.localFacingVectorToWorld(state.getValue(TrainControlsBlock.FACING).getOpposite());
+        leader.driverDirection=forward.dotProduct(heading)<0D?-1:1;
+        leader.driverControls=controlsPos.toImmutable();
         leader.driver=player.getUniqueID();leader.driverCarriage=getUniqueID();leader.controls=0;
         if(leader.schedule!=null)leader.schedulePaused=true;
         leader.route=null;leader.destination=null;leader.lastInput=world.getTotalWorldTime();return true;
@@ -333,15 +345,18 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         RailwayCarriageEntity local=player.world==world?this:portalCopy();
         BearingContraptionEntity structure=local==null?null:local.body();
         if(structure==null||!structure.getEntityBoundingBox().grow(4D).contains(player.getPositionVector())||player.isSpectator()){
-            leader.driver=null;leader.driverCarriage=null;leader.controls=0;return false;
+            leader.clearDriving();return false;
         }
         leader.controls=mask&15;leader.lastInput=world.getTotalWorldTime();return true;
     }
     public void stopDriving(EntityPlayerMP player){
         RailwayCarriageEntity leader = trainController();
         if(leader!=null&&leader.driver!=null&&leader.driver.equals(player.getUniqueID())){
-            leader.driver=null;leader.driverCarriage=null;leader.controls=0;
+            leader.clearDriving();
         }
+    }
+    private void clearDriving(){
+        driver=null;driverCarriage=null;driverControls=null;driverDirection=1;controls=0;
     }
     public boolean installSchedule(net.minecraft.item.ItemStack stack) {
         RailwayCarriageEntity leader = trainController();
@@ -500,8 +515,8 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         Vec3d at=cursor.position(graph);
         World cursorWorld=cursor.world(world);
         if(at==null||cursorWorld==null||!cursorWorld.isBlockLoaded(cursor.track())){speed=0D;motionX=motionY=motionZ=0D;return;}
-        if(driver!=null && world.getTotalWorldTime()-lastInput>20){driver=null;driverCarriage=null;controls=0;}
-        int direction=((controls&1)!=0?1:0)-((controls&2)!=0?1:0);
+        if(driver!=null && world.getTotalWorldTime()-lastInput>20)clearDriving();
+        int direction=driverDirection*(((controls&1)!=0?1:0)-((controls&2)!=0?1:0));
         TrackCursor speedCursor = trainPath == null ? cursor : trainPath.at(graph, speed >= 0D ? trainPath.span() : 0D);
         double max=speedCursor!=null&&speedCursor.edge(graph)!=null&&speedCursor.edge(graph).curve()!=null?.525D:1.05D;
         double desired=direction*max;
@@ -535,7 +550,9 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         if(Math.abs(speed)<1E-5D)speed=0D;
         previousCursor=cursor.copy();
         previousRoute=route==null?null:new ArrayList<>(route);
-        int steering=((controls&8)!=0?1:0)-((controls&4)!=0?1:0);
+        int steering=driverDirection*(((controls&8)!=0?1:0)-((controls&4)!=0?1:0));
+        // Junction tangents follow motion, but left/right stay relative to the cab.
+        if(speed<0D)steering=-steering;
         double requested=automatic&&Double.isFinite(remaining)
                 ?Math.copySign(Math.min(Math.abs(speed),remaining),speed):speed;
         if (trainPath != null) {
@@ -622,7 +639,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
             NBTTagCompound member=members.getCompoundTagAt(i);
             if(member.hasUniqueId("Id"))trainMembers.add(member.getUniqueId("Id"));
         }
-        secondBogeyCursor=tag.hasKey("SecondBogeyCursor",10)?TrackCursor.read(tag.getCompoundTag("SecondBogeyCursor")):null;previousTrainPath=null;driverCarriage=null;
+        secondBogeyCursor=tag.hasKey("SecondBogeyCursor",10)?TrackCursor.read(tag.getCompoundTag("SecondBogeyCursor")):null;previousTrainPath=null;clearDriving();
         schedule=tag.hasKey("Schedule",10)?TrainSchedule.read(tag.getCompoundTag("Schedule")):null;
         if(schedule!=null&&schedule.entries.isEmpty())schedule=null;
         if(schedule!=null) {

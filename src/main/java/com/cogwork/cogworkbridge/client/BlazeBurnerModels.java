@@ -2,6 +2,7 @@ package com.cogwork.cogworkbridge.client;
 
 import com.cogwork.cogworkbridge.Reference;
 import com.cogwork.cogworkbridge.content.processing.burner.BlazeBurnerBlock;
+import com.cogwork.cogworkbridge.content.processing.burner.BlazeBurnerTileEntity.FlameType;
 import com.cogwork.cogworkbridge.registry.AllBlocks;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -31,6 +32,7 @@ import java.util.Map;
 @Mod.EventBusSubscriber(modid = Reference.MOD_ID, value = Side.CLIENT)
 public final class BlazeBurnerModels {
     private static final ResourceLocation FIRE = new ResourceLocation("create", "block/blaze_burner/block_with_fire");
+    private static final ResourceLocation SOUL_FIRE = new ResourceLocation("create", "block/blaze_burner/block_with_soul_fire");
     public static final ResourceLocation FLAME_TEXTURE = new ResourceLocation("create", "block/blaze_burner_flame");
     public static final ResourceLocation FLAME_SCROLL = new ResourceLocation("create", "block/blaze_burner_flame_scroll");
     public static final ResourceLocation SUPER_FLAME_SCROLL =
@@ -55,8 +57,8 @@ public final class BlazeBurnerModels {
 
     private BlazeBurnerModels() { }
 
-    private static IModel fireModel() {
-        return ModelLoaderRegistry.getModelOrLogError(FIRE, "Could not load empty burner fire model " + FIRE);
+    private static IModel fireModel(ResourceLocation model) {
+        return ModelLoaderRegistry.getModelOrLogError(model, "Could not load empty burner fire model " + model);
     }
 
     private static IModel partModel(Part part) {
@@ -74,7 +76,9 @@ public final class BlazeBurnerModels {
         event.getMap().registerSprite(FLAME_TEXTURE);
         event.getMap().registerSprite(FLAME_SCROLL);
         event.getMap().registerSprite(SUPER_FLAME_SCROLL);
-        for (ResourceLocation texture : fireModel().getTextures()) event.getMap().registerSprite(texture);
+        for (ResourceLocation fire : List.of(FIRE, SOUL_FIRE)) {
+            for (ResourceLocation texture : fireModel(fire).getTextures()) event.getMap().registerSprite(texture);
+        }
         for (Part part : Part.values()) {
             for (ResourceLocation texture : partModel(part).getTextures()) {
                 event.getMap().registerSprite(texture);
@@ -90,29 +94,34 @@ public final class BlazeBurnerModels {
             PARTS.put(part, partModel(part).bake(TRSRTransformation.identity(), DefaultVertexFormats.ITEM,
                     texture -> atlas.getAtlasSprite(texture.toString())));
         }
-        IBakedModel lit = fireModel().bake(TRSRTransformation.identity(), DefaultVertexFormats.BLOCK,
+        IBakedModel lit = fireModel(FIRE).bake(TRSRTransformation.identity(), DefaultVertexFormats.BLOCK,
+                texture -> atlas.getAtlasSprite(texture.toString()));
+        IBakedModel soul = fireModel(SOUL_FIRE).bake(TRSRTransformation.identity(), DefaultVertexFormats.BLOCK,
                 texture -> atlas.getAtlasSprite(texture.toString()));
         for (EnumFacing facing : EnumFacing.HORIZONTALS) {
             ModelResourceLocation key = new ModelResourceLocation(AllBlocks.EMPTY_BLAZE_BURNER.getRegistryName(),
                     "facing=" + facing.getName());
             IBakedModel original = event.getModelRegistry().getObject(key);
-            if (original != null) event.getModelRegistry().putObject(key, new EmptyBurnerModel(original, lit));
+            if (original != null) event.getModelRegistry().putObject(key, new EmptyBurnerModel(original, lit, soul));
         }
     }
 
     private static final class EmptyBurnerModel extends BakedModelWrapper<IBakedModel> {
         private final IBakedModel lit;
+        private final IBakedModel soul;
 
-        private EmptyBurnerModel(IBakedModel original, IBakedModel lit) {
+        private EmptyBurnerModel(IBakedModel original, IBakedModel lit, IBakedModel soul) {
             super(original);
             this.lit = lit;
+            this.soul = soul;
         }
 
         @Override
         public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long random) {
-            boolean burning = state instanceof IExtendedBlockState extended
-                    && Boolean.TRUE.equals(extended.getValue(BlazeBurnerBlock.LIT));
-            return (burning ? lit : originalModel).getQuads(state, side, random);
+            FlameType flame = state instanceof IExtendedBlockState extended
+                    ? extended.getValue(BlazeBurnerBlock.FLAME_TYPE) : FlameType.NONE;
+            IBakedModel model = flame == FlameType.SOUL ? soul : flame == FlameType.REGULAR ? lit : originalModel;
+            return model.getQuads(state, side, random);
         }
     }
 }
