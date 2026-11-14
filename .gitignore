@@ -49,3 +49,6 @@ $null
 # Python cache
 __pycache__/
 *.pyc
+
+# Local maintenance tools
+/tools/
