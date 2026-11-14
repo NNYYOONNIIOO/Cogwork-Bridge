@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:brass_casing",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.brass_casing"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.brass_casing.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:brass"
+}

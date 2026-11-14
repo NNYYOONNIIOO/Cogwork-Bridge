@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "farmers_future_delight:amethyst_block",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.train_portal"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.train_portal.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:train_whistle"
+}

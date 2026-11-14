@@ -46,6 +46,7 @@ public final class PotatoProjectileEntity extends EntityThrowable {
         if (recovery > 0) recoveryChance = .125F + recovery * .125F;
     }
     @Override protected void entityInit() { super.entityInit(); dataManager.register(ITEM, ItemStack.EMPTY); dataManager.register(STUCK, -1); }
+    @Override public boolean canBeCollidedWith() { return !isDead && !isStuck(); }
     public ItemStack getItem() { return dataManager.get(ITEM); }
     public void disableRecovery() { recoveryChance = 0F; }
     public boolean isStuck() { return dataManager.get(STUCK) >= 0; }
@@ -95,10 +96,18 @@ public final class PotatoProjectileEntity extends EntityThrowable {
         if (ammo == null) { setDead(); return; }
         world.playSound(null, posX, posY, posZ, com.cogwork.cogworkbridge.registry.AllSounds.POTATO_HIT, net.minecraft.util.SoundCategory.PLAYERS, .7F, 1F);
         boolean recoverable = true;
+        if (hit.entityHit instanceof PotatoProjectileEntity other && !net.minecraft.item.ItemStack.areItemsEqual(item, other.getItem())) {
+            if (getThrower() instanceof net.minecraft.entity.player.EntityPlayer p) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(p, "potato_cannon_collide");
+            if (other.getThrower() instanceof net.minecraft.entity.player.EntityPlayer p) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(p, "potato_cannon_collide");
+            world.setEntityState(this, (byte)3); world.setEntityState(other, (byte)3);
+            other.setDead(); setDead(); return;
+        }
         if (hit.entityHit != null) {
             if (item.getItem() == Items.BAKED_POTATO || item.getItem() == AllItems.BLAZE_CAKE)
                 hit.entityHit.setFire(item.getItem() == AllItems.BLAZE_CAKE ? 12 : 3);
             if (!hit.entityHit.attackEntityFrom(DamageSource.causeThrownDamage(this, getThrower()), ammo.damage() * damageMultiplier)) { setDead(); return; }
+            if (hit.entityHit instanceof net.minecraft.entity.monster.IMob && !hit.entityHit.isEntityAlive()
+                    && getThrower() instanceof net.minecraft.entity.player.EntityPlayer p) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(p, "potato_cannon");
             if (hit.entityHit instanceof EntityLivingBase living) {
                 living.knockBack(this, ammo.knockback() + additionalKnockback, -motionX, -motionZ);
                 if (item.getItem() instanceof xy177.farmersfuturedelight.common.item.ItemSuspiciousStew)

@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:mechanical_arm",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.arm_many_targets"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.arm_many_targets.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:crusher_maxed_0000"
+}

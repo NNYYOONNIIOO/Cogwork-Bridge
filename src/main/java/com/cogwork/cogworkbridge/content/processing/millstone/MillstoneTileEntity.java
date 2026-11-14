@@ -87,6 +87,7 @@ public final class MillstoneTileEntity extends KineticTileEntity {
         input.extractItem(0, 1, false);
         for (ItemStack result : results) ItemHandlerHelper.insertItemStacked(output, result, false);
         remainingTicks = 0;
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "millstone");
         markDirty();
     }
 

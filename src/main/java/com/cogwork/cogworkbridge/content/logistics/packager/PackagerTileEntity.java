@@ -126,6 +126,7 @@ public class PackagerTileEntity extends CogworkTileEntity implements ITickable, 
         box = existingPackage.isEmpty() ? PackageItem.create(contents, signAddress(), world.rand) : existingPackage.copy();
         if (!existingPackage.isEmpty()) PackageItem.setAddress(box, signAddress());
         box.setCount(1); startAnimation(false, ItemStack.EMPTY);
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "packager");
     }
     public int request(ItemStack requested, int count, String address) {
         return request(requested, count, address, null);
@@ -161,6 +162,7 @@ public class PackagerTileEntity extends CogworkTileEntity implements ITickable, 
         if (extractedTotal > 0) {
             ItemStack packageStack = PackageItem.create(contents, address, world.rand);
             queued.add(packageStack);
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "packager");
             if (created != null) created.add(packageStack);
             changed();
         }

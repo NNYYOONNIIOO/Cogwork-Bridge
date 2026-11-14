@@ -29,6 +29,12 @@ public final class AssemblyLineRecipes {
     public record Progress(Kind kind, int completed, int total) { }
 
     public static List<Recipe> all() {
+        List<Recipe> result = new ArrayList<>();
+        for (Recipe recipe : builtins()) if (ScriptedAssemblyRecipes.allowBuiltin(recipe.kind())) result.add(recipe);
+        for (var line : ScriptedAssemblyRecipes.all()) result.add(line.display());
+        return result;
+    }
+    public static List<Recipe> builtins() {
         List<Output> precisionOutputs = Arrays.asList(
                 new Output(new ItemStack(AllItems.PRECISION_MECHANISM), 120F / 150F),
                 new Output(new ItemStack(AllItems.GOLDEN_SHEET), 8F / 150F),

@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "minecraft:minecart",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.long_train"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.long_train.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:track_crafting_factory"
+}

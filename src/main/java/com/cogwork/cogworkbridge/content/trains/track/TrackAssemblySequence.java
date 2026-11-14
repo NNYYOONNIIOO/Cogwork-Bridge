@@ -1,5 +1,8 @@
 package com.cogwork.cogworkbridge.content.trains.track;
 
+import com.cogwork.cogworkbridge.content.processing.ScriptedAssemblyRecipes;
+import com.cogwork.cogworkbridge.content.processing.AssemblyLineRecipes;
+
 import com.cogwork.cogworkbridge.registry.AllBlocks;
 import com.cogwork.cogworkbridge.registry.AllItems;
 import net.minecraft.init.Blocks;
@@ -41,14 +44,17 @@ public final class TrackAssemblySequence {
         return false;
     }
     public static boolean isDeployStep(ItemStack input,ItemStack held){
+        if (!ScriptedAssemblyRecipes.allowBuiltin(AssemblyLineRecipes.Kind.TRACK)) return false;
         return isNugget(held) && (isSleeper(input) || input.getItem()==AllItems.INCOMPLETE_TRACK && stage(input)==1);
     }
     public static ItemStack deploy(ItemStack input){
+        if (!ScriptedAssemblyRecipes.allowBuiltin(AssemblyLineRecipes.Kind.TRACK)) return ItemStack.EMPTY;
         ItemStack result=new ItemStack(AllItems.INCOMPLETE_TRACK);
         NBTTagCompound tag=new NBTTagCompound();tag.setInteger(STEP,isSleeper(input)?1:2);result.setTagCompound(tag);
         return result;
     }
     public static ItemStack press(ItemStack input){
+        if (!ScriptedAssemblyRecipes.allowBuiltin(AssemblyLineRecipes.Kind.TRACK)) return ItemStack.EMPTY;
         return input.getItem()==AllItems.INCOMPLETE_TRACK && stage(input)==2
                 ?new ItemStack(AllBlocks.TRACK):ItemStack.EMPTY;
     }

@@ -1,0 +1,39 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:cardboard_package_12x12",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.package_chute_throw"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.package_chute_throw.desc",
+      "extra": [
+        {
+          "text": "\n"
+        },
+        {
+          "translate": "advancement.cogworkbridge.hidden",
+          "color": "gray"
+        }
+      ]
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:cardboard_armor"
+}

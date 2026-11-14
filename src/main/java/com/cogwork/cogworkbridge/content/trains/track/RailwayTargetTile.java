@@ -277,6 +277,9 @@ public abstract class RailwayTargetTile extends TileEntity {
                         +(plan.second().getZ()-origin.getZ())*dz));
             }
             RailwayCarriageEntity.configureTrain(carriages,path,offsets,secondOffsets);
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "train");
+            if (carriages.size() >= 6) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "long_train");
+            for (var plan : plans) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.assembled(world, pos, plan.structure());
             for(int i=0;i<plans.size();i++) {
                 var structure=plans.get(i).structure();var body=bodies.get(i);
                 com.cogwork.cogworkbridge.content.contraptions.bearing.ContraptionGuiProxy.closeCapturedBlock(

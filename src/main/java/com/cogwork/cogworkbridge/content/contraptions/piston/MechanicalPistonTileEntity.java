@@ -145,6 +145,7 @@ public final class MechanicalPistonTileEntity extends KineticTileEntity implemen
         entity.prepareNestedChildren();
         if (!world.spawnEntity(entity)) return;
         com.cogwork.cogworkbridge.content.decoration.SeatBlock.transferOccupants(entity, structure);
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.assembled(world, pos, structure);
         carried.removeFromWorld();
         structure.removeFromWorld(world, true, Set.of(pos));
         contraptionId = entity.getUniqueID();

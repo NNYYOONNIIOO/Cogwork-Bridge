@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:green_seat",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.long_travel"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.long_travel.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:long_train"
+}

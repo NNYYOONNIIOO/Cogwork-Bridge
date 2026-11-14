@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:rope_pulley",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.pulley_maxed"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.pulley_maxed.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:ejector_maxed"
+}

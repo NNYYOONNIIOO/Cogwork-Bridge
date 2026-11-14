@@ -1,5 +1,7 @@
 package com.cogwork.cogworkbridge.content.equipment;
 
+import com.cogwork.cogworkbridge.content.processing.RecipeControl;
+
 import com.cogwork.cogworkbridge.registry.AllItems;
 import com.cogwork.cogworkbridge.registry.ModCreativeTab;
 import net.minecraft.entity.EntityLivingBase;
@@ -68,11 +70,11 @@ public final class SandPaperItem extends Item {
         if (input.isEmpty()) return ItemStack.EMPTY;
         var upstream = com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes.find("sandpaper_polishing", input);
         if (upstream != null && !upstream.outputs().isEmpty()) return upstream.outputs().get(0).stack().copy();
-        if (input.getItem() == AllItems.ROSE_QUARTZ) return new ItemStack(AllItems.POLISHED_ROSE_QUARTZ);
+        if (input.getItem() == AllItems.ROSE_QUARTZ) return RecipeControl.fallback("sandpaper_polishing", input, ItemStack.EMPTY, new ItemStack(AllItems.POLISHED_ROSE_QUARTZ));
         Function<ItemStack, ItemStack> recipe = RECIPES.get(input.getItem());
         if (recipe == null) return ItemStack.EMPTY;
         ItemStack result = recipe.apply(input.copy());
-        return result == null ? ItemStack.EMPTY : result.copy();
+        return result == null ? ItemStack.EMPTY : RecipeControl.fallback("sandpaper_polishing", input, ItemStack.EMPTY, result.copy());
     }
 
     @Override public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {

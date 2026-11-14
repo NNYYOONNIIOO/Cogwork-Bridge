@@ -1,0 +1,39 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:brass_funnel",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.belt_funnel_kiss"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.belt_funnel_kiss.desc",
+      "extra": [
+        {
+          "text": "\n"
+        },
+        {
+          "translate": "advancement.cogworkbridge.hidden",
+          "color": "gray"
+        }
+      ]
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:mechanical_mixer"
+}

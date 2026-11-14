@@ -243,7 +243,14 @@ public final class WrenchItem extends Item {
             if (!world.isRemote && world.getTileEntity(pos) instanceof FunnelTileEntity funnel) {
                 BeltTileEntity belt = funnel.alignedBelt();
                 if (belt != null) {
-                    if (belt.step().getY() == 0) funnel.toggleExtended();
+                    if (belt.step().getY() == 0) {
+                        funnel.toggleExtended();
+                        EnumFacing orientation = state.getValue(FunnelBlock.FACING);
+                        if (funnel.isExtended() && world.getTileEntity(pos.offset(orientation)) instanceof FunnelTileEntity other
+                                && other.isExtended() && other.alignedBelt() != null
+                                && world.getBlockState(other.getPos()).getValue(FunnelBlock.FACING) == orientation.getOpposite())
+                            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "belt_funnel_kiss");
+                    }
                 } else if (funnel.beltBelow() == null) funnel.toggleExtraction();
             }
             return EnumActionResult.SUCCESS;
@@ -253,10 +260,13 @@ public final class WrenchItem extends Item {
             return EnumActionResult.SUCCESS;
         }
         if (block instanceof FluidPipeBlock && !(block instanceof com.cogwork.cogworkbridge.content.fluids.SmartFluidPipeBlock)) {
+            boolean hasFlowForAdvancement = world.getTileEntity(pos) instanceof FluidPipeTileEntity flowing
+                    && java.util.Arrays.stream(EnumFacing.VALUES).anyMatch(direction -> flowing.getFlow(direction, 1F) != null);
             if (block instanceof GlassFluidPipeBlock || block instanceof EncasedFluidPipeBlock) {
                 if (!world.isRemote && !FluidPipeBlock.replace(world, pos, AllBlocks.FLUID_PIPE.getDefaultState())) {
                     return EnumActionResult.FAIL;
                 }
+                if (!world.isRemote && hasFlowForAdvancement) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "glass_pipe");
                 return EnumActionResult.SUCCESS;
             }
             TileEntity tile = world.getTileEntity(pos);
@@ -277,7 +287,8 @@ public final class WrenchItem extends Item {
                     AllBlocks.GLASS_FLUID_PIPE.getDefaultState().withProperty(GlassFluidPipeBlock.AXIS, axis))) {
                 return EnumActionResult.FAIL;
             }
-            return EnumActionResult.SUCCESS;
+            if (!world.isRemote && hasFlowForAdvancement) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "glass_pipe");
+                return EnumActionResult.SUCCESS;
         }
         if (block instanceof AttachedActorBlock || block instanceof NozzleBlock) return EnumActionResult.FAIL;
         if (block instanceof BasinBlock) {

@@ -37,6 +37,7 @@ public final class TrainScheduleItem extends Item {
             return true;
         }
         if(!player.world.isRemote&&carriage.installSchedule(stack)) {
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "conductor");
             if(!player.capabilities.isCreativeMode)stack.shrink(1);
             player.getCooldownTracker().setCooldown(this,5);
             player.sendStatusMessage(new net.minecraft.util.text.TextComponentTranslation("cogworkbridge.schedule.assigned"),true);

@@ -71,7 +71,9 @@ public final class TrackCursor {
             RailwayNetworkData.Node junction=forward?to:from;
             RailwayNetworkData.Node previous=forward?from:to;
             Vec3d tangent=current.tangent(forward?1D:0D).normalize().scale(forward?1D:-1D);
-            if(graph.redSignalAt(world,junction,tangent,train))break;
+            boolean passingRed = graph.redSignalAt(world,junction,tangent,train);
+            net.minecraft.entity.player.EntityPlayerMP manualDriver = passingRed ? RailwayCarriageEntity.manualDriver(world, train) : null;
+            if (passingRed && manualDriver == null) break;
             RailwayNetworkData.Travel next;
             if(route==null) {
                 next=choose(world,graph,junction,previous,current.track(),tangent,steering);
@@ -90,6 +92,7 @@ public final class TrackCursor {
                 if(next!=null)route.remove(0);
             }
             if(next==null)break;
+            if (passingRed) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(manualDriver, "red_signal");
             dimension=next.dimension();
             if(forward){from=next.from();to=next.to();progress=0D;owner=next.track();}
             else {from=next.to();to=next.from();progress=1D;owner=next.track();}

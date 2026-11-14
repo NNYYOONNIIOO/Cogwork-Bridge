@@ -1,5 +1,7 @@
 package com.cogwork.cogworkbridge.content.processing.mixer;
 
+import com.cogwork.cogworkbridge.content.processing.RecipeControl;
+
 import com.cogwork.cogworkbridge.content.processing.basin.BasinTileEntity;
 import com.cogwork.cogworkbridge.content.processing.burner.BlazeBurnerTileEntity;
 import com.cogwork.cogworkbridge.registry.AllItems;
@@ -26,6 +28,23 @@ public final class MixingRecipes {
         return false;
     }
     public static Plan find(World world, BlockPos basinPos, BasinTileEntity basin) {
+        Plan upstream = findUpstream(world, basinPos, basin);
+        if (upstream != null) return upstream;
+        Plan builtin = findBuiltin(world, basinPos, basin);
+        if (builtin == null) return null;
+        return allowed(basin, builtin) ? builtin : null;
+    }
+    public static boolean allowed(BasinTileEntity basin, Plan plan) {
+        java.util.List<java.util.List<ItemStack>> inputs = new java.util.ArrayList<>();
+        for (int i = 0; i < plan.counts().length; i++) if (plan.counts()[i] > 0) {
+            ItemStack stack = basin.getInputItems().getStackInSlot(i).copy(); stack.setCount(plan.counts()[i]); inputs.add(java.util.List.of(stack));
+        }
+        java.util.List<net.minecraftforge.fluids.FluidStack> fluids = new java.util.ArrayList<>(plan.fluidInputs());
+        if (plan.water() > 0) fluids.add(new net.minecraftforge.fluids.FluidStack(net.minecraftforge.fluids.FluidRegistry.WATER, plan.water()));
+        return RecipeControl.allowed(new RecipeControl.View("mixing", "cogworkbridge:" + plan.id(), inputs, java.util.List.of(),
+                plan.result().isEmpty() ? java.util.List.of() : java.util.List.of(plan.result()), fluids, plan.fluidOutput()));
+    }
+    private static Plan findBuiltin(World world, BlockPos basinPos, BasinTileEntity basin) {
         int andesite = -1, iron = -1, zincNugget = -1, copper = -1, zinc = -1, cobblestone = -1;
         for (int i = 0; i < basin.getInputItems().getSlots(); i++) {
             ItemStack stack = basin.getInputItems().getStackInSlot(i);
@@ -46,16 +65,22 @@ public final class MixingRecipes {
         }
         net.minecraftforge.fluids.FluidStack water = new net.minecraftforge.fluids.FluidStack(net.minecraftforge.fluids.FluidRegistry.WATER, 250);
         if (needed == 0 && basin.drainInputFluid(water, false) == 250
-                && basin.processBatch(pulp, Collections.singletonList(new ItemStack(AllItems.PULP)), true))
+                && basin.processBatch(pulp, Collections.singletonList(new ItemStack(AllItems.PULP)), true)
+                && allowed(basin, new Plan("pulp", pulp, new ItemStack(AllItems.PULP), 250)))
             return new Plan("pulp", pulp, new ItemStack(AllItems.PULP), 250);
-        if (andesite >= 0 && (iron >= 0 || zincNugget >= 0))
-            return plan(basin, "andesite_alloy", andesite, iron >= 0 ? iron : zincNugget);
-        if (copper >= 0 && zinc >= 0 && world.getTileEntity(basinPos.down()) instanceof BlazeBurnerTileEntity burner && burner.getProcessingHeat() >= 1)
-            return plan(basin, "brass_ingot", copper, zinc);
+        if (andesite >= 0 && (iron >= 0 || zincNugget >= 0)) {
+            Plan plan = plan(basin, "andesite_alloy", andesite, iron >= 0 ? iron : zincNugget);
+            if (plan != null && allowed(basin, plan)) return plan;
+        }
+        if (copper >= 0 && zinc >= 0 && world.getTileEntity(basinPos.down()) instanceof BlazeBurnerTileEntity burner && burner.getProcessingHeat() >= 1) {
+            Plan plan = plan(basin, "brass_ingot", copper, zinc);
+            if (plan != null && allowed(basin, plan)) return plan;
+        }
         if (cobblestone >= 0 && world.getTileEntity(basinPos.down()) instanceof BlazeBurnerTileEntity burner && burner.getProcessingHeat() >= 2) {
             int[] counts = new int[basin.getInputItems().getSlots()]; counts[cobblestone] = 1;
             net.minecraftforge.fluids.FluidStack lava = new net.minecraftforge.fluids.FluidStack(net.minecraftforge.fluids.FluidRegistry.LAVA, 50);
-            if (basin.fillOutput(lava, false) == lava.amount && basin.processBatch(counts, Collections.emptyList(), true))
+            if (basin.fillOutput(lava, false) == lava.amount && basin.processBatch(counts, Collections.emptyList(), true)
+                    && allowed(basin, new Plan("lava_from_cobble", counts, ItemStack.EMPTY, 0, lava)))
                 return new Plan("lava_from_cobble", counts, ItemStack.EMPTY, 0, lava);
         }
         int heat = world.getTileEntity(basinPos.down()) instanceof BlazeBurnerTileEntity burner ? burner.getProcessingHeat() : 0;
@@ -63,6 +88,10 @@ public final class MixingRecipes {
             Plan brewing = com.cogwork.cogworkbridge.content.fluids.PotionMixingRecipes.find(basin);
             if (brewing != null) return brewing;
         }
+        return null;
+    }
+    private static Plan findUpstream(World world, BlockPos basinPos, BasinTileEntity basin) {
+        int heat = world.getTileEntity(basinPos.down()) instanceof BlazeBurnerTileEntity burner ? burner.getProcessingHeat() : 0;
         for (var recipe : com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes.mixing()) {
             if (heat < recipe.heat()) continue;
             int[] counts = matchItems(basin, recipe.items());
@@ -98,9 +127,7 @@ public final class MixingRecipes {
         for (int slot = 0; slot < counts.length; slot++) {
             ItemStack stack = basin.getInputItems().getStackInSlot(slot);
             if (stack.getCount() <= counts[slot]) continue;
-            boolean matches = false;
-            for (ItemStack option : ingredients.get(index)) if (OreDictionary.itemMatches(option, stack, false)) { matches = true; break; }
-            if (!matches) continue;
+            if (!RecipeControl.matches(ingredients.get(index), stack)) continue;
             counts[slot]++;
             if (assign(basin, ingredients, index + 1, counts, visited)) return true;
             counts[slot]--;

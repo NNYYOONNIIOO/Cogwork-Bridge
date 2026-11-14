@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "minecraft:carrot",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.potato_cannon_collide"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.potato_cannon_collide.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:arm_many_targets"
+}

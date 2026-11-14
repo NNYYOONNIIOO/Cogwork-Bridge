@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:netherite_diving_helmet",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.diving_suit_lava"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.diving_suit_lava.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:foods"
+}

@@ -213,6 +213,7 @@ public final class CartAssemblerTileEntity extends CogworkTileEntity implements 
         }
         if (cart instanceof EntityMinecartFurnace furnace) furnace.pushX = furnace.pushZ = 0D;
         com.cogwork.cogworkbridge.content.decoration.SeatBlock.transferOccupants(entity, structure);
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.assembled(world, pos, structure);
         if (otherCart instanceof EntityMinecartFurnace furnace) furnace.pushX = furnace.pushZ = 0D;
         java.util.Set<BlockPos> protectedRails = new java.util.HashSet<>();
         protectedRails.add(pos);

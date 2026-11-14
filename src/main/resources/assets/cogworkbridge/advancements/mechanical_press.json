@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:mechanical_press",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.mechanical_press"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.mechanical_press.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:andesite_casing"
+}

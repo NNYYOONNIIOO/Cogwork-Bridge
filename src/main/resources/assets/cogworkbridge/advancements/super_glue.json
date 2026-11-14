@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:super_glue",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.super_glue"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.super_glue.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:millstone"
+}

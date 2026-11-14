@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:chest_minecart_contraption",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.cart_pickup"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.cart_pickup.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:pulley_maxed"
+}

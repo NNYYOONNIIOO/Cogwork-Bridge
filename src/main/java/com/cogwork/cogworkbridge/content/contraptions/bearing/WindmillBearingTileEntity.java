@@ -31,7 +31,13 @@ public final class WindmillBearingTileEntity extends MechanicalBearingTileEntity
         sails = count; return true;
     }
     @Override protected void onAssemblyChanged() {
-        if (world != null && !world.isRemote) { KineticNetworkManager.discard(world); markDirty(); sync(); }
+        if (world != null && !world.isRemote) {
+            KineticNetworkManager.discard(world); markDirty(); sync();
+            if (isAssembled()) {
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "windmill");
+                if (sails >= 128) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "windmill_maxed");
+            }
+        }
     }
     @Override public void syncSavedContraption(BearingContraption contraption) {
         super.syncSavedContraption(contraption);

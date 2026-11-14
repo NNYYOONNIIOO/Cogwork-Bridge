@@ -155,6 +155,7 @@ public final class RopePulleyTileEntity extends KineticTileEntity implements Lin
             entity.prepareNestedChildren();
             if (!world.spawnEntity(entity)) return;
             com.cogwork.cogworkbridge.content.decoration.SeatBlock.transferOccupants(entity, structure);
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.assembled(world, pos, structure);
             removeSegments(); carried.removeFromWorld(); structure.removeFromWorld(world, true);
             contraptionId = entity.getUniqueID(); needsContraption = true;
             attachMirrors(structure, anchor, length);
@@ -244,6 +245,7 @@ public final class RopePulleyTileEntity extends KineticTileEntity implements Lin
         if (!running || speed == 0F) return;
         BearingContraptionEntity entity = findEntity();
         if (needsContraption && entity == null) return;
+        if (cableOffset > 200F) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "pulley_maxed");
         float before = cableOffset;
         float next = MathHelper.clamp(cableOffset + sequencedTravel.limit(this, MathHelper.clamp(speed / 512F, -.49F, .49F)), 0F, range());
         if (entity != null) {

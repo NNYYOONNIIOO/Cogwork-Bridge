@@ -35,7 +35,10 @@ public final class SteamWhistleTileEntity extends CogworkTileEntity implements I
         EnumFacing support=SteamWhistleBlock.attachedDirection(world.getBlockState(pos));
         boolean nextPower=world.isBlockPowered(pos);
         boolean next=nextPower && world.getTileEntity(pos.offset(support)) instanceof FluidTankTileEntity tank && tank.isBoiler() && tank.hasBoilerHeat();
+        boolean started = next && !sounding;
         if(next!=sounding || powered!=nextPower || pitch!=p) { sounding=next;powered=nextPower;pitch=p;changed(); }
+        if (started)
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "steam_whistle");
     }
     @Override public NBTTagCompound writeToNBT(NBTTagCompound n) { super.writeToNBT(n);n.setInteger("Size",size);n.setInteger("Pitch",pitch);n.setBoolean("Sounding",sounding);n.setBoolean("Powered",powered);return n; }
     @Override public void readFromNBT(NBTTagCompound n) { super.readFromNBT(n);size=Math.floorMod(n.getInteger("Size"),3);pitch=n.getInteger("Pitch");sounding=n.getBoolean("Sounding");powered=n.getBoolean("Powered"); }

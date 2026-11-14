@@ -285,6 +285,11 @@ public final class DeployerTileEntity extends KineticTileEntity implements Trans
         boolean consumeHeld = DeployerTransportRecipes.consumesHeld(input, heldItem);
         boolean polishing = DeployerTransportRecipes.isPolishing(input, heldItem);
         holder.replaceOneWith(results);
+        for (ItemStack output : results) {
+            String casing = output.getItem().getRegistryName() == null ? "" : output.getItem().getRegistryName().getPath();
+            String progress = switch (casing) { case "andesite_casing", "brass_casing", "copper_casing" -> casing; case "railway_casing" -> "train_casing_00"; default -> null; };
+            if (progress != null) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, progress);
+        }
         if (consumeHeld) useHeldItem(); else if (polishing) damageSandPaper();
         if (heldItem.isEmpty()) heldItem = ItemStack.EMPTY;
         contentsChanged();
@@ -338,6 +343,18 @@ public final class DeployerTileEntity extends KineticTileEntity implements Trans
             }
             return;
         }
+        if (mode == Mode.PUNCH) for (int distance = 2; distance <= 4; distance++) {
+            BlockPos partner = pos.offset(facing, distance);
+            if (!world.isBlockLoaded(partner)) break;
+            if (world.getTileEntity(partner) instanceof DeployerTileEntity other) {
+                if (other.mode == Mode.PUNCH && other.getSpeed() != 0F
+                        && world.getBlockState(partner).getValue(DeployerBlock.FACING) == facing.getOpposite()) {
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "fist_bump");
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, partner, "fist_bump");
+                }
+                break;
+            }
+        }
         interactAt(world, pos.offset(facing, 2), facing, origin);
     }
 
@@ -390,9 +407,13 @@ public final class DeployerTileEntity extends KineticTileEntity implements Trans
             float hitY = 0.5F + hitFace.getYOffset() * 0.5F;
             float hitZ = 0.5F + hitFace.getZOffset() * 0.5F;
             PlayerInteractionManager manager = fake.interactionManager;
-            EnumActionResult ignored = manager.processRightClickBlock(fake, targetWorld,
+            boolean placingRail = heldItem.getItem() instanceof net.minecraft.item.ItemBlock itemBlock && itemBlock.getBlock() instanceof net.minecraft.block.BlockRailBase;
+            EnumActionResult interactionResult = manager.processRightClickBlock(fake, targetWorld,
                     fake.getHeldItemMainhand(), EnumHand.MAIN_HAND, target, hitFace,
                     hitX, hitY, hitZ);
+            if (interactionResult == EnumActionResult.SUCCESS && placingRail
+                    && world instanceof FakeWorld moving && moving.getMobileChunk().getEntityMovingWorld() instanceof BearingContraptionEntity structure && structure.getMountedCart() != null)
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "self_deploying");
         }
         heldItem = fake.getHeldItemMainhand().copy();
         if (heldItem.isEmpty()) heldItem = ItemStack.EMPTY;
@@ -428,6 +449,9 @@ public final class DeployerTileEntity extends KineticTileEntity implements Trans
             deployerPlayer.capabilities.isCreativeMode = false;
             playerWorld = targetWorld;
         }
+        net.minecraft.entity.player.EntityPlayer owner = com.cogwork.cogworkbridge.content.advancement.AllAdvancements.owner(world, pos);
+        if (owner != null) deployerPlayer.getEntityData().setUniqueId("CogworkDeployerOwner", owner.getUniqueID());
+        else deployerPlayer.getEntityData().removeTag("CogworkDeployerOwner");
         return deployerPlayer;
     }
 

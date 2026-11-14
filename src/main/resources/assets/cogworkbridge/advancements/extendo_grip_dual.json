@@ -1,0 +1,39 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:extendo_grip",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.extendo_grip_dual"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.extendo_grip_dual.desc",
+      "extra": [
+        {
+          "text": "\n"
+        },
+        {
+          "translate": "advancement.cogworkbridge.hidden",
+          "color": "gray"
+        }
+      ]
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:mechanical_crafter"
+}

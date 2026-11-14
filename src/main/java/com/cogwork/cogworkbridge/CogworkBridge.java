@@ -48,6 +48,7 @@ public class CogworkBridge {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        com.cogwork.cogworkbridge.content.advancement.AdvancementOwnerData.register();
         LOGGER.info("{} {} starting (remote={})", Reference.MOD_NAME, Reference.VERSION, event.getSide().isClient());
         proxy.preInit(event);
         StateGuard.verifyAll();

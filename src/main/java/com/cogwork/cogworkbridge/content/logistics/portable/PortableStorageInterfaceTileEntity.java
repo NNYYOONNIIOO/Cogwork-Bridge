@@ -298,14 +298,20 @@ public final class PortableStorageInterfaceTileEntity extends CogworkTileEntity 
             IItemHandler target = target();
             if (target == null || slot < 0 || slot >= target.getSlots() || stack.isEmpty()) return stack;
             ItemStack remaining = target.insertItem(slot, stack, simulate);
-            if (!simulate && remaining.getCount() < stack.getCount()) keepAlive();
+            if (!simulate && remaining.getCount() < stack.getCount()) {
+                keepAlive();
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "portable_storage_interface");
+            }
             return remaining;
         }
         @Override public ItemStack extractItem(int slot, int amount, boolean simulate) {
             IItemHandler target = target();
             if (target == null || slot < 0 || slot >= target.getSlots() || amount <= 0) return ItemStack.EMPTY;
             ItemStack result = target.extractItem(slot, amount, simulate);
-            if (!simulate && !result.isEmpty()) keepAlive();
+            if (!simulate && !result.isEmpty()) {
+                keepAlive();
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "portable_storage_interface");
+            }
             return result;
         }
         @Override public int getSlotLimit(int slot) {

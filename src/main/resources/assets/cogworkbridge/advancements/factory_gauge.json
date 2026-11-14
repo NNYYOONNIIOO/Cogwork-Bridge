@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:factory_gauge",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.factory_gauge"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.factory_gauge.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:table_cloth_shop"
+}

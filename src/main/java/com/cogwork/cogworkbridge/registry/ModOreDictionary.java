@@ -30,6 +30,7 @@ public final class ModOreDictionary {
         OreDictionary.registerOre("blockZinc", AllBlocks.ZINC_BLOCK);
         OreDictionary.registerOre("oreZinc", AllBlocks.ZINC_ORE);
         OreDictionary.registerOre("oreZinc", AllBlocks.DEEPSLATE_ZINC_ORE);
+        OreDictionary.registerOre("track", AllBlocks.TRACK);
         OreDictionary.registerOre("cogworkBridgeSmallFlower", new net.minecraft.item.ItemStack(Blocks.YELLOW_FLOWER, 1, OreDictionary.WILDCARD_VALUE));
         OreDictionary.registerOre("cogworkBridgeSmallFlower", new net.minecraft.item.ItemStack(Blocks.RED_FLOWER, 1, OreDictionary.WILDCARD_VALUE));
         for (String color : new String[]{"horn", "brain", "tube", "bubble", "fire"})

@@ -84,6 +84,7 @@ public abstract class KineticTileEntity extends CogworkTileEntity implements ITi
     protected void tickKinetics() {
         KineticNetwork network = KineticNetworkManager.networkFor(this);
         applyNetwork(network);
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.checkPoweredMachine(this);
         if (rotation.isMoving()) {
             phaseDegrees = (float) ((phaseDegrees + rotation.getSpeed() * 0.3F) % 360.0F);
         }

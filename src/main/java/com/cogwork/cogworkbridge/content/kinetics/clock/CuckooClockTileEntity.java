@@ -37,6 +37,7 @@ public final class CuckooClockTileEntity extends KineticTileEntity {
         int trigger = hours==12 && minutes<5 ? 1 : hours==18 && minutes>31 && minutes<36 ? 2 : 0;
         if (trigger == 0) lastTrigger=-1;
         if (animation==0 && trigger!=0 && lastTrigger!=trigger && world.provider.isSurfaceWorld()) {
+            if (trigger == 2) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardNear(world, pos, "cuckoo_clock", 32);
             lastTrigger=trigger;
             animation=((CuckooClockBlock)world.getBlockState(pos).getBlock()).isMysterious()?3:trigger;
             progress=0; markDirty(); sync();

@@ -1,5 +1,7 @@
 package com.cogwork.cogworkbridge.content.processing.millstone;
 
+import com.cogwork.cogworkbridge.content.processing.RecipeControl;
+
 import net.minecraft.block.BlockStone;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -18,6 +20,10 @@ public final class MillstoneRecipes {
         if (input.isEmpty()) return null;
         var upstream = com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes.find("milling", input);
         if (upstream != null) return new Recipe(upstream.outputs().get(0).stack().copy(), upstream.duration());
+        Recipe builtin = builtin(input);
+        return builtin != null && RecipeControl.allow("milling", input, ItemStack.EMPTY, builtin.result()) ? builtin : null;
+    }
+    private static Recipe builtin(ItemStack input) {
         Item item = input.getItem();
         int meta = input.getMetadata();
         if (item == Item.getItemFromBlock(Blocks.COBBLESTONE)) return new Recipe(new ItemStack(Blocks.GRAVEL), 250);

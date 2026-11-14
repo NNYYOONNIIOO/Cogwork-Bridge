@@ -24,12 +24,17 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     @Nullable private TrackCursor secondBogeyCursor;
     @Nullable private TrackCursor previousSecondBogeyCursor;
     @Nullable private Vec3d expectedPosition;
+    private long collisionMotionTick = Long.MIN_VALUE;
     @Nullable private UUID bodyId,driver;
     private double speed;
     private int controls;
     private int driverDirection=1;
     @Nullable private BlockPos driverControls;
     private long lastInput;
+    private long lastHonk = Long.MIN_VALUE / 2;
+    private boolean crashed;
+    private int damageGraceTicks = 10;
+    private int crashDirection = 1;
     @Nullable private TrainSchedule schedule;
     private int scheduleIndex,waitTicks;
     private boolean scheduleWaiting,schedulePaused,scheduleFinished;
@@ -118,7 +123,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     public String waitingStatus() { return schedule==null||schedulePaused||!scheduleWaiting||scheduleComplete()||!schedule.cyclic&&scheduleIndex==schedule.entries.size()-1?"":waitRuntime.status(schedule.entries.get(scheduleIndex)); }
     public boolean scheduleComplete() { return schedule!=null&&scheduleFinished; }
     public boolean resumeSchedule() {
-        if(schedule==null||!schedulePaused||scheduleComplete())return false;
+        if(crashed||schedule==null||!schedulePaused||scheduleComplete())return false;
         schedulePaused=false;route=null;nextRouteAttempt=0;return true;
     }
     public boolean validConductorSeat(com.cogwork.cogworkbridge.content.decoration.SeatEntity seat) {
@@ -167,6 +172,10 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         prevPosX=posX;prevPosY=posY;prevPosZ=posZ;
     }
     public void attach(BearingContraptionEntity body){bodyId=body.getUniqueID();}
+    /** A removed body cannot leave behind an invisible railway controller. Missing/unloaded bodies are not removed here. */
+    public void discardWithBody(BearingContraptionEntity body) {
+        if (!world.isRemote && !portalPending && body.getUniqueID().equals(bodyId)) setDead();
+    }
     public UUID trainId(){return trainLeader == null ? getUniqueID() : trainLeader;}
     @Nullable public RailwayCarriageEntity trainController() {
         if(portalProxy){var owner=portalOwner();return owner==null?null:owner.trainController();}
@@ -213,6 +222,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         speed=old.speed;portalPending=false;route=old.route;destination=old.destination;automaticDirection=old.automaticDirection;nextRouteAttempt=0;
         driver=old.driver;driverCarriage=old.driverCarriage;controls=old.controls;lastInput=world.getTotalWorldTime();secondBogeyCursor=old.secondBogeyCursor;
         driverDirection=old.driverDirection;driverControls=old.driverControls;
+        crashed=old.crashed;crashDirection=old.crashDirection;damageGraceTicks=10;
         routeStartedDistance=old.routeStartedDistance;previousTrainPath=old.previousTrainPath;
         previousRoute=old.previousRoute;
         expectedPosition=getPositionVector();previousCursor=old.previousCursor;previousSecondBogeyCursor=old.previousSecondBogeyCursor;
@@ -260,6 +270,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
             location=carriage.physicalPosition(carriage.cursor,location);if(location==null)return false;
             double dx = location.x - carriage.posX, dy = location.y - carriage.posY, dz = location.z - carriage.posZ;
             carriage.motionX = move ? dx : 0D; carriage.motionY = move ? dy : 0D; carriage.motionZ = move ? dz : 0D;
+            carriage.collisionMotionTick = move ? carriage.world.getTotalWorldTime() : Long.MIN_VALUE;
             carriage.speed = speed;
             carriage.setPosition(location.x, location.y, location.z);
             carriage.expectedPosition = location;
@@ -269,10 +280,12 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     }
     private void haltLoadedCarriages() {
         speed=motionX=motionY=motionZ=0D;
+        collisionMotionTick = Long.MIN_VALUE;
         UUID id=trainId();
         if(world.getMinecraftServer()!=null)for(WorldServer level:world.getMinecraftServer().worlds)for(Entity entity:level.loadedEntityList)
             if(entity instanceof RailwayCarriageEntity carriage && id.equals(carriage.trainId())) {
                 carriage.speed=0D;carriage.motionX=carriage.motionY=carriage.motionZ=0D;
+                carriage.collisionMotionTick = Long.MIN_VALUE;
             }
     }
     private void updateTrainOccupation(RailwayNetworkData graph,List<RailwayCarriageEntity> carriages) {
@@ -301,6 +314,156 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         return direction!=null&&portalPassage!=null&&cursor.dimension(graph)==portalPassage.targetDimension()?portalPassage.reverse().mapVector(direction):direction;
     }
     public double speed(){return speed;}
+    public boolean isCrashed() {
+        RailwayCarriageEntity controller = trainController();
+        return controller == null ? crashed : controller.crashed;
+    }
+    int damageGraceTicks() { return damageGraceTicks; }
+
+    /** Only physical slices with a live, nonempty mounted body occupy space for train collisions. */
+    boolean hasCollisionBody() {
+        if (isDead || portalPending) return false;
+        BearingContraptionEntity structure = body();
+        if (structure == null || !structure.isMountedTo(getUniqueID())) return false;
+        for (BearingContraptionEntity part : structure.railwayPortalParts()) {
+            var contraption = part.getContraption();
+            if (part.isDead || contraption == null || contraption.isEmpty()) continue;
+            if (!part.isRailwayInPortal()) return true;
+            for (var snapshot : contraption.blocks().values())
+                if (part.isRailwayBlockVisible(part.localPos(snapshot))) return true;
+        }
+        return false;
+    }
+
+    /** A graph cursor expressed in this physical slice's coordinates, without initiating portal travel. */
+    @Nullable private Vec3d collisionPosition(TrackCursor point) {
+        if (point == null) return null;
+        RailwayNetworkData graph = RailwayNetworkData.get(world);
+        Vec3d at = point.position(graph);
+        if (at == null || point.dimension(graph) == world.provider.getDimension()) return at;
+        if (portalPassage == null) return null;
+        return portalProxy ? portalPassage.map(at) : portalPassage.reverse().map(at);
+    }
+    private void addCollisionSegment(List<TrainCollision.Segment> result, Vec3d start, Vec3d end) {
+        if (portalPassage != null) {
+            RailwayPortals.Passage frame = portalProxy ? portalPassage.reverse() : portalPassage;
+            double a = frame.sourceDistance(start), b = frame.sourceDistance(end);
+            if (a > 0D && b > 0D) return;
+            if (a > 0D) start = start.add(end.subtract(start).scale(a / (a - b)));
+            else if (b > 0D) end = start.add(end.subtract(start).scale(a / (a - b)));
+        }
+        if (start.squareDistanceTo(end) > 1E-10D) result.add(new TrainCollision.Segment(world, start, end));
+    }
+    List<TrainCollision.Segment> collisionSegments() {
+        List<TrainCollision.Segment> result = new ArrayList<>();
+        if (!hasCollisionBody()) return result;
+        RailwayCarriageEntity source = portalProxy ? portalOwner() : this;
+        if (source == null) return result;
+        Vec3d first = collisionPosition(source.cursor), second = collisionPosition(source.secondBogeyCursor), axis = heading();
+        if (first == null || axis == null) return result;
+        if (second == null) second = first;
+        // Standard bogeys' wheel contact points are two blocks apart in upstream.
+        addCollisionSegment(result, first.subtract(axis), second.add(axis));
+        // Other trains may tick before this one; retain at most the preceding tick's actual sweep.
+        if (source.collisionMotionTick < source.world.getTotalWorldTime() - 1L) return result;
+        // Cover the leading point's travel this tick, including crossing another short train.
+        Vec3d oldFirst = collisionPosition(source.previousCursor), oldSecond = collisionPosition(source.previousSecondBogeyCursor);
+        if (oldFirst != null) addCollisionSegment(result, oldFirst.subtract(axis), first.subtract(axis));
+        if (oldSecond != null) addCollisionSegment(result, oldSecond.add(axis), second.add(axis));
+        else if (oldFirst != null) addCollisionSegment(result, oldFirst.add(axis), second.add(axis));
+        return result;
+    }
+    List<TrainCollision.Segment> couplingSegments(RailwayCarriageEntity next) {
+        List<TrainCollision.Segment> result = new ArrayList<>();
+        for (RailwayCarriageEntity copy : dimensionalCopies()) for (RailwayCarriageEntity other : next.dimensionalCopies()) {
+            if (copy.world != other.world || !copy.hasCollisionBody() || !other.hasCollisionBody()) continue;
+            Vec3d start = copy.collisionPosition(secondBogeyCursor == null ? cursor : secondBogeyCursor);
+            Vec3d end = other.collisionPosition(next.cursor);
+            if (start != null && end != null) copy.addCollisionSegment(result, start, end);
+        }
+        return result;
+    }
+    void crash() {
+        RailwayCarriageEntity leader = trainController();
+        if (leader == null || leader != this) { if (leader != null) leader.crash(); return; }
+        if (crashed) return;
+        List<RailwayCarriageEntity> cars = trainCarriages();
+        if (cars != null) for (RailwayCarriageEntity car : cars) for (RailwayCarriageEntity copy : car.dimensionalCopies()) {
+            BearingContraptionEntity structure = copy.body();
+            if (structure == null) continue;
+            for (Entity entity : copy.world.loadedEntityList)
+                if (entity instanceof EntityPlayer player && structure.carriesSeatedPassenger(player)
+                        && !player.getUniqueID().equals(driver))
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "train_crash");
+        }
+        EntityPlayerMP operator = manualDriver(world, trainId());
+        int input = ((controls & 1) != 0 ? 1 : 0) - ((controls & 2) != 0 ? 1 : 0);
+        if (input < 0 && speed * driverDirection < -1E-5D)
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(operator, "train_crash_backwards");
+        crashDirection = speed < 0D ? -1 : 1;
+        crashed = true;
+        schedulePaused = true; route = null; destination = null; previousTrainPath = null; previousRoute = null;
+        haltLoadedCarriages();
+        if (cars != null) for (RailwayCarriageEntity car : cars) {
+            car.crashed = true;
+            car.previousCursor = null; car.previousSecondBogeyCursor = null;
+        }
+        clearDriving();
+        if (operator != null) {
+            com.cogwork.cogworkbridge.network.ModNetwork.CHANNEL.sendTo(new TrainControlClientPacket(-1), operator);
+            operator.sendStatusMessage(new net.minecraft.util.text.TextComponentTranslation("cogworkbridge.train.crashed"), true);
+        }
+    }
+
+    /** Wrench recovery: find a nearby clear, loaded position on the existing route; never ignore another train. */
+    public boolean recoverFromCrash() {
+        RailwayCarriageEntity leader = trainController();
+        if (leader == null) return false;
+        if (leader != this) return leader.recoverFromCrash();
+        List<RailwayCarriageEntity> cars = trainCarriages();
+        if (!crashed || trainPath == null || cars == null) return false;
+        RailwayNetworkData graph = RailwayNetworkData.get(world);
+        if (!trainPath.usable(world, graph)) return false;
+        TrainPath original = trainPath.copy();
+        List<RailwayPortals.Passage> passages = new ArrayList<>();
+        for (RailwayCarriageEntity car : cars) passages.add(car.portalPassage);
+        for (int attempt = 0; attempt <= 32; attempt++) {
+            for (int i = 0; i < cars.size(); i++) cars.get(i).portalPassage = passages.get(i);
+            double distance = attempt == 0 ? 0D : ((attempt + 1) / 2) * .5D * (attempt % 2 == 1 ? -crashDirection : crashDirection);
+            trainPath = original.copy();
+            double moved = trainPath.advance(world, graph, distance, 0, null, trainId(), false);
+            if (Math.abs(moved - distance) > 1E-6D || !placeTrain(graph, cars, false)) continue;
+            // Recovery checks the new pose only, not the swept movement away from the crash.
+            for (RailwayCarriageEntity car : cars) { car.previousCursor = null; car.previousSecondBogeyCursor = null; }
+            if (TrainCollision.findContact(this) != null) continue;
+            boolean blocked = false;
+            for (RailwayCarriageEntity car : cars) for (RailwayCarriageEntity copy : car.dimensionalCopies()) {
+                if (copy.isPortalProxy()) copy.copyPortalPosition(car);
+                BearingContraptionEntity structure = copy.body();
+                if (structure == null || !structure.canRecoverRailwayAt(copy)) blocked = true;
+            }
+            if (blocked) continue;
+            crashed = false; damageGraceTicks = 10;
+            previousTrainPath = null; previousRoute = null; route = null; destination = null;
+            for (RailwayCarriageEntity car : cars) {
+                car.crashed = false; car.damageGraceTicks = 10;
+                for (RailwayCarriageEntity copy : car.dimensionalCopies()) {
+                    BearingContraptionEntity structure = copy.body();
+                    if (structure != null) structure.setRailwayPortalPose(copy);
+                }
+            }
+            updateTrainOccupation(graph, cars);
+            return true;
+        }
+        for (int i = 0; i < cars.size(); i++) cars.get(i).portalPassage = passages.get(i);
+        trainPath = original; placeTrain(graph, cars, false);
+        for (RailwayCarriageEntity car : cars) {
+            RailwayCarriageEntity copy = car.portalCopy();
+            if (copy != null) copy.copyPortalPosition(car);
+        }
+        for (RailwayCarriageEntity car : cars) { car.previousCursor = null; car.previousSecondBogeyCursor = null; }
+        return false;
+    }
     List<RailwayNetworkData.Travel> occupiedTrainPath(RailwayNetworkData graph) {
         return trainPath == null ? List.of() : trainPath.occupiedEdges(graph);
     }
@@ -321,10 +484,20 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         }
         return false;
     }
+    @Nullable static EntityPlayerMP manualDriver(World world, @Nullable UUID train) {
+        if (train == null || world.getMinecraftServer() == null) return null;
+        for (WorldServer level : world.getMinecraftServer().worlds) {
+            Entity entity = level.getEntityFromUuid(train);
+            if (entity instanceof RailwayCarriageEntity carriage && carriage.driver != null
+                    && world.getTotalWorldTime() - carriage.lastInput <= 20)
+                return world.getMinecraftServer().getPlayerList().getPlayerByUUID(carriage.driver);
+        }
+        return null;
+    }
     public boolean startDriving(EntityPlayerMP player,BlockPos controlsPos) {
         BearingContraptionEntity structure=body();
         RailwayCarriageEntity leader = trainController();
-        if(structure==null || leader==null || leader.trainCarriages()==null || leader.driver!=null&&!leader.driver.equals(player.getUniqueID())
+        if(structure==null || leader==null || leader.crashed || leader.trainCarriages()==null || leader.driver!=null&&!leader.driver.equals(player.getUniqueID())
                 || !structure.getEntityBoundingBox().grow(4D).contains(player.getPositionVector()))return false;
         Vec3d heading=heading();
         if(structure.getContraptionLocalWorld()==null||heading==null)return false;
@@ -347,7 +520,32 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         if(structure==null||!structure.getEntityBoundingBox().grow(4D).contains(player.getPositionVector())||player.isSpectator()){
             leader.clearDriving();return false;
         }
-        leader.controls=mask&15;leader.lastInput=world.getTotalWorldTime();return true;
+        leader.controls=mask&31;
+        if ((mask & 16) != 0 && world.getTotalWorldTime() - leader.lastHonk >= 10) {
+            leader.lastHonk = world.getTotalWorldTime();
+            leader.honk(player);
+        }
+        leader.lastInput=world.getTotalWorldTime();return true;
+    }
+    private void honk(EntityPlayerMP player) {
+        List<RailwayCarriageEntity> cars = trainCarriages();
+        if (cars == null) return;
+        for (RailwayCarriageEntity car : cars) {
+            BearingContraptionEntity structure = car.body();
+            if (structure == null || structure.getContraption() == null) continue;
+            for (var snapshot : structure.getContraption().blocks().values()) {
+                if (!(snapshot.state().getBlock() instanceof com.cogwork.cogworkbridge.content.fluids.whistle.SteamWhistleBlock)) continue;
+                net.minecraft.nbt.NBTTagCompound data = snapshot.tileData();
+                int size = data == null ? 1 : data.getInteger("Size");
+                int pitch = data == null ? 0 : data.getInteger("Pitch");
+                net.minecraft.util.SoundEvent sound = size == 0 ? com.cogwork.cogworkbridge.registry.AllSounds.WHISTLE_HIGH
+                        : size == 2 ? com.cogwork.cogworkbridge.registry.AllSounds.WHISTLE_LOW : com.cogwork.cogworkbridge.registry.AllSounds.WHISTLE;
+                Vec3d at = structure.localBlockCenterToWorld(structure.localPos(snapshot));
+                car.world.playSound(null, at.x, at.y, at.z, sound, net.minecraft.util.SoundCategory.BLOCKS, 4F, (float) Math.pow(2D, -pitch / 12D));
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "train_whistle");
+                return;
+            }
+        }
     }
     public void stopDriving(EntityPlayerMP player){
         RailwayCarriageEntity leader = trainController();
@@ -480,6 +678,8 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         if(portalProxy)return;
         if(portalPending)return;
         if (trainLeader != null && !trainLeader.equals(getUniqueID())) return;
+        if (damageGraceTicks > 0) damageGraceTicks--;
+        if (crashed) { haltLoadedCarriages(); return; }
         if(world.getTotalWorldTime()%20==0)RailwayDisplayData.capture(this);
         prevPosX=posX;prevPosY=posY;prevPosZ=posZ;
         if(cursor==null){motionX=motionY=motionZ=0D;return;}
@@ -566,6 +766,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
             }
             if (Math.abs(moved) <= 1E-8D) previousTrainPath = null;
             updateTrainOccupation(graph,carriages);
+            TrainCollision.tick(this);
             return;
         }
         double moved=cursor.advance(world,graph,requested,steering,automatic?route:null,getUniqueID());
@@ -575,9 +776,12 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         next=physicalPosition(cursor,next);
         if(next==null){portalFailed();return;}
         motionX=next.x-posX;motionY=next.y-posY;motionZ=next.z-posZ;
+        collisionMotionTick = Math.abs(motionX)+Math.abs(motionY)+Math.abs(motionZ)>1E-8D
+                ? world.getTotalWorldTime() : Long.MIN_VALUE;
         setPosition(next.x,next.y,next.z);expectedPosition=next;
         if(Math.abs(motionX)+Math.abs(motionY)+Math.abs(motionZ)>1E-8D)velocityChanged=true;
         graph.updateOccupation(this);
+        TrainCollision.tick(this);
     }
     @Override public void setDead() {
         if(!world.isRemote&&!portalProxy&&!portalPending&&trainId().equals(getUniqueID()))RailwayDisplayData.remove(this);
@@ -589,6 +793,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     @Override public boolean attackEntityFrom(DamageSource source,float amount){return false;}
     @Override protected void writeEntityToNBT(NBTTagCompound tag){
         super.writeEntityToNBT(tag);if(cursor!=null)tag.setTag("TrackCursor",cursor.write());
+        tag.setBoolean("TrainCrashed", crashed); tag.setInteger("CrashDirection", crashDirection);
         if(bodyId!=null)tag.setUniqueId("CarriageBody",bodyId);
         if(portalPassage!=null)tag.setTag("PortalPassage",portalPassage.write());
         tag.setBoolean("PortalProxy",portalProxy);if(portalBodyId!=null)tag.setUniqueId("PortalBody",portalBodyId);
@@ -618,6 +823,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     }
     @Override protected void readEntityFromNBT(NBTTagCompound tag){
         super.readEntityFromNBT(tag);cursor=tag.hasKey("TrackCursor",10)?TrackCursor.read(tag.getCompoundTag("TrackCursor")):null;
+        crashed=tag.getBoolean("TrainCrashed");crashDirection=tag.getInteger("CrashDirection")<0?-1:1;damageGraceTicks=10;
         portalPassage=tag.hasKey("PortalPassage",10)?RailwayPortals.Passage.read(tag.getCompoundTag("PortalPassage")):null;
         portalProxy=tag.getBoolean("PortalProxy");portalBodyId=tag.hasUniqueId("PortalBody")?tag.getUniqueId("PortalBody"):null;
         runTitle=tag.getString("RunTitle");throttle=tag.hasKey("Throttle")?Math.max(0,Math.min(1,tag.getDouble("Throttle"))):1D;

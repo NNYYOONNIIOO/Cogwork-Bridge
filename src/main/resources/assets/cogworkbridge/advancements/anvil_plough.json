@@ -1,0 +1,31 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "minecraft:anvil",
+      "count": 1,
+      "data": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.anvil_plough"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.anvil_plough.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:cart_pickup"
+}

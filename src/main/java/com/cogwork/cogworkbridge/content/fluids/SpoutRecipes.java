@@ -15,8 +15,15 @@ public final class SpoutRecipes {
         ItemStack one = input.copy(); one.setCount(1);
         FluidStack available = fluid.copy(); available.amount = 1000;
         FluidTank tank = new FluidTank(1000); tank.setFluid(available);
-        ItemStack output = FillingRecipes.canFill(one, tank) ? FillingRecipes.fill(one, tank)
-                : FluidContainerHelper.canFill(one, tank, 1000) ? FluidContainerHelper.fill(one, tank, 1000) : null;
+        var assembly = FillingRecipes.assembly(one, tank);
+        if (assembly == null && com.cogwork.cogworkbridge.content.processing.ScriptedAssemblyRecipes.inProgress(one)) return null;
+        ItemStack output = assembly != null ? assembly.result(null) : FillingRecipes.canFill(one, tank) ? FillingRecipes.fill(one, tank) : null;
+        if (assembly != null) tank.drain(assembly.step().fluid(), true);
+        if (output == null && FluidContainerHelper.canFill(one, tank, 1000)) {
+            output = FluidContainerHelper.fill(one, tank, 1000);
+            FluidStack consumed = available.copy(); consumed.amount = 1000 - tank.getFluidAmount();
+            if (output != null && !FillingRecipes.allowed(one, output, consumed)) return null;
+        }
         int used = 1000 - tank.getFluidAmount();
         if (output == null || output.isEmpty() || used <= 0) return null;
         available.amount = used;

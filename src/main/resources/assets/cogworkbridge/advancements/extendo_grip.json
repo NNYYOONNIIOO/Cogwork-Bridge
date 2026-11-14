@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:extendo_grip",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.extendo_grip"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.extendo_grip.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:potato_cannon"
+}

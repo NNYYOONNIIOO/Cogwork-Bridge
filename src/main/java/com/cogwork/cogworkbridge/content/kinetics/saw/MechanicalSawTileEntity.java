@@ -100,6 +100,7 @@ public final class MechanicalSawTileEntity extends KineticTileEntity {
             activeRecipe = null; cuttingTicks = 0; recipeIndex++; exportDelay = 10;
             fillOutput();
         } finally { changingInventory = false; }
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "saw_processing");
         markDirty(); sync();
     }
     private int processingSpeed() { return Math.max(1, Math.min(128, (int) (Math.abs(getSpeed()) / 24F))); }

@@ -45,6 +45,7 @@ final class HoseFluidSearch {
     @Nullable private Fluid fillFluid;
     private boolean searching;
     private boolean infinite;
+    boolean isInfinite() { return infinite; }
     private boolean fillInfinite;
     private int fillValidationFluidCount;
     private int recheck;

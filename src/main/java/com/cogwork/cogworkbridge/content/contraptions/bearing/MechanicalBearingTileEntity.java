@@ -479,6 +479,7 @@ public class MechanicalBearingTileEntity extends KineticTileEntity {
         entity.sendNestedSnapshots();
         angleDegrees = 0.0F;
         applyAssembledState(true);
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.assembled(world, pos, contraption);
     }
 
     private boolean disassemble() {

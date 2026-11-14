@@ -15,6 +15,7 @@ repositories {
         url = 'https://api.modrinth.com/maven'
     }
     mavenCentral()
+    maven { url = 'https://maven.blamejared.com' }
     mavenLocal() // Must be last for caching to work
 }
 
@@ -44,5 +45,11 @@ dependencies {
     // do not embed Ponder or its assets into the Cogwork Bridge distribution.
     modCompileOnly 'local.ponder:ponder-legacy:1.7.1'
     modRuntimeOnly 'local.ponder:ponder-legacy:1.7.1'
+
+    // Optional ZenScript integration; the user supplies this jar in libs/mods.
+    def craftTweaker = rootProject.file('libs/CraftTweaker2-1.12-4.1.20.699.jar').exists() ? 'local.crafttweaker:CraftTweaker2-1.12:4.1.20.699'
+            : 'CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.20.699'
+    modCompileOnly craftTweaker
+    modRuntimeOnly craftTweaker
 
 }

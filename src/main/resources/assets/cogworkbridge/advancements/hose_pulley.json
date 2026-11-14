@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:hose_pulley",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.hose_pulley"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.hose_pulley.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:water_supply"
+}

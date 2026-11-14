@@ -1,0 +1,50 @@
+{
+  "criteria": {
+    "0": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "cogworkbridge:wrench"
+          }
+        ]
+      }
+    },
+    "1": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "cogworkbridge:goggles"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:wrench",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.wrench_goggles"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.wrench_goggles.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "0"
+    ],
+    [
+      "1"
+    ]
+  ],
+  "parent": "cogworkbridge:portable_storage_interface"
+}

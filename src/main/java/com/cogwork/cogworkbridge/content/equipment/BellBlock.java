@@ -56,11 +56,11 @@ public final class BellBlock extends BlockContainer {
         if (side.getAxis().isVertical() || y > .8124F) return false;
         boolean wall = state.getValue(MOUNT) == Mount.SINGLE_WALL || state.getValue(MOUNT) == Mount.DOUBLE_WALL;
         if ((side.getAxis() == state.getValue(FACING).getAxis()) == wall) return false;
-        if (!world.isRemote && world.getTileEntity(pos) instanceof BellTileEntity bell) bell.ring(side);
+        if (!world.isRemote && world.getTileEntity(pos) instanceof BellTileEntity bell) { bell.ring(side); if (haunted) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "haunted_bell"); }
         return true;
     }
     @Override public void onBlockClicked(World world, BlockPos pos, EntityPlayer player) {
-        if (!world.isRemote && world.getTileEntity(pos) instanceof BellTileEntity bell) bell.ring(player.getHorizontalFacing());
+        if (!world.isRemote && world.getTileEntity(pos) instanceof BellTileEntity bell) { bell.ring(player.getHorizontalFacing()); if (haunted) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "haunted_bell"); }
     }
     @Override public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block, BlockPos from) {
         if (world.isRemote) return;

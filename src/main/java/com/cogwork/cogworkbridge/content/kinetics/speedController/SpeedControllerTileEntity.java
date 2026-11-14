@@ -21,6 +21,9 @@ public final class SpeedControllerTileEntity extends KineticTileEntity {
             return;
         }
         targetSpeed = next;
+        if (world != null && !world.isRemote && getSpeed() != 0F
+                && world.getBlockState(pos.up()).getBlock() instanceof com.cogwork.cogworkbridge.content.kinetics.cogwheel.CogwheelBlock cog && cog.isLarge())
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "speed_controller");
         markDirty();
         needsSync = true;
         if (world != null && !world.isRemote) {

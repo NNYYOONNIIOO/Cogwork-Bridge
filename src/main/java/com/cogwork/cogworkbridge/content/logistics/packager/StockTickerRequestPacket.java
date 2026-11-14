@@ -42,6 +42,9 @@ public final class StockTickerRequestPacket implements IMessage {
                     return;
                 }
                 int moved = StockLinkNetwork.request(player.getServer(), ticker.getNetwork(), message.item, message.amount, message.address);
+                if (!message.item.isEmpty())
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAction(
+                            player.world, container.position(), player, "stock_ticker");
                 player.sendStatusMessage(new net.minecraft.util.text.TextComponentTranslation("cogworkbridge.stock_ticker.requested", moved), true);
             });
             return null;

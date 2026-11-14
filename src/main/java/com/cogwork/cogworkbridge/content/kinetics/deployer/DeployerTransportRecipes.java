@@ -1,5 +1,9 @@
 package com.cogwork.cogworkbridge.content.kinetics.deployer;
 
+import com.cogwork.cogworkbridge.content.processing.RecipeControl;
+import com.cogwork.cogworkbridge.content.processing.ScriptedAssemblyRecipes;
+import com.cogwork.cogworkbridge.content.processing.AssemblyLineRecipes;
+
 import com.cogwork.cogworkbridge.registry.AllBlocks;
 import com.cogwork.cogworkbridge.registry.AllItems;
 import net.minecraft.init.Blocks;
@@ -12,6 +16,18 @@ public final class DeployerTransportRecipes {
     private DeployerTransportRecipes() { }
 
     public static ItemStack result(ItemStack input, ItemStack held) {
+        var assembly = ScriptedAssemblyRecipes.find(AssemblyLineRecipes.Operation.DEPLOY, input, held, null);
+        if (assembly != null) return assembly.result(null);
+        if (ScriptedAssemblyRecipes.inProgress(input)) return ItemStack.EMPTY;
+        var recipe = findUpstream(input, held);
+        if (recipe != null) return recipe.outputs().get(0).stack().copy();
+        ItemStack result = builtinResult(input, held);
+        boolean application = com.cogwork.cogworkbridge.content.processing.casing.CasingApplication.isStripped(input)
+                || isPlank(held) && (input.getItem() == Item.getItemFromBlock(AllBlocks.SHAFT) || input.getItem() == Item.getItemFromBlock(AllBlocks.COGWHEEL));
+        return RecipeControl.allow("deploying", input, held, result)
+                && (!application || RecipeControl.allow("item_application", input, held, result)) ? result : ItemStack.EMPTY;
+    }
+    private static ItemStack builtinResult(ItemStack input, ItemStack held) {
         if (input.isEmpty() || held.isEmpty()) return ItemStack.EMPTY;
         if (com.cogwork.cogworkbridge.content.trains.track.TrackAssemblySequence.isDeployStep(input, held))
             return com.cogwork.cogworkbridge.content.trains.track.TrackAssemblySequence.deploy(input);
@@ -28,9 +44,6 @@ public final class DeployerTransportRecipes {
             tag.setInteger(com.cogwork.cogworkbridge.content.processing.AssemblyLineRecipes.PRECISION_STEP, stage + 1); partial.setTagCompound(tag); return partial;
         }
         if (input.getItem() == AllItems.INCOMPLETE_PRECISION_MECHANISM) return ItemStack.EMPTY;
-        var upstream = findUpstream(input, held);
-        if (upstream != null && !upstream.outputs().isEmpty())
-            return upstream.outputs().get(0).stack().copy();
         if (com.cogwork.cogworkbridge.content.processing.casing.CasingApplication.isStripped(input)) {
             net.minecraft.block.Block casing = com.cogwork.cogworkbridge.content.processing.casing.CasingApplication.casing(held);
             if (casing != null) return new ItemStack(casing);
@@ -44,14 +57,18 @@ public final class DeployerTransportRecipes {
     }
 
     static boolean consumesHeld(ItemStack input, ItemStack held) {
+        var assembly = ScriptedAssemblyRecipes.find(AssemblyLineRecipes.Operation.DEPLOY, input, held, null);
+        if (assembly != null) return !assembly.step().keepHeld();
+        var custom = findUpstream(input, held);
+        if (custom != null) return !custom.keepHeld();
         if (isPolishing(input, held)) return false;
         if (com.cogwork.cogworkbridge.content.trains.track.TrackAssemblySequence.isDeployStep(input, held)) return true;
         if (isSequenceStep(input, held)) return true;
-        var recipe = findUpstream(input, held);
-        return recipe == null || !recipe.keepHeld();
+        return true;
     }
 
     static boolean isPolishing(ItemStack input, ItemStack held) {
+        if (ScriptedAssemblyRecipes.find(AssemblyLineRecipes.Operation.DEPLOY, input, held, null) != null || findUpstream(input, held) != null) return false;
         return held.getItem() instanceof com.cogwork.cogworkbridge.content.equipment.SandPaperItem
                 && !com.cogwork.cogworkbridge.content.equipment.SandPaperItem.polish(input).isEmpty();
     }
@@ -62,6 +79,7 @@ public final class DeployerTransportRecipes {
     }
 
     private static boolean isSequenceStep(ItemStack input, ItemStack held) {
+        if (!ScriptedAssemblyRecipes.allowBuiltin(AssemblyLineRecipes.Kind.PRECISION)) return false;
         boolean initial = hasOre(input, "plateGold");
         if (!initial && input.getItem() != AllItems.INCOMPLETE_PRECISION_MECHANISM) return false;
         int stage = initial ? 0 : Math.max(0, Math.min(14, input.hasTagCompound() ? input.getTagCompound().getInteger(com.cogwork.cogworkbridge.content.processing.AssemblyLineRecipes.PRECISION_STEP) : 0));
@@ -70,12 +88,14 @@ public final class DeployerTransportRecipes {
     }
 
     static java.util.List<ItemStack> finish(ItemStack input, ItemStack held, java.util.Random random) {
+        var assembly = ScriptedAssemblyRecipes.find(AssemblyLineRecipes.Operation.DEPLOY, input, held, null);
+        if (assembly != null) return java.util.List.of(assembly.result(random));
         ItemStack result = result(input, held);
         if (result.isEmpty()) return java.util.Collections.emptyList();
+        var upstream = findUpstream(input, held);
+        if (upstream != null) return upstream.roll(random);
         if (com.cogwork.cogworkbridge.content.trains.track.TrackAssemblySequence.isDeployStep(input, held))
             return java.util.Collections.singletonList(result);
-        var upstream = findUpstream(input, held);
-        if (upstream != null && !isSequenceStep(input, held) && !isPolishing(input, held)) return upstream.roll(random);
         if (!isSequenceStep(input, held) || result.getItem() != AllItems.PRECISION_MECHANISM) return java.util.Collections.singletonList(result);
         int roll = random.nextInt(150);
         if (roll < 120) return java.util.Collections.singletonList(result);

@@ -11,7 +11,7 @@ public final class ObsidianSheetSequence {
     private ObsidianSheetSequence() { }
 
     public static boolean isPowder(ItemStack stack) {
-        if (stack.isEmpty()) return false;
+        if (stack.isEmpty() || !ScriptedAssemblyRecipes.allowBuiltin(AssemblyLineRecipes.Kind.STURDY_SHEET)) return false;
         for (int id : OreDictionary.getOreIDs(stack)) if ("dustObsidian".equals(OreDictionary.getOreName(id))) return true;
         return false;
     }
@@ -25,7 +25,7 @@ public final class ObsidianSheetSequence {
     }
 
     public static ItemStack pressed(ItemStack input) {
-        if (input.isEmpty() || input.getItem() != AllItems.UNPROCESSED_OBSIDIAN_SHEET) return ItemStack.EMPTY;
+        if (!ScriptedAssemblyRecipes.allowBuiltin(AssemblyLineRecipes.Kind.STURDY_SHEET) || input.isEmpty() || input.getItem() != AllItems.UNPROCESSED_OBSIDIAN_SHEET) return ItemStack.EMPTY;
         int presses = input.hasTagCompound() ? input.getTagCompound().getInteger(STEP) : 0;
         if (presses >= 1) return new ItemStack(AllItems.STURDY_SHEET);
         ItemStack result = new ItemStack(AllItems.UNPROCESSED_OBSIDIAN_SHEET);

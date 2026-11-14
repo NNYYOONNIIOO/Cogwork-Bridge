@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:spout",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.spout"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.spout.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:copper_casing"
+}

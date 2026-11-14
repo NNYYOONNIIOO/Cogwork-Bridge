@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:white_sail",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.windmill_maxed"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.windmill_maxed.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:andesite_alloy"
+}

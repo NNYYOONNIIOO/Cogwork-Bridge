@@ -40,7 +40,7 @@ public final class TrainControlClient {
         if(!(mc.world.getEntityByID(carriage) instanceof RailwayCarriageEntity)){if(spawnGrace-->0)return;stop();return;}
         spawnGrace=0;
         int mask=(pressed(mc.gameSettings.keyBindForward)?1:0)|(pressed(mc.gameSettings.keyBindBack)?2:0)
-                |(pressed(mc.gameSettings.keyBindLeft)?4:0)|(pressed(mc.gameSettings.keyBindRight)?8:0);
+                |(pressed(mc.gameSettings.keyBindLeft)?4:0)|(pressed(mc.gameSettings.keyBindRight)?8:0)|(pressed(mc.gameSettings.keyBindJump)?16:0);
         if(mask!=lastMask||++refresh>=5){ModNetwork.CHANNEL.sendToServer(new TrainControlInputPacket(carriage,mask,false));lastMask=mask;refresh=0;}
     }
     @SubscribeEvent public static void preventMovement(InputUpdateEvent event){

@@ -1,5 +1,7 @@
 package com.cogwork.cogworkbridge.content.processing.crafter;
 
+import com.cogwork.cogworkbridge.content.processing.RecipeControl;
+
 import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraptionEntity;
 import com.cogwork.cogworkbridge.kinetic.KineticTileEntity;
 import com.cogwork.cogworkbridge.vendor.movingworld.common.chunk.mobilechunk.world.FakeWorld;
@@ -748,6 +750,12 @@ public final class MechanicalCrafterTileEntity extends KineticTileEntity {
         if (recipe == null) return null;
         ItemStack result = recipe.getCraftingResult(grid.inventory);
         if (result.isEmpty()) return null;
+        List<List<ItemStack>> inputs = new ArrayList<>();
+        for (int i = 0; i < grid.inventory.getSizeInventory(); i++) {
+            ItemStack stack = grid.inventory.getStackInSlot(i); if (!stack.isEmpty()) inputs.add(java.util.List.of(stack));
+        }
+        if (!RecipeControl.allowed(new RecipeControl.View("mechanical_crafting", recipe.getRegistryName() == null ? "" : recipe.getRegistryName().toString(),
+                inputs, java.util.List.of(), java.util.List.of(result), java.util.List.of(), null))) return null;
         List<ItemStack> results = new ArrayList<>();
         results.add(result.copy());
         for (ItemStack remainder : recipe.getRemainingItems(grid.inventory)) {

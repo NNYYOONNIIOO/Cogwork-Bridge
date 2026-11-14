@@ -92,6 +92,11 @@ final class TrainPath {
     /** Only the leading bogey chooses new edges; the rest follow this saved path. */
     double advance(World world, RailwayNetworkData graph, double distance, int steering,
                    @Nullable List<RailwayNetworkData.Travel> route, UUID train) {
+        return advance(world, graph, distance, steering, route, train, true);
+    }
+
+    double advance(World world, RailwayNetworkData graph, double distance, int steering,
+                   @Nullable List<RailwayNetworkData.Travel> route, UUID train, boolean checkSignal) {
         if (Math.abs(distance) <= EPSILON || !usable(world, graph)) return 0D;
         boolean forward = distance > 0D;
         double length = length(graph);
@@ -100,7 +105,7 @@ final class TrainPath {
             double leading = reference + span;
             double wanted = leading + distance;
             while (wanted > length + EPSILON && edges.size() < MAX_EDGES) {
-                TrackCursor nextCursor=next(world, graph, true, steering, route, train, true);
+                TrackCursor nextCursor=next(world, graph, true, steering, route, train, checkSignal);
                 RailwayNetworkData.Travel next=nextCursor==null?null:nextCursor.edge(graph);
                 if (next == null) break;
                 edges.add(TrackCursor.onEdge(next, 0D));
@@ -113,7 +118,7 @@ final class TrainPath {
         }
         double wanted = reference + distance;
         while (wanted < -EPSILON && edges.size() < MAX_EDGES) {
-            TrackCursor nextCursor=next(world, graph, false, steering, route, train, true);
+            TrackCursor nextCursor=next(world, graph, false, steering, route, train, checkSignal);
             RailwayNetworkData.Travel next=nextCursor==null?null:nextCursor.edge(graph);
             if (next == null) break;
             RailwayNetworkData.Travel reverse = reverse(graph, next);
@@ -136,11 +141,14 @@ final class TrainPath {
         RailwayNetworkData.Node junction = forward ? current.to() : current.from();
         RailwayNetworkData.Node previous = forward ? current.from() : current.to();
         Vec3d tangent = current.tangent(forward ? 1D : 0D).normalize().scale(forward ? 1D : -1D);
-        if (checkSignal && graph.redSignalAt(world, junction, tangent, train)) return null;
+        boolean passingRed = checkSignal && graph.redSignalAt(world, junction, tangent, train);
+        net.minecraft.entity.player.EntityPlayerMP manualDriver = passingRed ? RailwayCarriageEntity.manualDriver(world, train) : null;
+        if (passingRed && manualDriver == null) return null;
         if (route == null) {
             var local=TrackCursor.choose(world, graph, junction, previous, current.track(), tangent, steering);
-            if(local!=null)return TrackCursor.onEdge(local,0);
-            return RailwayPortals.next(world,current.track(),junction,tangent);
+            TrackCursor next = local != null ? TrackCursor.onEdge(local,0) : RailwayPortals.next(world,current.track(),junction,tangent);
+            if (next != null && passingRed) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(manualDriver, "red_signal");
+            return next;
         }
         if (route.isEmpty()) return null;
         RailwayNetworkData.Travel expected = route.get(0);

@@ -173,7 +173,10 @@ public final class FactoryPanelTileEntity extends TileEntity implements ITickabl
             if (destination != null) {
                 int requested = Math.min(576, target[i] - value - outstanding);
                 int accepted = StockLinkNetwork.requestRestock(world.getMinecraftServer(), network[i], filter[i], requested, address[i], destination);
-                if (accepted > 0) { promised[i] += accepted; displayedPromises[i] = promised[i]; expires[i] = world.getTotalWorldTime() + 1200; dirty = true; }
+                if (accepted > 0) {
+                    promised[i] += accepted; displayedPromises[i] = promised[i]; expires[i] = world.getTotalWorldTime() + 1200; dirty = true;
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "factory_gauge");
+                }
             } else if (!inputs.get(i).isEmpty()) {
                 Map<UUID, List<StockOrder.Line>> order = new LinkedHashMap<>();
                 int expected = 0;
@@ -189,6 +192,7 @@ public final class FactoryPanelTileEntity extends TileEntity implements ITickabl
                 if (expected > 0 && StockLinkNetwork.requestNetworks(world.getMinecraftServer(), order, address[i], pattern) == expected) {
                     FactoryPromises.add(world, network[i], filter[i], recipeOutput[i]);
                     displayedPromises[i] = FactoryPromises.get(world, network[i], filter[i]); dirty = true;
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "factory_gauge");
                 }
             }
         }

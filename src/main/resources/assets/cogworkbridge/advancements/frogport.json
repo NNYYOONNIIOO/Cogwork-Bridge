@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:package_frogport",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.frogport"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.frogport.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:stock_ticker"
+}

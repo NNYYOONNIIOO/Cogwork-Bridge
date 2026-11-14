@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:blaze_burner",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.arm_blaze_burner"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.arm_blaze_burner.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:linked_controller"
+}

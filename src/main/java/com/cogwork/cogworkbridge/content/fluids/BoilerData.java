@@ -26,7 +26,11 @@ final class BoilerData {
     void tick(FluidTankTileEntity tank) {
         World world = tank.getWorld();
         long time = world.getTotalWorldTime();
-        if (time % 20 == 0) evaluate(tank);
+        if (time % 20 == 0) {
+            evaluate(tank);
+            if (active() && Math.min(heat, Math.min(tank.getWidth() * tank.getWidth() * tank.getHeight() / 4, (int) Math.ceil(waterRate) / 10)) >= 18)
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, tank.getPos(), "steam_engine_maxed");
+        }
         if (!active() || time % 5 != 0) return;
         samples[sampleIndex] = gathered; gathered = 0; sampleIndex = (sampleIndex + 1) % samples.length;
         int max = 0; for (int sample : samples) max = Math.max(max, sample);
@@ -35,6 +39,7 @@ final class BoilerData {
     }
     private void evaluate(FluidTankTileEntity tank) {
         World world = tank.getWorld(); BlockPos base = tank.getPos();
+        java.util.Set<Integer> pitches = new java.util.HashSet<>();
         int nextEngines = 0, nextHeat = 0, nextWhistles = 0; boolean nextPassive = false;
         for (int x = 0; x < tank.getWidth(); x++) for (int z = 0; z < tank.getWidth(); z++) {
             BlockPos heater = base.add(x, -1, z);
@@ -59,6 +64,15 @@ final class BoilerData {
                 }
             }
         }
+        for (int x = -1; x <= tank.getWidth(); x++) for (int z = -1; z <= tank.getWidth(); z++) for (int y = 0; y < tank.getHeight(); y++) {
+            BlockPos p = base.add(x, y, z);
+            if (world.getTileEntity(p) instanceof com.cogwork.cogworkbridge.content.fluids.whistle.SteamWhistleTileEntity whistle) {
+                BlockPos attached = p.offset(com.cogwork.cogworkbridge.content.fluids.whistle.SteamWhistleBlock.attachedDirection(world.getBlockState(p)));
+                if (attached.getX() >= base.getX() && attached.getX() < base.getX()+tank.getWidth() && attached.getZ() >= base.getZ() && attached.getZ() < base.getZ()+tank.getWidth())
+                    pitches.add(whistle.size() * 100 + whistle.pitch());
+            }
+        }
+        if (pitches.size() >= 12) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, base, "pipe_organ");
         if (engines != nextEngines || whistles != nextWhistles || heat != nextHeat || passive != nextPassive) {
             boolean becomingBoiler = !active() && (nextEngines > 0 || nextWhistles > 0);
             engines = nextEngines; whistles = nextWhistles; heat = nextHeat; passive = nextPassive; tank.syncStructure();

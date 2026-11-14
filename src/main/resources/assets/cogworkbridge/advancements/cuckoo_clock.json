@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:cuckoo_clock",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.cuckoo_clock"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.cuckoo_clock.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:stressometer"
+}

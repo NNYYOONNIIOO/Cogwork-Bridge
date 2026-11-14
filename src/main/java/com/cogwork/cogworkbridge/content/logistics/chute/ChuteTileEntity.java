@@ -105,7 +105,11 @@ public class ChuteTileEntity extends CogworkTileEntity implements ITickable, IIt
     }
     public void acceptEntity(EntityItem entity) {
         if (entity.isDead || !canAccept(entity.getItem())) return;
+        int beforeAdvancement = entity.getItem().getCount();
         ItemStack left = insertItem(0, entity.getItem(), false);
+        if (left.getCount() < beforeAdvancement && entity instanceof com.cogwork.cogworkbridge.content.logistics.packagebox.PackageEntity
+                && entity.getEntityData().hasUniqueId("CogworkThrower") && world.getMinecraftServer() != null)
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(world.getMinecraftServer().getPlayerList().getPlayerByUUID(entity.getEntityData().getUniqueId("CogworkThrower")), "package_chute_throw");
         if (left.isEmpty()) entity.setDead();
         else entity.setItem(left);
     }
@@ -221,6 +225,7 @@ public class ChuteTileEntity extends CogworkTileEntity implements ITickable, IIt
                 if (rest.getCount() != before.getCount()) {
                     item = rest;
                     changed();
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "chute");
                     return true;
                 }
             }
@@ -233,6 +238,7 @@ public class ChuteTileEntity extends CogworkTileEntity implements ITickable, IIt
             if (rest.getCount() == before.getCount()) return false;
             item = rest;
             changed();
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "chute");
             return true;
         }
         IItemHandler handler = ItemTransfer.at(world, target, upward ? EnumFacing.DOWN : EnumFacing.UP);
@@ -242,6 +248,7 @@ public class ChuteTileEntity extends CogworkTileEntity implements ITickable, IIt
             if (rest.getCount() == count) return false;
             item = rest;
             changed();
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "chute");
             return true;
         }
         if (!upward && facing() != EnumFacing.DOWN) return false;
@@ -256,6 +263,7 @@ public class ChuteTileEntity extends CogworkTileEntity implements ITickable, IIt
             entity.setDefaultPickupDelay();
             if (!world.spawnEntity(entity)) { item = dropped; changed(); return false; }
         }
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "chute");
         return true;
     }
 

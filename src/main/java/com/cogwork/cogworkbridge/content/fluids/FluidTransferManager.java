@@ -430,6 +430,7 @@ public final class FluidTransferManager {
                             || !next.isFluidEqual(flow.fluid)) continue;
                     if (inside == null) inside = flow.fluid;
                     else if (!inside.isFluidEqual(flow.fluid)) {
+                        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "cross_streams");
                         world.destroyBlock(pos, true);
                         if (inside.getFluid() == FluidRegistry.WATER && flow.fluid.getFluid() == FluidRegistry.LAVA
                                 || inside.getFluid() == FluidRegistry.LAVA && flow.fluid.getFluid() == FluidRegistry.WATER) {

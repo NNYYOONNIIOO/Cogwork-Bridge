@@ -1,0 +1,37 @@
+{
+  "criteria": {
+    "0": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "cogworkbridge:cardboard"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:cardboard",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.cardboard"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.cardboard.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "parent": "cogworkbridge:mechanical_mixer"
+}

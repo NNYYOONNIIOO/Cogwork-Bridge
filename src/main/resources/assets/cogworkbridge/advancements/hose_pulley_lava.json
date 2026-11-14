@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:hose_pulley",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.hose_pulley_lava"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.hose_pulley_lava.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:copper"
+}

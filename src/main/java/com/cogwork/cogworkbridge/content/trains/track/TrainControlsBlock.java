@@ -53,6 +53,15 @@ public final class TrainControlsBlock extends Block {
                 || !(fake.getMobileChunk().getEntityMovingWorld() instanceof BearingContraptionEntity body)
                 || !(body.getMountedCart() instanceof RailwayCarriageEntity carriage))return false;
         net.minecraft.item.ItemStack held=player.getHeldItem(hand);
+        if (carriage.isCrashed()) {
+            if (!world.isRemote) {
+                boolean recovered = held.getItem() == com.cogwork.cogworkbridge.registry.AllItems.WRENCH && carriage.recoverFromCrash();
+                player.sendStatusMessage(new TextComponentTranslation(recovered ? "cogworkbridge.train.recovered"
+                        : held.getItem() == com.cogwork.cogworkbridge.registry.AllItems.WRENCH
+                        ? "cogworkbridge.train.recovery_blocked" : "cogworkbridge.train.crashed"), true);
+            }
+            return true;
+        }
         if(held.getItem()==com.cogwork.cogworkbridge.registry.AllItems.SCHEDULE) {
             if(!world.isRemote&&carriage.installSchedule(held)) {
                 if(!player.capabilities.isCreativeMode)held.shrink(1);

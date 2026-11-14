@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:red_table_cloth",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.table_cloth_shop"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.table_cloth_shop.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:frogport"
+}

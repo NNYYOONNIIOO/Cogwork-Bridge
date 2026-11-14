@@ -265,6 +265,7 @@ public final class DisplayLinkTileEntity extends TileEntity implements ITickable
         int remainingRows = Math.max(0, getTargetLineCount() - targetLine);
         int lineCount = Math.min(remainingRows, multiline ? remainingRows : Math.max(values.size(), previous));
         TileEntity reservationTarget = reservationTarget(target);
+        boolean wroteAdvancementLine = false;
         boolean signChanged = false;
         for (int i = 0; i < lineCount; i++) {
             String value = i < values.size() ? values.get(i) : "";
@@ -274,6 +275,7 @@ public final class DisplayLinkTileEntity extends TileEntity implements ITickable
                 else if (lineReserved(reservationTarget, line)
                         || target instanceof DisplayBoardTileEntity board && board.isLineManual(line)) break;
             }
+            wroteAdvancementLine |= target instanceof DisplayTarget || LecternDisplayTarget.supports(target) || target instanceof TileEntitySign;
             if (target instanceof DisplayTarget display) display.acceptDisplayText(line, value);
             else if (LecternDisplayTarget.supports(target)) LecternDisplayTarget.accept(target, line, value);
             else if (target instanceof TileEntitySign sign && line < sign.signText.length
@@ -285,6 +287,10 @@ public final class DisplayLinkTileEntity extends TileEntity implements ITickable
         if (signChanged && target instanceof TileEntitySign sign) {
             sign.markDirty();
             world.notifyBlockUpdate(targetPos, world.getBlockState(targetPos), world.getBlockState(targetPos), 3);
+        }
+        if (wroteAdvancementLine) {
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "display_link");
+            if (mode == 22 && target instanceof DisplayBoardTileEntity) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "display_board_0");
         }
         lastOutputTarget = targetPos;
         lastOutputStart = targetLine;

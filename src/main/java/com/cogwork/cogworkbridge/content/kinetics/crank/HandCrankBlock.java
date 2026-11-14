@@ -53,7 +53,10 @@ public class HandCrankBlock extends KineticBlock {
         if (player.isSpectator()) return false;
         if (!world.isRemote && world.getTileEntity(pos) instanceof HandCrankTileEntity crank) {
             crank.turn(player.isSneaking());
-            if (!(crank instanceof ValveHandleTileEntity)) player.addExhaustion(.32F);
+            if (!(crank instanceof ValveHandleTileEntity)) {
+                player.addExhaustion(.32F);
+                if (player.getFoodStats().getFoodLevel() == 0) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "hand_crank_000");
+            }
         }
         return true;
     }

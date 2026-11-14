@@ -131,8 +131,13 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
         ItemStack input = holder.getTransportedItem();
         if (input.isEmpty() || !ItemStack.areItemsEqual(expectedInput, input)
                 || !ItemStack.areItemStackTagsEqual(expectedInput, input)) return;
-        ItemStack result = PressingRecipes.result(input);
-        if (!result.isEmpty()) holder.replaceOneWith(result);
+        ItemStack result = PressingRecipes.finish(input, world.rand);
+        if (!result.isEmpty()) {
+            holder.replaceOneWith(result);
+            if (result.getItem() == net.minecraft.item.Item.getItemFromBlock(com.cogwork.cogworkbridge.registry.AllBlocks.TRACK))
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.count(this, "TracksCreated", result.getCount(), 1000, "track_crafting_factory");
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "mechanical_press");
+        }
     }
 
     private void applyCompacting() {
@@ -144,13 +149,16 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
             if (!basin.processBatch(plan.counts(), java.util.Collections.singletonList(recipe.itemOutput()), false)) return;
             for (net.minecraftforge.fluids.FluidStack fluid : recipe.fluids()) basin.drainInputFluid(fluid, true);
             if (recipe.fluidOutput() != null) basin.fillOutput(recipe.fluidOutput(), true);
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "compacting");
             return;
         }
         CompactingCraft.Plan plan = basin == null ? null : CompactingCraft.find(world, basin);
         if (plan == null || plan.count() != inputCount || !plan.recipe().toString().equals(recipeId)
                 || !ItemStack.areItemsEqual(expectedInput, plan.input())
                 || !ItemStack.areItemStackTagsEqual(expectedInput, plan.input())) return;
-        basin.processItems(plan.slot(), plan.input(), plan.count(), plan.results(), false);
+        if (basin.processItems(plan.slot(), plan.input(), plan.count(), plan.results(), false)) {
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "compacting");
+        }
     }
     private BasinPlan findUpstream(BasinTileEntity basin, String wanted) {
         TileEntity heater = world.getTileEntity(pos.down(3));

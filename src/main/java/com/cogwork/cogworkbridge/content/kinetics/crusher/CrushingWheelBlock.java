@@ -99,6 +99,14 @@ public final class CrushingWheelBlock extends KineticBlock {
                     ? ((CrushingWheelTileEntity) otherTile).getSpeed() : 0.0F;
             boolean valid = speed != 0.0F && otherSpeed != 0.0F
                     && (speed > 0.0F) != (otherSpeed > 0.0F);
+            if (valid) {
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "crushing_wheel");
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, otherWheelPos, "crushing_wheel");
+                if (Math.abs(speed) > 255F) {
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "crusher_maxed_0000");
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, otherWheelPos, "crusher_maxed_0000");
+                }
+            }
             EnumFacing outputFacing = valid ? outputFacing(wheelAxis, side, speed) : EnumFacing.DOWN;
 
             boolean controllerExists = existing.getBlock() instanceof CrushingWheelControllerBlock;

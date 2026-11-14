@@ -78,23 +78,56 @@ public final class CasingApplication {
         return isStripped(stack);
     }
     @SubscribeEvent public static void apply(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getWorld().getBlockState(event.getPos()).getBlock() == AllBlocks.BRASS_CASING && hasObsidianPlate(event.getItemStack())) {
+        IBlockState original = event.getWorld().getBlockState(event.getPos());
+        ItemStack input = new ItemStack(original.getBlock(), 1, original.getBlock().damageDropped(original));
+        var scripted = com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes.find("item_application", input, event.getItemStack());
+        if (scripted != null) {
+            ItemStack result = scripted.outputs().get(0).stack();
+            if (!(result.getItem() instanceof net.minecraft.item.ItemBlock item)) return;
             if (!event.getEntityPlayer().canPlayerEdit(event.getPos(), event.getFace(), event.getItemStack())
                     || !event.getWorld().isBlockModifiable(event.getEntityPlayer(), event.getPos())) return;
             event.setCancellationResult(EnumActionResult.SUCCESS); event.setCanceled(true);
             if (!event.getWorld().isRemote && event.getWorld().setBlockState(event.getPos(),
-                    com.cogwork.cogworkbridge.registry.BlockFamily.get("railway_casing").getDefaultState(), 3)
-                    && !event.getEntityPlayer().capabilities.isCreativeMode) event.getItemStack().shrink(1);
+                    item.getBlock().getStateFromMeta(item.getMetadata(result.getMetadata())), 3)) {
+                net.minecraft.item.ItemBlock.setTileEntityNBT(event.getWorld(), event.getEntityPlayer(), event.getPos(), result);
+                if (!scripted.keepHeld() && !event.getEntityPlayer().capabilities.isCreativeMode) event.getItemStack().shrink(1);
+            }
+            return;
+        }
+        if (event.getWorld().getBlockState(event.getPos()).getBlock() == AllBlocks.BRASS_CASING && hasObsidianPlate(event.getItemStack())) {
+            if (!com.cogwork.cogworkbridge.content.processing.RecipeControl.allow("item_application", input, event.getItemStack(),
+                    new ItemStack(com.cogwork.cogworkbridge.registry.BlockFamily.get("railway_casing")))) return;
+            if (!event.getEntityPlayer().canPlayerEdit(event.getPos(), event.getFace(), event.getItemStack())
+                    || !event.getWorld().isBlockModifiable(event.getEntityPlayer(), event.getPos())) return;
+            event.setCancellationResult(EnumActionResult.SUCCESS); event.setCanceled(true);
+            if (!event.getWorld().isRemote && event.getWorld().setBlockState(event.getPos(),
+                    com.cogwork.cogworkbridge.registry.BlockFamily.get("railway_casing").getDefaultState(), 3)) {
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAction(event.getWorld(), event.getPos(), event.getEntityPlayer(), "train_casing_00");
+                if (!event.getEntityPlayer().capabilities.isCreativeMode) event.getItemStack().shrink(1);
+            }
             return;
         }
         Block casing = casing(event.getItemStack());
         if (casing == null || !isStripped(event.getWorld().getBlockState(event.getPos()))) return;
+        if (!com.cogwork.cogworkbridge.content.processing.RecipeControl.allow("item_application", input, event.getItemStack(), new ItemStack(casing))) return;
         if (!event.getEntityPlayer().canPlayerEdit(event.getPos(), event.getFace(), event.getItemStack())
                 || !event.getWorld().isBlockModifiable(event.getEntityPlayer(), event.getPos())) return;
         event.setCancellationResult(EnumActionResult.SUCCESS);
         event.setCanceled(true);
-        if (!event.getWorld().isRemote && event.getWorld().setBlockState(event.getPos(), casing.getDefaultState(), 3)
-                && !event.getEntityPlayer().capabilities.isCreativeMode) event.getItemStack().shrink(1);
+        if (!event.getWorld().isRemote && event.getWorld().setBlockState(event.getPos(), casing.getDefaultState(), 3)) {
+            String path = casing.getRegistryName() == null ? "" : casing.getRegistryName().getPath();
+            String advancement = switch (path) {
+                case "andesite_casing" -> "andesite_casing";
+                case "brass_casing" -> "brass_casing";
+                case "copper_casing" -> "copper_casing";
+                case "railway_casing" -> "train_casing_00";
+                default -> "";
+            };
+            if (!advancement.isEmpty())
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAction(
+                        event.getWorld(), event.getPos(), event.getEntityPlayer(), advancement);
+            if (!event.getEntityPlayer().capabilities.isCreativeMode) event.getItemStack().shrink(1);
+        }
     }
     private static boolean hasObsidianPlate(ItemStack stack) {
         if (stack.isEmpty()) return false;

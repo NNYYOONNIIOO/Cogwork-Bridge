@@ -1,5 +1,7 @@
 package com.cogwork.cogworkbridge.content.kinetics.saw;
 
+import com.cogwork.cogworkbridge.content.processing.RecipeControl;
+
 import com.cogwork.cogworkbridge.content.fluids.ListFilterItem;
 import com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes;
 import com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes.Recipe;
@@ -26,7 +28,7 @@ public final class SawRecipes {
             if (recipe.matches(input) && !recipe.outputs().isEmpty()) matches.add(recipe);
         if (matches.isEmpty()) {
             ItemStack result = fallback(input);
-            if (!result.isEmpty()) matches.add(new Recipe("cutting", java.util.List.of(input.copy()),
+            if (!result.isEmpty() && RecipeControl.allow("cutting", input, ItemStack.EMPTY, result)) matches.add(new Recipe("cutting", java.util.List.of(input.copy()),
                     java.util.List.of(), java.util.List.of(new Output(result, 1F)), 100, false, null));
         }
         var single = input.copy(); single.setCount(1);
@@ -35,7 +37,7 @@ public final class SawRecipes {
                 xy177.farmersfuturedelight.api.WorkstationRecipes.Type.STONECUTTING)) {
             if (!recipe.matches(ingredients)) continue;
             ItemStack output = recipe.assemble(java.util.Collections.singletonList(single.copy()));
-            if (!output.isEmpty()) matches.add(new Recipe("stonecutting", java.util.List.of(single.copy()),
+            if (!output.isEmpty() && RecipeControl.allow("cutting", input, ItemStack.EMPTY, output)) matches.add(new Recipe("stonecutting", java.util.List.of(single.copy()),
                     java.util.List.of(), java.util.List.of(new Output(output, 1F)), 50, false, null));
         }
         // Upstream recipe filtering tests the principal output, not incidental by-products.

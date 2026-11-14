@@ -50,6 +50,7 @@ public final class SteamEngineTileEntity extends TileEntity implements ITickable
             if (axis == EnumFacing.Axis.Z) direction = -direction;
             if (reverse) direction = -direction;
             powered.power(pos, direction, boiler.getBoilerEfficiency());
+            if (boiler.getBoilerEfficiency() > 0) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "steam_engine");
         }
     }
     public void releaseShaft() {

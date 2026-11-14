@@ -85,6 +85,7 @@ public final class MechanicalMixerTileEntity extends KineticTileEntity {
                     if (plan.water() > 0) basin.drainInputFluid(new net.minecraftforge.fluids.FluidStack(net.minecraftforge.fluids.FluidRegistry.WATER, plan.water()), true);
                     for (net.minecraftforge.fluids.FluidStack fluid : plan.fluidInputs()) basin.drainInputFluid(fluid, true);
                     if (plan.fluidOutput() != null) basin.fillOutput(plan.fluidOutput(), true);
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "mechanical_mixer");
                 }
             }
             processingTicks = 0;

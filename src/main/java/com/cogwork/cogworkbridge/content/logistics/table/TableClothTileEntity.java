@@ -63,6 +63,8 @@ public final class TableClothTileEntity extends TileEntity {
         shop.setBoolean("Valid", shop.hasKey("Ticker") && shop.getInteger("Dimension") == world.provider.getDimension()
                 && pos.distanceSq(target) < 128D * 128D);
         changed();
+        if (shop.getBoolean("Valid"))
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAction(world, pos, player, "table_cloth_shop");
     }
     public void interact(EntityPlayer player, EnumHand hand) {
         if (isShop()) { ShoppingListItem.addPurchase(this, player, hand); return; }

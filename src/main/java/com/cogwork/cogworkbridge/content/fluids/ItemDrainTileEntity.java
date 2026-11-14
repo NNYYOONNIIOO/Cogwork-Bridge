@@ -73,8 +73,11 @@ public final class ItemDrainTileEntity extends FluidTankTileEntity {
                     return;
                 }
                 if (processingTicks == 5) {
-                    ItemStack result = FluidContainerHelper.empty(heldItem, getFluidHandler(), fluid);
-                    if (result != null) heldItem = result;
+                    ItemStack result = DrainProcessingRecipes.empty(heldItem, getFluidHandler(), fluid);
+                    if (result != null) {
+                        heldItem = result;
+                        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "drain");
+                    }
                     else processingTicks = 0;
                     syncItem();
                 }
@@ -108,7 +111,7 @@ public final class ItemDrainTileEntity extends FluidTankTileEntity {
         ItemStack held = player.getHeldItem(hand);
         FluidStack fluid = fluidIn(held);
         if (fluid == null || tank.fill(fluid, false) != fluid.amount) return false;
-        ItemStack result = FluidContainerHelper.empty(held, getFluidHandler(), fluid);
+        ItemStack result = DrainProcessingRecipes.empty(held, getFluidHandler(), fluid);
         if (result == null) return false;
         if (!player.capabilities.isCreativeMode) {
             ItemStack returned = result;
@@ -187,6 +190,7 @@ public final class ItemDrainTileEntity extends FluidTankTileEntity {
             int previousCount = heldItem.getCount();
             ItemStack remainder = ItemHandlerHelper.insertItem(handler, heldItem, false);
             if (remainder.getCount() != previousCount) {
+                if (target instanceof ItemDrainTileEntity) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "chained_drain");
                 heldItem = remainder;
                 syncItem();
             }
@@ -220,7 +224,7 @@ public final class ItemDrainTileEntity extends FluidTankTileEntity {
 
     @Nullable
     private static FluidStack fluidIn(ItemStack stack) {
-        return FluidContainerHelper.contents(stack);
+        return DrainProcessingRecipes.contents(stack);
     }
 
     private void syncItem() {

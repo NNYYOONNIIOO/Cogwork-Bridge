@@ -29,6 +29,7 @@ public final class LargeWaterWheelTileEntity extends KineticTileEntity {
     }
     private void updateFlow() {
         int score = 0;
+        boolean lavaFlow = false;
         EnumFacing.Axis axis = getAxis();
         for (int a = -2; a <= 2; a++) for (int b = -2; b <= 2; b++) {
             if (Math.max(Math.abs(a), Math.abs(b)) != 2 || Math.abs(a) == 2 && Math.abs(b) == 2) continue;
@@ -47,7 +48,14 @@ public final class LargeWaterWheelTileEntity extends KineticTileEntity {
             };
             Vec3d plane = switch (axis) { case X -> new Vec3d(0, flow.y, flow.z); case Y -> new Vec3d(flow.x, 0, flow.z); case Z -> new Vec3d(flow.x, flow.y, 0); };
             double dot = plane.normalize().dotProduct(tangent);
-            if (Math.abs(dot) > .5D) score += (int) Math.signum(dot);
+            if (Math.abs(dot) > .5D) {
+                score += (int) Math.signum(dot);
+                lavaFlow |= fluid.getMaterial() == net.minecraft.block.material.Material.LAVA;
+            }
+        }
+        if (score != 0) {
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "water_wheel");
+            if (lavaFlow) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "lava_wheel_00000");
         }
         if (score != flowScore) { flowScore = score; KineticNetworkManager.discard(world); markDirty(); sync(); }
     }

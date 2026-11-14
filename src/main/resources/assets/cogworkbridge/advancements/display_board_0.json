@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:display_board",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.display_board_0"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.display_board_0.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:track_signal"
+}

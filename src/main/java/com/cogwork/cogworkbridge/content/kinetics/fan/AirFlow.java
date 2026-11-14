@@ -144,8 +144,10 @@ public final class AirFlow {
             }
             int segment = MathHelper.clamp((int) flowDistance, 0, media.length - 1);
             EncasedFanTileEntity.Medium medium = media[segment];
-            if (entity instanceof EntityItem item) FanItemProcessing.applyToEntity(item, medium);
-            else affectWithMedium(entity, medium);
+            if (entity instanceof EntityItem item) {
+                if (FanItemProcessing.applyToEntity(item, medium))
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, source, "fan_processing");
+            } else affectWithMedium(entity, medium);
         }
         for (int i = 0; i < media.length && i < Math.ceil(distance); i++) {
             if (media[i] == EncasedFanTileEntity.Medium.NONE) continue;
@@ -154,7 +156,7 @@ public final class AirFlow {
                 BlockPos target = flow.down(below);
                 if (!world.isBlockLoaded(target)) continue;
                 TileEntity tile = world.getTileEntity(target);
-                if (tile instanceof FanProcessingHolder holder) holder.applyFanProcessing(media[i]);
+                if (tile instanceof FanProcessingHolder holder) holder.applyFanProcessing(media[i], source);
             }
         }
     }

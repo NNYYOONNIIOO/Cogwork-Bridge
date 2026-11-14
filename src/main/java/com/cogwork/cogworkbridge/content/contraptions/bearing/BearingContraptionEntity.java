@@ -283,6 +283,22 @@ public class BearingContraptionEntity extends EntityMovingWorld {
         setStalled(false);syncPoseToDataManager();syncEntityPosition();updateBounds();
         lastTickPosX=prevPosX=posX;lastTickPosY=prevPosY=posY;lastTickPosZ=prevPosZ=posZ;
     }
+    /** Probe the existing collision shapes at a recovery pose without moving passengers or syncing a trial pose. */
+    public boolean canRecoverRailwayAt(com.cogwork.cogworkbridge.content.trains.track.RailwayCarriageEntity cart) {
+        float oldX = cartX, oldY = cartY, oldZ = cartZ, oldAngle = angle;
+        cartX = (float) (cart.posX - getAnchor().getX() - .5D);
+        cartY = (float) (cart.posY - getAnchor().getY() + 1D);
+        cartZ = (float) (cart.posZ - getAnchor().getZ() - .5D);
+        Vec3d heading = cart.heading();
+        if (heading != null) angle = cartInitialYaw - mountedYaw(heading.x, heading.z);
+        try {
+            for (BearingContraptionEntity part : railwayPortalParts())
+                if (part.collidesAt(part.angle, part.movingCollisionShapes(), new java.util.HashMap<>())) return false;
+            return true;
+        } finally {
+            cartX = oldX; cartY = oldY; cartZ = oldZ; angle = oldAngle;
+        }
+    }
     /** The same block-layer cutoff is used by meshes, TESRs, ray tracing and collision. */
     public boolean isRailwayInPortal() { return parentContraption!=null?parentContraption.isRailwayInPortal():dataManager.get(DATA_PORTAL); }
     public boolean isRailwayPortalCopy() { return parentContraption!=null?parentContraption.isRailwayPortalCopy():dataManager.get(DATA_PORTAL_COPY); }
@@ -699,6 +715,9 @@ public class BearingContraptionEntity extends EntityMovingWorld {
             if(!supported&&previousSupport!=null&&now-previousSupport.tick()<=2&&hasPortalFloor(passenger,dx,dy,dz)) {
                 supported=true;supportTop=posY-dy+previousSupport.relativeTop();pushY=dy;
             }
+            if (!world.isRemote && !supported)
+                com.cogwork.cogworkbridge.content.trains.track.TrainCollision.hitEntity(this, passenger,
+                        oldBoxes, destinationBoxes);
             if (supported) {
                 double relativeX = passenger.posX - pivotX, relativeZ = passenger.posZ - pivotZ;
                 pushX = dx + relativeX * cos + relativeZ * sin - relativeX;
@@ -4386,6 +4405,8 @@ public class BearingContraptionEntity extends EntityMovingWorld {
 
     @Override
     public void setDead() {
+        if (!world.isRemote && getMountedCart() instanceof com.cogwork.cogworkbridge.content.trains.track.RailwayCarriageEntity railway)
+            railway.discardWithBody(this);
         ContraptionGuiProxy.closeForStructureTransition(this);
         worldProperties.clear();
         if (world.isRemote) {

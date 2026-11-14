@@ -153,6 +153,8 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
             ItemStack result = fillItem(original);
             if (result != null) {
                 holder.replaceOneWith(result);
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.food(this, result);
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "spout");
                 syncProcessing();
             }
             return;
@@ -163,6 +165,8 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
         ItemStack original = item.getItem();
         ItemStack result = fillItem(original);
         if (result == null) return;
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.food(this, result);
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "spout");
         if (original.getCount() == 1) {
             item.setItem(result);
         } else {
@@ -177,7 +181,7 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
 
     private boolean canFill(ItemStack stack) {
         return !stack.isEmpty() && (FillingRecipes.canFill(stack, getFluidHandler())
-                || FluidContainerHelper.canFill(stack, getFluidHandler(), tank.getCapacity()));
+                || FillingRecipes.containerAllowed(stack, getFluidHandler()));
     }
 
     @Nullable private ItemStack fillItem(ItemStack stack) {
@@ -185,7 +189,7 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
             ItemStack result = FillingRecipes.fill(stack, getFluidHandler());
             return result.isEmpty() ? null : result;
         }
-        return FluidContainerHelper.fill(stack, getFluidHandler(), tank.getCapacity());
+        return FillingRecipes.containerAllowed(stack, getFluidHandler()) ? FluidContainerHelper.fill(stack, getFluidHandler(), tank.getCapacity()) : null;
     }
 
     public boolean canInteractWithContainer(ItemStack stack) {

@@ -140,6 +140,7 @@ public final class PackageItem extends Item {
         var look = player.getLookVec(); ItemStack box = stack.copy(); box.setCount(1);
         EntityItem dropped = new PackageEntity(world, player.posX + look.x, player.posY + player.height * .5 + look.y, player.posZ + look.z, box);
         dropped.motionX = look.x * f * 2; dropped.motionY = look.y * f * 2; dropped.motionZ = look.z * f * 2;
+        dropped.getEntityData().setUniqueId("CogworkThrower", player.getUniqueID());
         dropped.setPickupDelay(30); if (world.spawnEntity(dropped) && !player.capabilities.isCreativeMode) stack.shrink(1);
     }
     @Override public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag advanced) {

@@ -1,0 +1,37 @@
+{
+  "criteria": {
+    "0": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "cogworkbridge:blaze_burner"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:blaze_burner",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.burner"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.burner.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "parent": "cogworkbridge:mechanical_mixer"
+}

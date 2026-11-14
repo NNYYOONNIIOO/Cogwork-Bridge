@@ -18,6 +18,8 @@ public final class FanItemProcessing {
         return switch (medium) {
             case SPLASHING -> "splashing";
             case HAUNTING -> "haunting";
+            case SMOKING -> "smoking";
+            case BLASTING -> "blasting";
             default -> null;
         };
     }
@@ -27,14 +29,14 @@ public final class FanItemProcessing {
         String type = recipeType(medium);
         if (type != null) {
             var recipe = UpstreamProcessingRecipes.find(type, input);
-            return recipe == null ? ItemStack.EMPTY : recipe.outputs().get(0).stack().copy();
+            if (recipe != null) return recipe.outputs().get(0).stack().copy();
         }
         ItemStack result = FurnaceRecipes.instance().getSmeltingResult(input);
         boolean food = input.getItem() instanceof ItemFood || !result.isEmpty() && result.getItem() instanceof ItemFood;
         if (medium != EncasedFanTileEntity.Medium.SMOKING && medium != EncasedFanTileEntity.Medium.BLASTING
                 || medium == EncasedFanTileEntity.Medium.SMOKING && !food
                 || medium == EncasedFanTileEntity.Medium.BLASTING && food) return ItemStack.EMPTY;
-        return result.isEmpty() ? ItemStack.EMPTY : result.copy();
+        return result.isEmpty() ? ItemStack.EMPTY : com.cogwork.cogworkbridge.content.processing.RecipeControl.fallback(type, input, ItemStack.EMPTY, result.copy());
     }
 
     public static List<ItemStack> results(EncasedFanTileEntity.Medium medium, ItemStack input) {
@@ -43,7 +45,7 @@ public final class FanItemProcessing {
     /** Maximum possible outputs, for checking storage before rolling chance. */
     public static List<ItemStack> possible(EncasedFanTileEntity.Medium medium, ItemStack input) {
         String type = recipeType(medium);
-        if (type == null) return results(medium, input);
+        if (type == null || UpstreamProcessingRecipes.find(type, input) == null) return results(medium, input);
         var recipe = UpstreamProcessingRecipes.find(type, input);
         List<ItemStack> outputs = new ArrayList<>();
         if (recipe == null) return outputs;
@@ -62,17 +64,18 @@ public final class FanItemProcessing {
         if (type != null) {
             var recipe = UpstreamProcessingRecipes.find(type, input);
             List<ItemStack> outputs = new ArrayList<>();
-            if (recipe == null) return outputs;
-            for (int i = 0; i < input.getCount(); i++) for (ItemStack stack : recipe.roll(random)) {
-                for (ItemStack current : outputs) {
-                    if (!net.minecraftforge.items.ItemHandlerHelper.canItemStacksStack(current, stack)) continue;
-                    int amount = Math.min(stack.getCount(), current.getMaxStackSize() - current.getCount());
-                    current.grow(amount); stack.shrink(amount);
-                    if (stack.isEmpty()) break;
+            if (recipe != null) {
+                for (int i = 0; i < input.getCount(); i++) for (ItemStack stack : recipe.roll(random)) {
+                    for (ItemStack current : outputs) {
+                        if (!net.minecraftforge.items.ItemHandlerHelper.canItemStacksStack(current, stack)) continue;
+                        int amount = Math.min(stack.getCount(), current.getMaxStackSize() - current.getCount());
+                        current.grow(amount); stack.shrink(amount);
+                        if (stack.isEmpty()) break;
+                    }
+                    if (!stack.isEmpty()) outputs.add(stack);
                 }
-                if (!stack.isEmpty()) outputs.add(stack);
+                return outputs;
             }
-            return outputs;
         }
         ItemStack template = result(medium, input);
         List<ItemStack> outputs = new ArrayList<>();
@@ -87,10 +90,10 @@ public final class FanItemProcessing {
     }
 
     /** Process loose items with the same timer as belt and depot items. */
-    public static void applyToEntity(EntityItem entity, EncasedFanTileEntity.Medium medium) {
+    public static boolean applyToEntity(EntityItem entity, EncasedFanTileEntity.Medium medium) {
         ItemStack input = entity.getItem();
         ItemStack output = result(medium, input);
-        if (output.isEmpty()) return;
+        if (output.isEmpty()) return false;
         NBTTagCompound data = entity.getEntityData();
         NBTTagCompound progressTag = data.getCompoundTag("CogworkBridgeFanProcessing");
         ItemStack expected = progressTag.hasKey("Input", 10)
@@ -102,24 +105,25 @@ public final class FanItemProcessing {
             progressTag.setTag("Input", one.writeToNBT(new NBTTagCompound()));
         }
         long tick = entity.world.getTotalWorldTime();
-        if (progressTag.hasKey("LastTick", 4) && progressTag.getLong("LastTick") == tick) return;
+        if (progressTag.hasKey("LastTick", 4) && progressTag.getLong("LastTick") == tick) return false;
         Progress progress = new Progress();
         progress.read(progressTag);
         boolean ready = progress.tick(medium, input, tick);
         progress.write(progressTag);
         progressTag.setLong("LastTick", tick);
         data.setTag("CogworkBridgeFanProcessing", progressTag);
-        if (!ready) return;
+        if (!ready) return false;
 
         List<EntityItem> spawned = new ArrayList<>();
         for (ItemStack stack : results(medium, input, entity.world.rand)) {
             EntityItem produced = new EntityItem(entity.world, entity.posX, entity.posY, entity.posZ, stack);
             produced.motionX = entity.motionX; produced.motionY = entity.motionY; produced.motionZ = entity.motionZ;
             produced.setDefaultPickupDelay();
-            if (!entity.world.spawnEntity(produced)) { for (EntityItem rollback : spawned) rollback.setDead(); return; }
+            if (!entity.world.spawnEntity(produced)) { for (EntityItem rollback : spawned) rollback.setDead(); return false; }
             spawned.add(produced);
         }
         entity.setDead();
+        return true;
     }
 
     public static final class Progress {
@@ -130,7 +134,9 @@ public final class FanItemProcessing {
             if (result(type, input).isEmpty()) return false;
             if (medium != type.ordinal()) {
                 medium = type.ordinal();
-                remaining = 150 * ((input.getCount() - 1) / 16 + 1) + 1;
+                String recipeType = recipeType(type);
+                var recipe = recipeType == null ? null : UpstreamProcessingRecipes.find(recipeType, input);
+                remaining = (recipe == null ? 150 : recipe.duration()) * ((input.getCount() - 1) / 16 + 1) + 1;
             }
             if (lastTick == tick) return false;
             lastTick = tick;

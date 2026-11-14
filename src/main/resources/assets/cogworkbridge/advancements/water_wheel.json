@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:water_wheel",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.water_wheel"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.water_wheel.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:andesite_alloy"
+}

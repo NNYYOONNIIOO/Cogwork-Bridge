@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:stock_ticker",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.stock_ticker"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.stock_ticker.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:packager"
+}

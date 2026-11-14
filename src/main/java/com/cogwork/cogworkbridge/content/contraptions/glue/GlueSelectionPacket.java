@@ -82,7 +82,8 @@ public final class GlueSelectionPacket implements IMessage {
             }
 
             SuperGlueEntity entity = new SuperGlueEntity(player.world, box, group);
-            player.world.spawnEntity(entity);
+            if (!player.world.spawnEntity(entity)) return null;
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "super_glue");
             ModNetwork.CHANNEL.sendToAllAround(new GlueAreaUpdatePacket(
                             entity.getEntityId(), box, group, true),
                     new NetworkRegistry.TargetPoint(player.dimension, entity.posX, entity.posY, entity.posZ, 64.0D));

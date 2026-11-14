@@ -12,7 +12,7 @@ public final class CrushingWheelTileEntity extends KineticTileEntity {
         super.update();
         if (world == null || world.isRemote || !(world.getBlockState(pos).getBlock() instanceof CrushingWheelBlock)) return;
         float speed = getSpeed();
-        if (Float.compare(speed, lastControllerSpeed) != 0) {
+        if (Float.compare(speed, lastControllerSpeed) != 0 || world.getTotalWorldTime() % 20L == 0L) {
             lastControllerSpeed = speed;
             IBlockState state = world.getBlockState(pos);
             CrushingWheelBlock.updateControllers(world, pos, state);

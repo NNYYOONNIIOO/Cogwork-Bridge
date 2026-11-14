@@ -85,6 +85,9 @@ public final class ClockworkBearingTileEntity extends KineticTileEntity implemen
         if (minute != null) { minuteNested.removeFromWorld(); minute.removeFromWorld(world, true); }
         hourId = hourEntity.getUniqueID(); minuteId = minuteEntity == null ? null : minuteEntity.getUniqueID();
         hourAngle = minuteAngle = 0F; running = true;
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "clockwork_bearing");
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.assembled(world, pos, hour);
+        if (minute != null) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.assembled(world, pos, minute);
         markDirty(); sync();
         hourEntity.sendSnapshotToTrackingPlayers(); hourEntity.sendNestedSnapshots();
         if (minuteEntity != null) { minuteEntity.sendSnapshotToTrackingPlayers(); minuteEntity.sendNestedSnapshots(); }

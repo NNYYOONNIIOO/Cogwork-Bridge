@@ -10,12 +10,6 @@ public final class ItemDrainRecipes {
     public record Result(ItemStack container, FluidStack fluid) { }
     private ItemDrainRecipes() { }
     @Nullable public static Result preview(ItemStack input) {
-        if (input.isEmpty()) return null;
-        ItemStack one = input.copy(); one.setCount(1);
-        FluidStack fluid = FluidContainerHelper.contents(one);
-        if (fluid == null || fluid.amount <= 0 || fluid.amount > 1500) return null;
-        FluidTank destination = new FluidTank(1500);
-        ItemStack result = FluidContainerHelper.empty(one, destination, fluid);
-        return result == null ? null : new Result(result.copy(), fluid.copy());
+        return DrainProcessingRecipes.preview(input);
     }
 }

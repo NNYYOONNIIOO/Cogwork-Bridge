@@ -18,6 +18,7 @@ public final class AssemblyProgressItem extends Item {
 
     @Override @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+        if (ScriptedAssemblyRecipes.inProgress(stack)) return;
         AssemblyLineRecipes.Progress progress = AssemblyLineRecipes.progress(stack);
         if (progress == null) return;
         tooltip.add("");

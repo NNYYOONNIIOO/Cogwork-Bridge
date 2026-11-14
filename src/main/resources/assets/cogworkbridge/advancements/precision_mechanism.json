@@ -1,0 +1,37 @@
+{
+  "criteria": {
+    "0": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "cogworkbridge:precision_mechanism"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:precision_mechanism",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.precision_mechanism"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.precision_mechanism.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "parent": "cogworkbridge:deployer"
+}

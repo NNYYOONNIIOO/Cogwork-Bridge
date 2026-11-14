@@ -1,0 +1,37 @@
+{
+  "criteria": {
+    "0": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "cogworkbridge:chocolate_bucket"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:chocolate_bucket",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.chocolate_bucket"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.chocolate_bucket.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "parent": "cogworkbridge:hose_pulley"
+}

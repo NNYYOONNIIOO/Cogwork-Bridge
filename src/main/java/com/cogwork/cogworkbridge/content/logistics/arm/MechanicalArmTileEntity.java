@@ -65,6 +65,10 @@ public final class MechanicalArmTileEntity extends KineticTileEntity {
             points.add(new Point(offset, EnumFacing.byIndex(entry.getInteger("Side")), entry.getInteger("Mode") == 1));
         }
         phase = held.isEmpty() ? SEARCH_INPUT : SEARCH_OUTPUT; target = previousTarget = -1; changed();
+        if (world != null && points.stream().anyMatch(point -> world.getBlockState(pos.add(point.offset)).getBlock() instanceof com.cogwork.cogworkbridge.content.processing.burner.BlazeBurnerBlock))
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "arm_blaze_burner");
+        if (points.stream().filter(Point::output).count() >= 10)
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "arm_many_targets");
     }
     @Override public float getStressImpact() { return 1; }
     @Override public void update() {
@@ -152,8 +156,18 @@ public final class MechanicalArmTileEntity extends KineticTileEntity {
     }
     private void deposit() {
         if (target >= 0 && target < points.size()) {
-            IItemHandler inventory = handler(points.get(target));
+            Point point = points.get(target);
+            IItemHandler inventory = handler(point);
+            ItemStack before = held.copy();
             if (inventory != null) held = ItemHandlerHelper.insertItemStacked(inventory, held, false);
+            if (held.getCount() < before.getCount()) {
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "mechanical_arm");
+                net.minecraft.block.Block targetBlock = world.getBlockState(pos.add(point.offset)).getBlock();
+                if (targetBlock instanceof com.cogwork.cogworkbridge.content.processing.burner.BlazeBurnerBlock)
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "arm_blaze_burner");
+                if (targetBlock == net.minecraft.init.Blocks.JUKEBOX && held.isEmpty())
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "musical_arm");
+            }
             lastOutput = target;
         }
         previousTarget = target;

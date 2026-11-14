@@ -65,6 +65,7 @@ public final class RailwayTargetItem extends ItemBlock {
         EnumActionResult result=super.onItemUse(player,world,pos,hand,face,x,y,z);
         if(result==EnumActionResult.SUCCESS && !world.isRemote) {
             if(world.getTileEntity(placed) instanceof RailwayTargetTile tile)tile.bind(target,front);
+            if ("signal".equals(kind)) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "track_signal");
             clear(stack);player.inventory.markDirty();status(player,"success");
         }
         return result;

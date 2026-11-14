@@ -1,0 +1,39 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:incomplete_track",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.train_crash"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.train_crash.desc",
+      "extra": [
+        {
+          "text": "\n"
+        },
+        {
+          "translate": "advancement.cogworkbridge.hidden",
+          "color": "gray"
+        }
+      ]
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:track_signal"
+}

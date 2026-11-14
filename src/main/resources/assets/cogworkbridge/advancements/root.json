@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "0": {
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:brass_hand",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.root"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.root.desc"
+    },
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false,
+    "background": "create:textures/gui/advancements.png"
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ]
+}

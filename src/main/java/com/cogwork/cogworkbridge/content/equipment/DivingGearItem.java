@@ -62,6 +62,8 @@ public class DivingGearItem extends ItemArmor {
         if (helmet.getItem() instanceof DivingGearItem diving && diving.armorType == EntityEquipmentSlot.HEAD
                 && tank.getItem() instanceof BacktankItem backtank && BacktankItem.getAir(tank) > 0
                 && (entity.isInsideOfMaterial(Material.WATER) || lava && diving.netherite && backtank.netherite)) {
+            if (!entity.world.isRemote && entity instanceof EntityPlayer player)
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, lava ? "diving_suit_lava" : "diving_suit");
             if (!lava) entity.setAir(300);
             if (!entity.world.isRemote && entity.ticksExisted % 20 == 0) BacktankItem.consumeAir(entity, tank, 1);
         }

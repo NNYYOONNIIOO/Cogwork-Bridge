@@ -74,6 +74,7 @@ public final class StockTickerOrderPacket implements IMessage {
                     held.setTagCompound(tag); player.inventory.markDirty(); return;
                 }
                 int moved = StockLinkNetwork.requestEncodedOrder(player.getServer(), ticker.getNetwork(), lines, message.address, false, message.crafts);
+                if (!lines.isEmpty()) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "stock_ticker");
                 player.sendStatusMessage(new TextComponentTranslation("cogworkbridge.stock_ticker.requested", moved), true);
             });
             return null;

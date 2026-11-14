@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "minecraft:rail",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.self_deploying"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.self_deploying.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:potato_cannon_collide"
+}

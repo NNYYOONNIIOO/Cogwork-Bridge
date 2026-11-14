@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "progress": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:steam_engine",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.steam_engine_maxed"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.steam_engine_maxed.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "progress"
+    ]
+  ],
+  "parent": "cogworkbridge:hose_pulley_lava"
+}

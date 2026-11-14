@@ -123,6 +123,9 @@ public final class HosePulleyTileEntity extends KineticTileEntity implements ITi
         if (pulled == null || pulled.amount != 1000 || !pulled.isFluidEqual(source)) {
             return tank.drain(maxDrain, true);
         }
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "hose_pulley");
+        if (pulled.getFluid() == net.minecraftforge.fluids.FluidRegistry.LAVA && search.isInfinite())
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "hose_pulley_lava");
         int fromBuffer = Math.min(bufferedAmount, amount);
         if (fromBuffer > 0) tank.drain(fromBuffer, true);
         int remainder = 1000 - (amount - fromBuffer);
@@ -148,6 +151,7 @@ public final class HosePulleyTileEntity extends KineticTileEntity implements ITi
         int stored = Math.min(remaining, tank.getCapacity() - (buffered - fromBuffer));
         if (!execute) return fromResource + stored;
         if (!search.deposit(endpoint(), resource.getFluid())) return tank.fill(resource, true);
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "hose_pulley");
         if (fromBuffer > 0) tank.drain(fromBuffer, true);
         if (stored > 0) {
             FluidStack rest = resource.copy();

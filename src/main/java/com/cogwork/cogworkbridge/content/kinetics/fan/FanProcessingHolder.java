@@ -1,6 +1,8 @@
 package com.cogwork.cogworkbridge.content.kinetics.fan;
 
+import net.minecraft.util.math.BlockPos;
+
 /** A transport surface that can expose its contents to a fan's processing air. */
 public interface FanProcessingHolder {
-    void applyFanProcessing(EncasedFanTileEntity.Medium medium);
+    void applyFanProcessing(EncasedFanTileEntity.Medium medium, BlockPos fanPos);
 }

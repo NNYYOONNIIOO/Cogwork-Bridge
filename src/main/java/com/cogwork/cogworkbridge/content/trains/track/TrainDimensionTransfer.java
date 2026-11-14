@@ -177,6 +177,7 @@ public final class TrainDimensionTransfer {
                         (world,moved,oldYaw)->moved.setLocationAndAngles(position.x,position.y,position.z,plan.yaw,moved.rotationPitch));
                 player.connection.setPlayerLocation(position.x,position.y,position.z,plan.yaw,player.rotationPitch);
             } else {plan.original.world.removeEntity(plan.original);plan.original.setDead();}
+            if (plan.moved instanceof EntityPlayerMP player) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "train_portal");
             plan.moved.fallDistance=0;plan.moved.timeUntilPortal=plan.moved.getPortalCooldown();
             plan.moved.motionX=plan.velocity.x;plan.moved.motionY=plan.velocity.y;plan.moved.motionZ=plan.velocity.z;
         }

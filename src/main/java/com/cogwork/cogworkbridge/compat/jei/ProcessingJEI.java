@@ -8,6 +8,7 @@ import com.cogwork.cogworkbridge.content.processing.millstone.MillstoneRecipes;
 import com.cogwork.cogworkbridge.content.processing.mixer.MixingRecipes;
 import com.cogwork.cogworkbridge.content.processing.press.PressingRecipes;
 import com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes;
+import com.cogwork.cogworkbridge.content.processing.RecipeControl;
 import com.cogwork.cogworkbridge.client.render.FastStateRendering;
 import com.cogwork.cogworkbridge.client.render.FluidTankRenderer;
 import com.cogwork.cogworkbridge.client.BlazeBurnerModels;
@@ -163,12 +164,12 @@ public final class ProcessingJEI {
         for (var upstream : UpstreamProcessingRecipes.all("deploying")) {
             if (upstream.outputs().size() != 1 || upstream.outputs().get(0).chance() < 1F) continue;
             ItemStack input = upstream.inputs().get(0), held = upstream.heldItems().get(0);
-            if (UpstreamProcessingRecipes.find("deploying", input, held) != upstream
-                    || !ItemStack.areItemsEqual(DeployerTransportRecipes.result(input, held), upstream.outputs().get(0).stack())) continue;
+            if (!(upstream.inputs() instanceof RecipeControl.Choices) && (UpstreamProcessingRecipes.find("deploying", input, held) != upstream
+                    || !ItemStack.areItemsEqual(DeployerTransportRecipes.result(input, held), upstream.outputs().get(0).stack()))) continue;
             deploying.removeIf(old -> old.inputs.size() == 2 && ItemStack.areItemsEqual(old.inputs.get(0), input)
                     && ItemStack.areItemsEqual(old.inputs.get(1), held));
             Recipe recipe = new Recipe(Arrays.asList(input.copy(), held.copy()), upstream.outputs().get(0).stack().copy(), false);
-            recipe.alternatives = upstream.inputs(); recipe.heldAlternatives = upstream.heldItems(); recipe.keepHeld = upstream.keepHeld();
+            recipe.alternatives = upstream.inputs(); recipe.heldAlternatives = upstream.heldItems(); recipe.keepHeld = upstream.keepHeld(); recipe.registered = true;
             deploying.add(recipe);
         }
         List<Recipe> polishing = new ArrayList<>();
@@ -183,7 +184,7 @@ public final class ProcessingJEI {
         addUpstream(press, "pressing"); addUpstream(milling, "milling"); addUpstream(cutting, "cutting");
         addUpstream(crushing, "crushing"); addUpstream(splashing, "splashing");
         addUpstream(haunting, "haunting");
-        if (crushing.isEmpty()) {
+        if (crushing.isEmpty() && com.cogwork.cogworkbridge.content.kinetics.crusher.CrushingRecipes.accepts(new ItemStack(Blocks.GRAVEL))) {
             Recipe gravel = new Recipe(Collections.singletonList(new ItemStack(Blocks.GRAVEL)), new ItemStack(Blocks.SAND), false);
             gravel.outputs.add(new UpstreamProcessingRecipes.Output(new ItemStack(Items.FLINT), .1F));
             gravel.outputs.add(new UpstreamProcessingRecipes.Output(new ItemStack(Items.CLAY_BALL), .05F));
@@ -194,6 +195,7 @@ public final class ProcessingJEI {
             Recipe recipe = new Recipe(Collections.singletonList(smelting.getKey().copy()), smelting.getValue().copy(), false);
             (smelting.getKey().getItem() instanceof net.minecraft.item.ItemFood || smelting.getValue().getItem() instanceof net.minecraft.item.ItemFood ? smoking : blasting).add(recipe);
         }
+        addUpstream(smoking, "smoking"); addUpstream(blasting, "blasting");
         List<Recipe> filling = new ArrayList<>();
         Recipe grass = new Recipe(Collections.singletonList(new ItemStack(Blocks.DIRT)), new ItemStack(Blocks.GRASS), false);
         grass.fluid = new FluidStack(FluidRegistry.WATER, 500);
@@ -210,15 +212,13 @@ public final class ProcessingJEI {
             milkBucket.fluid = new FluidStack(FluidRegistry.getFluid("milk"), 1000); filling.add(milkBucket);
         }
         for (var upstream : UpstreamProcessingRecipes.mixing()) {
-            if (upstream.id().endsWith("andesite_alloy.json") || upstream.id().endsWith("andesite_alloy_from_zinc.json")
-                    || upstream.id().endsWith("brass_ingot.json") || upstream.id().endsWith("cardboard_pulp.json")
-                    || upstream.id().endsWith("lava_from_cobble.json")) continue;
             List<ItemStack> inputsForRecipe = new ArrayList<>();
             for (List<ItemStack> group : upstream.items()) inputsForRecipe.add(group.get(0).copy());
             Recipe recipe = new Recipe(inputsForRecipe, upstream.itemOutput().copy(), upstream.heat() > 0);
             recipe.itemGroups = upstream.items(); recipe.fluids = upstream.fluids();
             recipe.fluidOutput = upstream.fluidOutput() == null ? null : upstream.fluidOutput().copy();
-            recipe.superheated = upstream.heat() >= 2; mixing.add(recipe);
+            recipe.superheated = upstream.heat() >= 2; recipe.registered = true;
+            mixing.removeIf(old -> sameResult(old, recipe) && groupsOverlap(old, recipe)); mixing.add(recipe);
         }
         for (var brewing : com.cogwork.cogworkbridge.content.fluids.PotionMixingRecipes.previews(brewingIngredients, potionInputs)) {
             Recipe recipe = new Recipe(Collections.singletonList(brewing.ingredient()), ItemStack.EMPTY, true);
@@ -232,7 +232,7 @@ public final class ProcessingJEI {
             filling.removeIf(old -> old.fluid != null && old.fluid.isFluidEqual(upstream.fluid())
                     && old.fluid.amount == upstream.fluid().amount && upstream.matches(old.inputs.get(0)));
             Recipe recipe = new Recipe(Collections.singletonList(input.copy()), output.copy(), false);
-            recipe.alternatives = upstream.inputs(); recipe.fluid = upstream.fluid().copy(); filling.add(recipe);
+            recipe.alternatives = upstream.inputs(); recipe.fluid = upstream.fluid().copy(); recipe.registered = true; filling.add(recipe);
         }
         java.util.Set<String> containerRecipes = new java.util.HashSet<>();
         for (Recipe recipe : filling) if (recipe.fluid != null)
@@ -283,8 +283,24 @@ public final class ProcessingJEI {
             Recipe recipe = new Recipe(compactInputs, upstream.itemOutput().copy(), upstream.heat() > 0);
             recipe.itemGroups = upstream.items(); recipe.fluids = upstream.fluids();
             recipe.fluidOutput = upstream.fluidOutput() == null ? null : upstream.fluidOutput().copy();
-            recipe.superheated = upstream.heat() >= 2; recipe.mixing = true; compacting.add(recipe);
+            recipe.superheated = upstream.heat() >= 2; recipe.mixing = true; recipe.registered = true; compacting.add(recipe);
         }
+        for (var upstream : UpstreamProcessingRecipes.all("item_application")) {
+            Recipe recipe = new Recipe(Arrays.asList(upstream.inputs().get(0).copy(), upstream.heldItems().get(0).copy()), upstream.outputs().get(0).stack().copy(), false);
+            recipe.application = true; recipe.alternatives = upstream.inputs(); recipe.heldAlternatives = upstream.heldItems();
+            recipe.keepHeld = upstream.keepHeld(); recipe.registered = true;
+            casing.removeIf(old -> sameResult(old, recipe) && groupsOverlap(old, recipe)); casing.add(recipe);
+        }
+        for (var upstream : UpstreamProcessingRecipes.all("emptying")) {
+            Recipe recipe = new Recipe(Collections.singletonList(upstream.inputs().get(0).copy()), upstream.outputs().get(0).stack().copy(), false);
+            recipe.alternatives = upstream.inputs(); recipe.fluidOutput = upstream.fluidOutput().copy(); recipe.registered = true;
+            emptying.removeIf(old -> sameResult(old, recipe) && groupsOverlap(old, recipe)); emptying.add(recipe);
+        }
+        filterFallbacks("pressing", press); filterFallbacks("mixing", mixing); filterFallbacks("cutting", cutting);
+        filterFallbacks("milling", milling); filterFallbacks("item_application", casing); filterFallbacks("deploying", deploying);
+        filterFallbacks("crushing", crushing); filterFallbacks("splashing", splashing); filterFallbacks("haunting", haunting);
+        filterFallbacks("compacting", compacting); filterFallbacks("filling", filling); filterFallbacks("emptying", emptying);
+        filterFallbacks("smoking", smoking); filterFallbacks("blasting", blasting); filterFallbacks("sandpaper_polishing", polishing);
         for (List<Recipe> recipes : Arrays.asList(press, mixing, cutting, milling, casing, deploying, crushing,
                 splashing, haunting, compacting, filling, emptying, smoking, blasting, polishing)) {
             recipes.removeIf(ProcessingJEI::isAssemblyIntermediateRecipe);
@@ -335,6 +351,31 @@ public final class ProcessingJEI {
         ItemStack one = input.copy(); one.setCount(1);
         return one.serializeNBT().toString() + ":" + fluid.writeToNBT(new net.minecraft.nbt.NBTTagCompound());
     }
+    private static boolean sameResult(Recipe first, Recipe second) {
+        if (first.outputs.size() != second.outputs.size()) return false;
+        for (int i = 0; i < first.outputs.size(); i++) {
+            ItemStack a = first.outputs.get(i).stack(), b = second.outputs.get(i).stack();
+            if (!ItemStack.areItemStacksEqual(a, b)) return false;
+        }
+        return first.fluidOutput == null ? second.fluidOutput == null
+                : second.fluidOutput != null && first.fluidOutput.isFluidEqual(second.fluidOutput) && first.fluidOutput.amount == second.fluidOutput.amount;
+    }
+    private static boolean groupsOverlap(Recipe first, Recipe second) {
+        var a = inputGroups(first); var b = inputGroups(second);
+        if (a.isEmpty() || b.isEmpty()) return a.isEmpty() && b.isEmpty();
+        return a.get(0).stream().anyMatch(stack -> RecipeControl.matches(b.get(0), stack));
+    }
+    private static void filterFallbacks(String type, List<Recipe> recipes) {
+        recipes.removeIf(recipe -> {
+            if (recipe.registered) return false;
+            List<List<ItemStack>> groups = new ArrayList<>(inputGroups(recipe));
+            List<ItemStack> held = Collections.emptyList();
+            if ((type.equals("item_application") || type.equals("deploying")) && groups.size() > 1) held = groups.remove(1);
+            List<FluidStack> fluids = new ArrayList<>(recipe.fluids); if (recipe.fluid != null) fluids.add(recipe.fluid);
+            return !RecipeControl.allowed(new RecipeControl.View(type, recipe.recipeName, groups, held,
+                    recipe.outputs.stream().map(UpstreamProcessingRecipes.Output::stack).toList(), fluids, recipe.fluidOutput));
+        });
+    }
     private static List<Recipe> compactingRecipes() {
         List<Recipe> result = new ArrayList<>();
         for (net.minecraft.item.crafting.IRecipe recipe : net.minecraft.item.crafting.CraftingManager.REGISTRY) {
@@ -359,7 +400,8 @@ public final class ProcessingJEI {
                     ItemStack output = recipe.getCraftingResult(grid);
                     if (output.isEmpty()) continue;
                     ItemStack input = sample.copy(); input.setCount(count);
-                    result.add(new Recipe(Collections.singletonList(input), output.copy(), false));
+                    Recipe display = new Recipe(Collections.singletonList(input), output.copy(), false);
+                    display.recipeName = recipe.getRegistryName() == null ? "" : recipe.getRegistryName().toString(); result.add(display);
                 } catch (RuntimeException ignored) { /* Mod recipes that require a world cannot be resolved here. */ }
             }
         }
@@ -368,14 +410,14 @@ public final class ProcessingJEI {
     private static void addUpstream(List<Recipe> destination, String type) {
         for (var upstream : UpstreamProcessingRecipes.all(type)) {
             List<ItemStack> options = new ArrayList<>();
-            for (ItemStack input : upstream.inputs()) if (UpstreamProcessingRecipes.find(type, input) == upstream) options.add(input);
+            for (ItemStack input : upstream.inputs()) if (upstream.inputs() instanceof RecipeControl.Choices || UpstreamProcessingRecipes.find(type, input) == upstream) options.add(input);
             if (options.isEmpty()) continue;
             // Replace previous single-result fallback entries for the same input.
             destination.removeIf(old -> old.inputs.size() == 1 && upstream.matches(old.inputs.get(0))
                     && UpstreamProcessingRecipes.find(type, old.inputs.get(0)) == upstream);
             Recipe recipe = new Recipe(Collections.singletonList(options.get(0).copy()), upstream.outputs().get(0).stack().copy(), false);
             recipe.alternatives = options;
-            recipe.outputs.clear(); recipe.outputs.addAll(upstream.outputs());
+            recipe.outputs.clear(); recipe.outputs.addAll(upstream.outputs()); recipe.registered = true;
             destination.add(recipe);
         }
     }
@@ -470,7 +512,8 @@ public final class ProcessingJEI {
         private List<ItemStack> heldAlternatives = Collections.emptyList();
         private List<List<ItemStack>> itemGroups = Collections.emptyList();
         private List<FluidStack> fluids = Collections.emptyList();
-        private boolean keepHeld, superheated, mixing, application;
+        private boolean keepHeld, superheated, mixing, application, registered;
+        private String recipeName = "";
         private FluidStack fluid, fluidOutput;
         private IRecipeLayout layout;
         private int fanArrowX = -1;

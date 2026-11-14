@@ -304,7 +304,7 @@ public final class BeltTileEntity extends KineticTileEntity implements IItemHand
     }
     private void changed() { markDirty(); if (world != null && !world.isRemote) sync(); }
 
-    @Override public void applyFanProcessing(EncasedFanTileEntity.Medium medium) {
+    @Override public void applyFanProcessing(EncasedFanTileEntity.Medium medium, BlockPos fanPos) {
         if (world == null || world.isRemote || carried.isEmpty()) return;
         if (!fanProgress.tick(medium, carried, world.getTotalWorldTime())) {
             if (world.getTotalWorldTime() % 20L == 0L) markDirty();
@@ -316,6 +316,7 @@ public final class BeltTileEntity extends KineticTileEntity implements IItemHand
         processingOutputs.addAll(results);
         fanProgress.reset();
         changed();
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, fanPos, "fan_processing");
     }
 
     @Override public void update() {

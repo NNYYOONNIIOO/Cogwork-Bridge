@@ -35,6 +35,7 @@ public final class WaterWheelTileEntity extends KineticTileEntity {
     public void updateFlow() {
         if (world == null) return;
         int score = 0;
+        boolean lavaFlow = false;
         EnumFacing.Axis axis = getAxis();
         for (int a = -1; a <= 1; a++) for (int b = -1; b <= 1; b++) {
             if (Math.abs(a) + Math.abs(b) != 1) continue;
@@ -60,8 +61,17 @@ public final class WaterWheelTileEntity extends KineticTileEntity {
                 case Y -> new Vec3d(flow.x, 0, flow.z);
                 case Z -> new Vec3d(flow.x, flow.y, 0);
             };
-            if (plane.lengthSquared() > 1.0E-8D && plane.normalize().dotProduct(tangent) > .5D) score++;
-            else if (plane.lengthSquared() > 1.0E-8D && plane.normalize().dotProduct(tangent) < -.5D) score--;
+            if (plane.lengthSquared() > 1.0E-8D && plane.normalize().dotProduct(tangent) > .5D) {
+                score++;
+                lavaFlow |= fluid.getMaterial() == net.minecraft.block.material.Material.LAVA;
+            } else if (plane.lengthSquared() > 1.0E-8D && plane.normalize().dotProduct(tangent) < -.5D) {
+                score--;
+                lavaFlow |= fluid.getMaterial() == net.minecraft.block.material.Material.LAVA;
+            }
+        }
+        if (score != 0) {
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "water_wheel");
+            if (lavaFlow) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "lava_wheel_00000");
         }
         if (score != flowScore) {
             flowScore = score;

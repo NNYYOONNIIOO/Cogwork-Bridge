@@ -49,6 +49,7 @@ public final class BeltConnectorItem extends Item {
                     return EnumActionResult.SUCCESS;
                 }
                 if (!create(world, player, start, pos)) return EnumActionResult.FAIL;
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAction(world, pos, player, "belt");
                 root.removeTag(FIRST);
                 setTag(stack, root);
                 if (!player.capabilities.isCreativeMode) stack.shrink(1);

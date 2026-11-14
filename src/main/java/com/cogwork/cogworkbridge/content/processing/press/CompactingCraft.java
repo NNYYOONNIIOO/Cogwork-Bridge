@@ -1,5 +1,7 @@
 package com.cogwork.cogworkbridge.content.processing.press;
 
+import com.cogwork.cogworkbridge.content.processing.RecipeControl;
+
 import com.cogwork.cogworkbridge.content.processing.basin.BasinTileEntity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -53,7 +55,8 @@ final class CompactingCraft {
         IRecipe recipe = CraftingManager.findMatchingRecipe(grid, world);
         if (recipe == null || recipe.getRegistryName() == null) return null;
         ItemStack result = recipe.getCraftingResult(grid);
-        if (result.isEmpty()) return null;
+        if (result.isEmpty() || !RecipeControl.allowed(new RecipeControl.View("compacting", recipe.getRegistryName().toString(),
+                java.util.List.of(java.util.List.of(input)), java.util.List.of(), java.util.List.of(result), java.util.List.of(), null))) return null;
         List<ItemStack> results = new ArrayList<>();
         results.add(result.copy());
         for (ItemStack remainder : recipe.getRemainingItems(grid)) {

@@ -47,7 +47,9 @@ public final class PotionMixingRecipes {
         ItemStack output = BrewingRecipeRegistry.getOutput(bottle, reagent);
         if (!supported(output)) return null;
         FluidStack result = PotionFluid.fromPotion(output, AMOUNT);
-        return result.isFluidEqual(input) ? null : result;
+        if (result.isFluidEqual(input)) return null;
+        return com.cogwork.cogworkbridge.content.processing.RecipeControl.allowed(new com.cogwork.cogworkbridge.content.processing.RecipeControl.View(
+                "mixing", "", List.of(List.of(ingredient)), List.of(), List.of(), List.of(input), result)) ? result : null;
     }
 
     @Nullable

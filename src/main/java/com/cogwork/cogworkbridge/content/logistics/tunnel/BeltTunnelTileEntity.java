@@ -48,9 +48,9 @@ public class BeltTunnelTileEntity extends CogworkTileEntity implements ITickable
         if (world != null && !world.isRemote) world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
     }
 
-    @Override public void applyFanProcessing(EncasedFanTileEntity.Medium medium) {
+    @Override public void applyFanProcessing(EncasedFanTileEntity.Medium medium, BlockPos fanPos) {
         if (world != null && world.getTileEntity(pos.down()) instanceof BeltTileEntity belt)
-            belt.applyFanProcessing(medium);
+            belt.applyFanProcessing(medium, fanPos);
     }
 
     /** Return true while a side output is blocked; otherwise let the remainder proceed. */

@@ -58,7 +58,7 @@ public final class DepotTileEntity extends CogworkTileEntity implements Transpor
         changed();
     }
 
-    @Override public void applyFanProcessing(EncasedFanTileEntity.Medium medium) {
+    @Override public void applyFanProcessing(EncasedFanTileEntity.Medium medium, net.minecraft.util.math.BlockPos fanPos) {
         if (world == null || world.isRemote || presented.isEmpty()) return;
         if (!fanProgress.tick(medium, presented, world.getTotalWorldTime())) {
             if (world.getTotalWorldTime() % 20L == 0L) markDirty();
@@ -77,6 +77,7 @@ public final class DepotTileEntity extends CogworkTileEntity implements Transpor
         for (int i = 0; i < output.getSlots(); i++) output.setStackInSlot(i, planned.getStackInSlot(i).copy());
         fanProgress.reset();
         changed();
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, fanPos, "fan_processing");
     }
 
     public void acceptItemEntity(EntityItem entity) {

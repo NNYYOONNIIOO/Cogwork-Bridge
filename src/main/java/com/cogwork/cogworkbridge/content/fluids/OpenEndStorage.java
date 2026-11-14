@@ -287,6 +287,8 @@ final class OpenEndStorage {
             }
             source = sourceFluid(true);
             if (source == null || source.amount <= 0) return null;
+            if (source.getFluid() == FluidRegistry.WATER) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(owner.getWorld(), owner.getPos(), "water_supply");
+            if (source.getFluid().getName().equals("honey")) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(owner.getWorld(), owner.getPos(), "honey_drain");
             buffer.fill(source, true);
             FluidStack extracted = buffer.drain(maxDrain, true);
             owner.markDirty();
@@ -300,6 +302,16 @@ final class OpenEndStorage {
             if (world == null || !world.isBlockLoaded(target)) return null;
             IBlockState state = world.getBlockState(target);
             Block block = state.getBlock();
+            if (block instanceof xy177.farmersfuturedelight.common.block.BlockBeehive
+                    && world.getTileEntity(target) instanceof xy177.farmersfuturedelight.common.tile.TileEntityBeehive hive) {
+                net.minecraftforge.fluids.Fluid honey = net.minecraftforge.fluids.FluidRegistry.getFluid("honey");
+                if (honey == null || hive.getHoneyLevel() < 5) return null;
+                if (drain) {
+                    hive.setHoneyLevel(0);
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, owner.getPos(), "honey_drain");
+                }
+                return new FluidStack(honey, 250);
+            }
             if (block == Blocks.CAULDRON) {
                 if (state.getValue(BlockCauldron.LEVEL) != 3) return null;
                 if (drain && !world.setBlockState(target, state.withProperty(BlockCauldron.LEVEL, 0), 3)) return null;
@@ -351,7 +363,10 @@ final class OpenEndStorage {
             } else if (incoming.getFluid() == FluidRegistry.LAVA && existing == FluidRegistry.WATER) {
                 result = (source ? Blocks.STONE : Blocks.COBBLESTONE).getDefaultState();
             } else return;
-            if (world.setBlockState(target, result, 3)) world.playEvent(1501, target, 0);
+            if (world.setBlockState(target, result, 3)) {
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, owner.getPos(), "cross_streams");
+                world.playEvent(1501, target, 0);
+            }
         }
     }
 }

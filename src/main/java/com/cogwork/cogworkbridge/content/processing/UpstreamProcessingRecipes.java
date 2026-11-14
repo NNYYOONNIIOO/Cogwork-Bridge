@@ -47,19 +47,21 @@ public final class UpstreamProcessingRecipes {
                 if (options.isEmpty()) { if (!actual.isEmpty()) return false; }
                 else {
                     if (actual.isEmpty()) return false;
-                    boolean found = false;
-                    for (ItemStack option : options) if (OreDictionary.itemMatches(option, actual, false)) { found = true; break; }
-                    if (!found) return false;
+                    if (!RecipeControl.matches(options, actual)) return false;
                 }
             }
             return true;
         }
     }
     public record Recipe(String type, List<ItemStack> inputs, List<ItemStack> heldItems, List<Output> outputs,
-                         int duration, boolean keepHeld, net.minecraftforge.fluids.FluidStack fluid) {
+                         int duration, boolean keepHeld, net.minecraftforge.fluids.FluidStack fluid,
+                         String id, net.minecraftforge.fluids.FluidStack fluidOutput) {
+        public Recipe(String type, List<ItemStack> inputs, List<ItemStack> heldItems, List<Output> outputs,
+                      int duration, boolean keepHeld, net.minecraftforge.fluids.FluidStack fluid) {
+            this(type, inputs, heldItems, outputs, duration, keepHeld, fluid, "", null);
+        }
         public boolean matches(ItemStack input) {
-            for (ItemStack option : inputs) if (OreDictionary.itemMatches(option, input, false)) return true;
-            return false;
+            return RecipeControl.matches(inputs, input);
         }
         public List<ItemStack> roll(Random random) {
             List<ItemStack> result = new ArrayList<>();
@@ -67,8 +69,7 @@ public final class UpstreamProcessingRecipes {
             return result;
         }
         public boolean matchesHeld(ItemStack held) {
-            for (ItemStack option : heldItems) if (OreDictionary.itemMatches(option, held, false)) return true;
-            return false;
+            return RecipeControl.matches(heldItems, held);
         }
     }
     private static final List<Recipe> recipes = new ArrayList<>();
@@ -103,6 +104,33 @@ public final class UpstreamProcessingRecipes {
         if (input.isEmpty() || held.isEmpty()) return null;
         for (Recipe recipe : all(type)) if (recipe.matches(input) && recipe.matchesHeld(held)) return recipe;
         return null;
+    }
+    public static synchronized void add(Recipe recipe) {
+        load();
+        recipes.removeIf(old -> old.type().equals(recipe.type()) && old.id().equals(recipe.id()));
+        recipes.add(0, recipe);
+        rebuildIndex();
+    }
+    public static synchronized void add(String type, MixingRecipe recipe) {
+        load();
+        List<MixingRecipe> target = type.equals("mixing") ? mixingRecipes : compactingRecipes;
+        target.removeIf(old -> old.id().equals(recipe.id())); target.add(0, recipe);
+    }
+    public static synchronized void add(MechanicalRecipe recipe) {
+        load(); mechanicalRecipes.removeIf(old -> old.id().equals(recipe.id())); mechanicalRecipes.add(0, recipe);
+    }
+    public static synchronized void remove(String type, java.util.function.Predicate<RecipeControl.View> filter) {
+        load();
+        recipes.removeIf(recipe -> recipe.type().equals(type) && filter.test(RecipeControl.view(recipe)));
+        if (type.equals("mixing")) mixingRecipes.removeIf(recipe -> filter.test(RecipeControl.view(type, recipe)));
+        if (type.equals("compacting")) compactingRecipes.removeIf(recipe -> filter.test(RecipeControl.view(type, recipe)));
+        if (type.equals("mechanical_crafting")) mechanicalRecipes.removeIf(recipe -> filter.test(RecipeControl.view(recipe)));
+        rebuildIndex();
+    }
+    private static void rebuildIndex() {
+        byType.clear();
+        for (Recipe recipe : recipes) byType.computeIfAbsent(recipe.type(), ignored -> new ArrayList<>()).add(recipe);
+        for (var entry : byType.entrySet()) entry.setValue(Collections.unmodifiableList(entry.getValue()));
     }
     private static void load() {
         if (loaded) return;
@@ -145,8 +173,12 @@ public final class UpstreamProcessingRecipes {
             } catch (Exception ignored) { }
         }
         CompatCrushedOres.addRecipes(recipes);
-        for (Recipe recipe : recipes) byType.computeIfAbsent(recipe.type(), ignored -> new ArrayList<>()).add(recipe);
-        for (var entry : byType.entrySet()) entry.setValue(Collections.unmodifiableList(entry.getValue()));
+        for (int i = 0; i < recipes.size(); i++) {
+            Recipe recipe = recipes.get(i);
+            if (recipe.id().isEmpty()) recipes.set(i, new Recipe(recipe.type(), recipe.inputs(), recipe.heldItems(), recipe.outputs(),
+                    recipe.duration(), recipe.keepHeld(), recipe.fluid(), "cogworkbridge:generated/" + recipe.type() + "/" + i, recipe.fluidOutput()));
+        }
+        rebuildIndex();
         org.apache.logging.log4j.LogManager.getLogger("CogworkBridge").info("Loaded {} compatible upstream processing recipes", recipes.size());
     }
     private static void accept(String remainder, JsonObject json) {
@@ -176,7 +208,7 @@ public final class UpstreamProcessingRecipes {
         if (!inputs.isEmpty() && !outputs.isEmpty() && (!itemApplication || !held.isEmpty()) && (!type.equals("filling") || fluid != null))
             recipes.add(new Recipe(type, inputs, held, outputs,
                     json.has("processing_time") ? Math.max(1, json.get("processing_time").getAsInt()) : 100,
-                    json.has("keep_held_item") && json.get("keep_held_item").getAsBoolean(), fluid));
+                    json.has("keep_held_item") && json.get("keep_held_item").getAsBoolean(), fluid, RecipeControl.upstreamId(remainder), null));
     }
     private static boolean supported(String type) {
         return type.equals("pressing") || type.equals("milling") || type.equals("crushing") || type.equals("cutting")
@@ -212,7 +244,7 @@ public final class UpstreamProcessingRecipes {
                 else return;
             }
         }
-        mechanicalRecipes.add(new MechanicalRecipe(id, width, height, slots, output,
+        mechanicalRecipes.add(new MechanicalRecipe(RecipeControl.upstreamId(id), width, height, slots, output,
                 json.has("accept_mirrored") && json.get("accept_mirrored").getAsBoolean()));
     }
     private static void parseBasin(List<MixingRecipe> destination, String id, JsonObject json, JsonArray ingredients, JsonArray outputs) {
@@ -253,7 +285,7 @@ public final class UpstreamProcessingRecipes {
         int heat = json.has("heat_requirement") ? switch (json.get("heat_requirement").getAsString()) {
             case "heated" -> 1; case "superheated" -> 2; default -> 0;
         } : 0;
-        destination.add(new MixingRecipe(id, items, fluids, itemOutput, fluidOutput, heat));
+        destination.add(new MixingRecipe(RecipeControl.upstreamId(id), items, fluids, itemOutput, fluidOutput, heat));
     }
     private static boolean conditions(JsonArray conditions) {
         if (conditions == null) return true;

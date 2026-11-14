@@ -185,6 +185,10 @@ public final class MechanicalPloughTileEntity extends TileEntity {
             }
             entity.addVelocity(boost.x, boost.y, boost.z);
             entity.velocityChanged = true;
+            if (entity instanceof net.minecraft.entity.item.EntityFallingBlock falling && falling.getBlock().getBlock() == Blocks.ANVIL
+                    && new Vec3d(entity.motionX, entity.motionY, entity.motionZ).length() >= .25D)
+                for (net.minecraft.entity.player.EntityPlayer player : realWorld.getEntitiesWithinAABB(net.minecraft.entity.player.EntityPlayer.class, new AxisAlignedBB(target).grow(32)))
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "anvil_plough");
         }
     }
 

@@ -161,6 +161,10 @@ public final class EjectorTileEntity extends KineticTileEntity implements IItemH
             entity.motionZ = facing.getZOffset() * xMotion * 0.91D;
             entity.velocityChanged = true;
             entity.fallDistance = 0;
+            if (entity instanceof EntityPlayer player) {
+                player.getEntityData().setTag("CogworkEjectorStart", net.minecraft.nbt.NBTUtil.createPosTag(new BlockPos(player)));
+                player.getEntityData().setLong("CogworkEjectorTime", world.getTotalWorldTime());
+            }
         }
         lid = 1;
         changed();

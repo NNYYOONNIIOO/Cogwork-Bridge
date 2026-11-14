@@ -1,0 +1,38 @@
+{
+  "criteria": {
+    "0": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "type": "forge:ore_dict",
+            "ore": "track"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "cogworkbridge:track",
+      "count": 1
+    },
+    "title": {
+      "translate": "advancement.cogworkbridge.track_0"
+    },
+    "description": {
+      "color": "gold",
+      "translate": "advancement.cogworkbridge.track_0.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "parent": "cogworkbridge:sturdy_sheet"
+}

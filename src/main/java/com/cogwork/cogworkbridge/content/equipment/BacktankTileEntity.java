@@ -26,6 +26,7 @@ public final class BacktankTileEntity extends KineticTileEntity {
         super.update();
         int maxAir = maxAir();
         if (world == null || world.isRemote || getSpeed() == 0F || air >= maxAir) return;
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "backtank");
         ticksSinceSync++;
         if (timer > 0) { timer--; return; }
         float speed = Math.abs(getSpeed());

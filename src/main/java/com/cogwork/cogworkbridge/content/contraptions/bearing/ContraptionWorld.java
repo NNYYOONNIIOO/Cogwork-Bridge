@@ -56,6 +56,8 @@ public final class ContraptionWorld extends World {
         this.chunkProvider = createChunkProvider();
     }
 
+    @Override public net.minecraft.server.MinecraftServer getMinecraftServer() { return parent.getMinecraftServer(); }
+
     public BlockPos worldPosition(BlockPos local) { return new BlockPos(access.getWorldCenter(local)); }
 
     @Override

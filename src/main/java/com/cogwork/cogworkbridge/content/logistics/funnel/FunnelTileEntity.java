@@ -45,7 +45,7 @@ public class FunnelTileEntity extends CogworkTileEntity implements ITickable, II
     @Nullable private BlockPos lastMovingPosition;
     private float flap, previousFlap;
     public float flapValue(float partial) { return previousFlap + (flap - previousFlap) * partial; }
-    private void transferred() { flapSerial++; }
+    private void transferred() { flapSerial++; com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "funnel"); }
     private void notifyObserver(ItemStack stack) {
         com.cogwork.cogworkbridge.content.redstone.DetectorTileEntity.onFunnelTransfer(world, pos, stack);
     }
@@ -161,7 +161,10 @@ public class FunnelTileEntity extends CogworkTileEntity implements ITickable, II
             int moved = exactExtraction()
                     ? ItemTransfer.moveExact(source, target, limit, this::accepts, stack -> ItemTransfer.drop(world, pos, stack), this::notifyObserver)
                     : ItemTransfer.move(source, target, limit, this::accepts, stack -> ItemTransfer.drop(world, pos, stack), this::notifyObserver);
-            if (moved > 0) { cooldown = 8; transferred(); changed(); }
+            if (moved > 0) {
+                cooldown = 8; transferred(); changed();
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "funnel");
+            }
             return;
         }
         if (!extracting) return;
@@ -175,7 +178,10 @@ public class FunnelTileEntity extends CogworkTileEntity implements ITickable, II
             int moved = exactExtraction()
                     ? ItemTransfer.moveExact(source, target, limit, this::accepts, stack -> ItemTransfer.drop(world, pos, stack), this::notifyObserver)
                     : ItemTransfer.move(source, target, limit, this::accepts, stack -> ItemTransfer.drop(world, pos, stack), this::notifyObserver);
-            if (moved > 0) { cooldown = 8; transferred(); changed(); }
+            if (moved > 0) {
+                cooldown = 8; transferred(); changed();
+                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "funnel");
+            }
             return;
         }
         AxisAlignedBB outputArea = new AxisAlignedBB(pos).expand(direction.getXOffset() * 0.5D,
@@ -203,6 +209,7 @@ public class FunnelTileEntity extends CogworkTileEntity implements ITickable, II
             cooldown = 8;
             notifyObserver(extracted);
             transferred(); changed();
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "funnel");
             break;
         }
     }
@@ -275,7 +282,10 @@ public class FunnelTileEntity extends CogworkTileEntity implements ITickable, II
         if (target == null) return stack;
         int before = stack.getCount(); ItemStack observed = stack.copy();
         ItemStack rest = ItemHandlerHelper.insertItemStacked(target, stack, simulate);
-        if (!simulate && rest.getCount() < before) { observed.setCount(before - rest.getCount()); notifyObserver(observed); transferred(); changed(); }
+        if (!simulate && rest.getCount() < before) {
+            observed.setCount(before - rest.getCount()); notifyObserver(observed); transferred(); changed();
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "funnel");
+        }
         return rest;
     }
     @Override public ItemStack extractItem(int slot, int count, boolean simulate) {
@@ -287,7 +297,10 @@ public class FunnelTileEntity extends CogworkTileEntity implements ITickable, II
         if (candidate.isEmpty() || !accepts(candidate) || exactExtraction() && candidate.getCount() < amount)
             return ItemStack.EMPTY;
         ItemStack result = simulate ? candidate : source.extractItem(slot, limit, false);
-        if (!simulate && !result.isEmpty()) { cooldown = 8; notifyObserver(result); transferred(); changed(); }
+        if (!simulate && !result.isEmpty()) {
+            cooldown = 8; notifyObserver(result); transferred(); changed();
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "funnel");
+        }
         return result;
     }
     @Override public int getSlotLimit(int slot) { return 64; }

@@ -3,6 +3,7 @@ package com.cogwork.cogworkbridge.content.contraptions.mounted;
 import com.cogwork.cogworkbridge.Reference;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraption;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraptionEntity;
+import com.cogwork.cogworkbridge.content.trains.track.RailwayCarriageEntity;
 import com.cogwork.cogworkbridge.registry.AllItems;
 import com.cogwork.cogworkbridge.registry.ModCreativeTab;
 import net.minecraft.block.BlockRailBase;
@@ -58,6 +59,7 @@ public final class MinecartContraptionItem extends Item {
     private static void handleEntityInteraction(PlayerInteractEvent event, Entity target) {
         EntityPlayer player = event.getEntityPlayer();
         if (!(target instanceof EntityMinecart cart) || cart.isDead
+                || cart instanceof RailwayCarriageEntity
                 || player.getHeldItem(event.getHand()).getItem() != AllItems.WRENCH) return;
         BearingContraptionEntity mounted = findMounted(cart);
         if (mounted == null) return;
@@ -80,9 +82,11 @@ public final class MinecartContraptionItem extends Item {
         BearingContraptionEntity mounted = hit;
         while (mounted.getParentContraption() != null) mounted = mounted.getParentContraption();
         EntityMinecart primary = mounted.getMountedCart();
-        if (primary == null) return false;
-        if (player.world.isRemote) return true;
+        // Railway controllers inherit EntityMinecart, but must keep their train and block interaction paths.
+        if (primary == null || primary instanceof RailwayCarriageEntity) return false;
         EntityMinecart other = mounted.getOtherMountedCart(primary.getUniqueID());
+        if (other instanceof RailwayCarriageEntity) return false;
+        if (player.world.isRemote) return true;
         Item item = itemFor(primary.getType());
         if (item == null || !player.capabilities.allowEdit || !primary.getPassengers().isEmpty()
                 || mounted.hasCoupledCart() && (other == null || itemFor(other.getType()) == null
@@ -116,6 +120,7 @@ public final class MinecartContraptionItem extends Item {
             return true;
         }
 
+        if (mounted.getContraption().blocks().size() > 200) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "cart_pickup");
         mounted.discardWithoutRestore();
         removeCartWithoutDrops(primary);
         if (other != null) removeCartWithoutDrops(other);

@@ -92,7 +92,10 @@ public final class PackagePortTileEntity extends TileEntity implements ITickable
     public boolean acceptFromChain(ItemStack stack) {
         if (world == null || world.isRemote || animationTicks > 0 || !matchesIncoming(stack)
                 || !ItemHandlerHelper.insertItemStacked(inventory, stack.copy(), true).isEmpty()) return false;
-        animatedPackage = stack.copy(); animatedPackage.setCount(1); sending = false; animationTicks = 10; changed(); return true;
+        animatedPackage = stack.copy(); animatedPackage.setCount(1); sending = false; animationTicks = 10; changed();
+        if (world.getBlockState(pos).getBlock() instanceof PackagePortBlock block && block.isFrog())
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "frogport");
+        return true;
     }
     public void bindChain(BlockPos wheel, float angle) {
         bindChain(wheel, null, angle);

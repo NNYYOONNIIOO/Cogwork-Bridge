@@ -66,6 +66,13 @@ public final class RedstoneLinkNetwork {
         World world = player.world; Map<UUID, Remote> remotes = REMOTES.computeIfAbsent(world, ignored -> new HashMap<>());
         Remote old = remotes.remove(player.getUniqueID());
         if (mask != 0) remotes.put(player.getUniqueID(), new Remote(player.getPosition(), keys.clone(), mask, world.getTotalWorldTime() + REMOTE_TIMEOUT));
+        if (mask != 0) for (int i = 0; i < keys.length; i++) {
+            if ((mask & 1 << i) == 0) continue;
+            Map<Key, Set<RedstoneLinkTileEntity>> endpoints = NETWORKS.get(world);
+            if (endpoints != null) for (RedstoneLinkTileEntity receiver : endpoints.getOrDefault(keys[i], Collections.emptySet()))
+                if (receiver.isReceiver() && !receiver.isInvalid() && receiver.getPos().distanceSq(player.getPosition()) < RANGE * RANGE)
+                    com.cogwork.cogworkbridge.content.advancement.AllAdvancements.award(player, "linked_controller");
+        }
         if (old != null) for (Key key : old.keys) update(world, key); if (mask != 0) for (Key key : keys) update(world, key);
     }
     public static void clearRemote(World world, UUID user) {
