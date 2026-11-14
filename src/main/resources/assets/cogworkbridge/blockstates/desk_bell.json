@@ -1,0 +1,1 @@
+{"variants":{"facing=up":{"model":"create:desk_bell/block"},"facing=down":{"model":"create:desk_bell/block","x":180},"facing=north":{"model":"create:desk_bell/block","x":90},"facing=south":{"model":"create:desk_bell/block","x":90,"y":180},"facing=east":{"model":"create:desk_bell/block","x":90,"y":90},"facing=west":{"model":"create:desk_bell/block","x":90,"y":270}}}

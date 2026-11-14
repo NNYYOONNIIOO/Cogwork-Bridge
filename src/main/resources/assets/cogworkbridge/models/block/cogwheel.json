@@ -1,0 +1,33 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "part": "create:block/cogwheel",
+    "particle": "create:block/cogwheel"
+  },
+  "elements": [
+    {
+      "from": [2, 6, 2],
+      "to": [14, 10, 14],
+      "faces": {
+        "down": { "texture": "#part" },
+        "up": { "texture": "#part" },
+        "north": { "texture": "#part" },
+        "south": { "texture": "#part" },
+        "west": { "texture": "#part" },
+        "east": { "texture": "#part" }
+      }
+    },
+    {
+      "from": [6, 5, 6],
+      "to": [10, 11, 10],
+      "faces": {
+        "down": { "texture": "#part" },
+        "up": { "texture": "#part" },
+        "north": { "texture": "#part" },
+        "south": { "texture": "#part" },
+        "west": { "texture": "#part" },
+        "east": { "texture": "#part" }
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "facing=up": {
+      "model": "create:gauge/dial"
+    },
+    "facing=down": {
+      "model": "create:gauge/dial"
+    },
+    "facing=north": {
+      "model": "create:gauge/dial"
+    },
+    "facing=south": {
+      "model": "create:gauge/dial"
+    },
+    "facing=east": {
+      "model": "create:gauge/dial"
+    },
+    "facing=west": {
+      "model": "create:gauge/dial"
+    }
+  }
+}

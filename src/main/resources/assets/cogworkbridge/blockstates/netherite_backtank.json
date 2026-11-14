@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"create:netherite_backtank/block"},"facing=east":{"model":"create:netherite_backtank/block","y":90},"facing=south":{"model":"create:netherite_backtank/block","y":180},"facing=west":{"model":"create:netherite_backtank/block","y":270}}}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    "CAC",
+    " C "
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:large_cogwheel"
+    },
+    "C": {
+      "item": "cogworkbridge:andesite_casing"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:chain_conveyor",
+    "count": 2
+  }
+}

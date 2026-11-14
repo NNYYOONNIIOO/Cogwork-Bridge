@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:stock_link"
+    },
+    {
+      "item": "cogworkbridge:precision_mechanism"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:factory_gauge",
+    "count": 2
+  }
+}

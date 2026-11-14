@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "P",
+    "A",
+    "C"
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:andesite_alloy"
+    },
+    "C": {
+      "type": "forge:ore_dict",
+      "ore": "blockCopper"
+    },
+    "P": {
+      "type": "forge:ore_dict",
+      "ore": "plateGold"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:steam_engine"
+  }
+}

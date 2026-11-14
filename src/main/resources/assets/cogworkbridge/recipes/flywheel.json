@@ -1,0 +1,1 @@
+{"pattern": ["CCC", "CAC", "CCC"], "key": {"A": {"item": "cogworkbridge:shaft"}, "C": {"type": "forge:ore_dict", "ore": "ingotBrass"}}, "type": "forge:ore_shaped", "result": {"item": "cogworkbridge:flywheel"}}

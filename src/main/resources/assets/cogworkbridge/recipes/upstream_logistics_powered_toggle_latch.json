@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " T ",
+    " C ",
+    "SSS"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:lever"
+    },
+    "S": {
+      "item": "minecraft:stone"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:powered_toggle_latch"
+  }
+}

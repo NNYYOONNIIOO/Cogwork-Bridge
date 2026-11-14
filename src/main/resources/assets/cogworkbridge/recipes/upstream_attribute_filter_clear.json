@@ -1,0 +1,11 @@
+{
+  "type": "forge:ore_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:attribute_filter"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:attribute_filter"
+  }
+}

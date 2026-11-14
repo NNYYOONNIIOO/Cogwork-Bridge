@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WS",
+    "SA"
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:andesite_alloy"
+    },
+    "S": {
+      "type": "forge:ore_dict",
+      "ore": "stickWood"
+    },
+    "W": {
+      "type": "forge:ore_dict",
+      "ore": "blockWool"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:white_sail",
+    "count": 2
+  }
+}

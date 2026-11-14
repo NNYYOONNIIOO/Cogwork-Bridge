@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:wool",
+      "data": 11
+    },
+    {
+      "item": "cogworkbridge:andesite_alloy"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:blue_table_cloth",
+    "count": 2
+  }
+}

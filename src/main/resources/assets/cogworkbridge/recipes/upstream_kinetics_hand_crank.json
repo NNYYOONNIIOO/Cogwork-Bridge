@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "  A"
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:andesite_alloy"
+    },
+    "C": {
+      "type": "forge:ore_dict",
+      "ore": "plankWood"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:hand_crank"
+  }
+}

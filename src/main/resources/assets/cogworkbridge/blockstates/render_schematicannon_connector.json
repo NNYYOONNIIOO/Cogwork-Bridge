@@ -1,0 +1,1 @@
+{"variants": {"facing=up": {"model": "create:schematicannon/connector"}, "facing=down": {"model": "create:schematicannon/connector"}, "facing=north": {"model": "create:schematicannon/connector"}, "facing=south": {"model": "create:schematicannon/connector"}, "facing=east": {"model": "create:schematicannon/connector"}, "facing=west": {"model": "create:schematicannon/connector"}}}

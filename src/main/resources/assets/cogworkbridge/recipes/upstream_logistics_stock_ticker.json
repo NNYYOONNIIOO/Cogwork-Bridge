@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "C",
+    "A",
+    "B"
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:stock_link"
+    },
+    "B": {
+      "type": "forge:ore_dict",
+      "ore": "ingotGold"
+    },
+    "C": {
+      "type": "forge:ore_dict",
+      "ore": "blockGlass"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:stock_ticker"
+  }
+}

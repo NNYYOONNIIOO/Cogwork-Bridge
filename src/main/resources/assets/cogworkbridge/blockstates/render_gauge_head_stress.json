@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "facing=up": {
+      "model": "create:gauge/stressometer/head"
+    },
+    "facing=down": {
+      "model": "create:gauge/stressometer/head"
+    },
+    "facing=north": {
+      "model": "create:gauge/stressometer/head"
+    },
+    "facing=south": {
+      "model": "create:gauge/stressometer/head"
+    },
+    "facing=east": {
+      "model": "create:gauge/stressometer/head"
+    },
+    "facing=west": {
+      "model": "create:gauge/stressometer/head"
+    }
+  }
+}

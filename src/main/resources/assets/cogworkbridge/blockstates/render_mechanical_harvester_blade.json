@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:mechanical_harvester/blade" },
+    "facing=east": { "model": "create:mechanical_harvester/blade", "y": 270 },
+    "facing=north": { "model": "create:mechanical_harvester/blade", "y": 180 },
+    "facing=south": { "model": "create:mechanical_harvester/blade" },
+    "facing=up": { "model": "create:mechanical_harvester/blade" },
+    "facing=west": { "model": "create:mechanical_harvester/blade", "y": 90 }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "A",
+    "D",
+    "I"
+  ],
+  "key": {
+    "A": {
+      "type": "forge:ore_dict",
+      "ore": "plateGold"
+    },
+    "D": {
+      "item": "cogworkbridge:depot"
+    },
+    "I": {
+      "item": "cogworkbridge:cogwheel"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:weighted_ejector"
+  }
+}

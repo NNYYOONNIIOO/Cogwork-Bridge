@@ -1,0 +1,57 @@
+{
+  "variants": {
+    "facing=north,mount=floor": {
+      "model": "create:analog_lever/block"
+    },
+    "facing=east,mount=floor": {
+      "model": "create:analog_lever/block",
+      "y": 90
+    },
+    "facing=south,mount=floor": {
+      "model": "create:analog_lever/block",
+      "y": 180
+    },
+    "facing=west,mount=floor": {
+      "model": "create:analog_lever/block",
+      "y": 270
+    },
+    "facing=north,mount=wall": {
+      "model": "create:analog_lever/block",
+      "x": 90
+    },
+    "facing=east,mount=wall": {
+      "model": "create:analog_lever/block",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,mount=wall": {
+      "model": "create:analog_lever/block",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,mount=wall": {
+      "model": "create:analog_lever/block",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,mount=ceiling": {
+      "model": "create:analog_lever/block",
+      "x": 180,
+      "y": 180
+    },
+    "facing=east,mount=ceiling": {
+      "model": "create:analog_lever/block",
+      "x": 180,
+      "y": 270
+    },
+    "facing=south,mount=ceiling": {
+      "model": "create:analog_lever/block",
+      "x": 180
+    },
+    "facing=west,mount=ceiling": {
+      "model": "create:analog_lever/block",
+      "x": 180,
+      "y": 90
+    }
+  }
+}

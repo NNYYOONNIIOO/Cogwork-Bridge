@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "C",
+    "A"
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    "C": {
+      "item": "minecraft:compass"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:speedometer"
+  }
+}

@@ -1,0 +1,1 @@
+{"type": "forge:ore_shaped", "pattern": ["S", "C", "A"], "key": {"S": {"type": "forge:ore_dict", "ore": "plankWood"}, "C": {"item": "cogworkbridge:andesite_casing"}, "A": {"item": "minecraft:clock"}}, "result": {"item": "cogworkbridge:cuckoo_clock"}}

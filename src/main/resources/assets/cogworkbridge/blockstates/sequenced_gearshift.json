@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "horizontal_axis=x,vertical=false": { "model": "create:sequenced_gearshift/idle", "y": 90 },
+    "horizontal_axis=x,vertical=true": { "model": "create:sequenced_gearshift/idle", "x": 90, "y": 90 },
+    "horizontal_axis=z,vertical=false": { "model": "create:sequenced_gearshift/idle" },
+    "horizontal_axis=z,vertical=true": { "model": "create:sequenced_gearshift/idle", "x": 90 }
+  }
+}

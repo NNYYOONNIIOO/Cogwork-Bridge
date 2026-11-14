@@ -1,0 +1,22 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "side": "create:block/axis",
+    "end": "create:block/axis_top",
+    "particle": "create:block/axis"
+  },
+  "elements": [
+    {
+      "from": [6, 8, 6],
+      "to": [10, 16, 10],
+      "faces": {
+        "down": { "texture": "#side" },
+        "up": { "texture": "#end" },
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "west": { "texture": "#side" },
+        "east": { "texture": "#side" }
+      }
+    }
+  ]
+}

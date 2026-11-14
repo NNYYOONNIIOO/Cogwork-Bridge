@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:polished_rose_quartz"
+    },
+    {
+      "type": "forge:ore_dict",
+      "ore": "dustRedstone"
+    },
+    {
+      "type": "forge:ore_dict",
+      "ore": "ingotZinc"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:rose_quartz_lamp"
+  }
+}

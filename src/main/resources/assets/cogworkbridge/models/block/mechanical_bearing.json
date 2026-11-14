@@ -1,0 +1,54 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "side": "create:block/mechanical_bearing_side",
+    "back": "create:block/gearbox",
+    "particle": "create:block/mechanical_bearing_side"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [2, 12, 16],
+      "faces": {
+        "north": { "texture": "#side" },
+        "east": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "west": { "texture": "#side" }
+      }
+    },
+    {
+      "from": [14, 0, 0],
+      "to": [16, 12, 16],
+      "faces": {
+        "north": { "texture": "#side" },
+        "east": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "west": { "texture": "#side" }
+      }
+    },
+    {
+      "from": [2, 0, 0],
+      "to": [14, 12, 2],
+      "faces": {
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" }
+      }
+    },
+    {
+      "from": [2, 0, 14],
+      "to": [14, 12, 16],
+      "faces": {
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" }
+      }
+    },
+    {
+      "from": [2, 1, 2],
+      "to": [14, 12, 14],
+      "faces": {
+        "up": { "texture": "#back" },
+        "down": { "texture": "#back" }
+      }
+    }
+  ]
+}

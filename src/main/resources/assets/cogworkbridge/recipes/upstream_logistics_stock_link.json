@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "C",
+    "B"
+  ],
+  "key": {
+    "B": {
+      "item": "cogworkbridge:item_vault"
+    },
+    "C": {
+      "item": "cogworkbridge:transmitter"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:stock_link"
+  }
+}

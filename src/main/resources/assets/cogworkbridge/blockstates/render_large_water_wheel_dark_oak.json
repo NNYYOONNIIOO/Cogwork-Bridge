@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "create:large_water_wheel/material_dark_oak",
+      "x": 180
+    },
+    "facing=up": {
+      "model": "create:large_water_wheel/material_dark_oak"
+    },
+    "facing=north": {
+      "model": "create:large_water_wheel/material_dark_oak",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "create:large_water_wheel/material_dark_oak",
+      "x": 90,
+      "y": 180
+    },
+    "facing=east": {
+      "model": "create:large_water_wheel/material_dark_oak",
+      "x": 90,
+      "y": 90
+    },
+    "facing=west": {
+      "model": "create:large_water_wheel/material_dark_oak",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

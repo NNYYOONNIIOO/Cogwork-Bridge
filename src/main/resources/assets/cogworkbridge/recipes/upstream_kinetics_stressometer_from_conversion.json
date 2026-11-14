@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:speedometer"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:stressometer"
+  }
+}

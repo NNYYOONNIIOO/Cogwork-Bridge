@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:encased_fan/propeller", "x": 270 },
+    "facing=up": { "model": "create:encased_fan/propeller", "x": 90 },
+    "facing=north": { "model": "create:encased_fan/propeller", "y": 180 },
+    "facing=south": { "model": "create:encased_fan/propeller" },
+    "facing=west": { "model": "create:encased_fan/propeller", "y": 90 },
+    "facing=east": { "model": "create:encased_fan/propeller", "y": 270 }
+  }
+}

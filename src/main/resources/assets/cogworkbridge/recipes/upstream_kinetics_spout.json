@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "T",
+    "P"
+  ],
+  "key": {
+    "P": {
+      "type": "forge:ore_dict",
+      "ore": "foodDriedKelp"
+    },
+    "T": {
+      "item": "cogworkbridge:copper_casing"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:spout"
+  }
+}

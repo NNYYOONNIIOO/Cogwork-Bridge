@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    {
+      "item": "cogworkbridge:chute"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:portable_storage_interface"
+  }
+}

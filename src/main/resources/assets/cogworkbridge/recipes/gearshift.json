@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {"item": "cogworkbridge:andesite_casing"},
+    {"item": "cogworkbridge:cogwheel"},
+    {"type": "forge:ore_dict", "ore": "dustRedstone"}
+  ],
+  "result": {"item": "cogworkbridge:gearshift"}
+}

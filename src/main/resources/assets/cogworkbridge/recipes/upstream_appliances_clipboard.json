@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "A",
+    "P",
+    "G"
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:andesite_alloy"
+    },
+    "G": {
+      "type": "forge:ore_dict",
+      "ore": "plankWood"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:clipboard"
+  }
+}

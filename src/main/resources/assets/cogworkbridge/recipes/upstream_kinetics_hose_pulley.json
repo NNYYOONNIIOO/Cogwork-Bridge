@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "C",
+    "I"
+  ],
+  "key": {
+    "B": {
+      "item": "cogworkbridge:copper_casing"
+    },
+    "C": {
+      "type": "forge:ore_dict",
+      "ore": "blockDriedKelp"
+    },
+    "I": {
+      "type": "forge:ore_dict",
+      "ore": "plateCopper"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:hose_pulley"
+  }
+}

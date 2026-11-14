@@ -1,0 +1,75 @@
+Cogwork Bridge: third-party licenses and notices
+=============================================
+
+Cogwork Bridge's original contributions are offered under the MIT License in
+the root LICENSE file (also distributed as CogworkBridge-LICENSE.txt in this
+directory). That grant does not replace the licenses or rights of third-party
+material identified below. The accompanying license files are part of this
+notice and must be retained where their terms require it.
+
+MovingWorld
+-----------
+
+Upstream: https://github.com/darkevilmac/MovingWorld
+Revision: 400225200ea4f913047f67dbfb44e882fcf997d8 (1.12 branch)
+Authors: Darkevilmac and MovingWorld contributors; the upstream project credits
+large portions of its code to Archimedes' Ships.
+License: Apache License, Version 2.0; see MovingWorld-LICENSE.txt.
+
+The project includes a modified subset at:
+
+  src/main/java/com/cogwork/cogworkbridge/vendor/movingworld/
+
+Its files derive from the corresponding paths under the upstream package
+com.elytradev.movingworld. They have been relocated and modified for Cogwork
+Bridge, including integration with its mobile chunks, entities, rendering,
+serialization, collisions and lifecycle. Each file identifies its upstream
+path and the fact that it has been modified. The original MovingWorld mod
+entry point and its independent configuration and networking are not included
+as part of this subset. All existing upstream notices remain applicable.
+
+Create
+------
+
+Upstream: https://github.com/Creators-of-Create/Create
+Copyright (c) The Create Team / The Creators of Create
+See Create-1.21.1-LICENSE.md for the original license overview and full MIT
+terms. The upstream license reserves all rights to files under its
+src/main/resources/assets/ directory; its other files are MIT-licensed.
+
+Cogwork Bridge implements behavior with reference to Create 1.21.1, and includes
+processing and mechanical crafting data and adapted recipe definitions based
+on Create's generated recipe data, including:
+
+  src/main/resources/data/cogworkbridge/upstream_processing.json
+  src/main/resources/data/cogworkbridge/upstream_mechanical_crafting.json
+  src/main/resources/assets/cogworkbridge/recipes/upstream_*.json
+
+The Ponder scene compiler at tools/port_ponder.py and the executable scene
+programs at assets/cogworkbridge/ponder/upstream-scenes.json adapt the MIT-
+licensed Java scene scripts under Create's infrastructure/ponder/scenes/.
+The icon coordinate table is derived from the MIT-licensed AllIcons.java.
+Copyright (c) The Create Team / The Creators of Create. These adapted code
+programs remain subject to the MIT notice in Create-1.21.1-LICENSE.md.
+Ponder structure NBT, translations, models and textures are read from the
+separately installed Create archive, rather than copied into this release.
+Ponder Legacy is a separate optional runtime and is not embedded in this JAR.
+
+Model definitions and localization in Cogwork Bridge may reference or be
+adapted from Create material; any applicable upstream rights are retained.
+This project does not grant a license to Create's reserved assets. The mod can
+read upstream assets from a separate Create installation at runtime; that copy
+is not relicensed by this project. The release jar does not contain an
+assets/create/ directory.
+
+Create Legacy
+-------------
+
+Upstream: https://github.com/Siepert123/create-legacy (rewrite branch)
+Copyright (c) 2026 Siepert
+License: MIT; see Create-Legacy-LICENSE.txt.
+
+Create Legacy was used as an implementation and API reference for the 1.12.2
+port. Its copyright and license remain applicable to any material derived
+from that project.
+

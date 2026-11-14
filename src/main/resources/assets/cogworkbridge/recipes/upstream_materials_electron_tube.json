@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "L",
+    "N"
+  ],
+  "key": {
+    "L": {
+      "item": "cogworkbridge:polished_rose_quartz"
+    },
+    "N": {
+      "type": "forge:ore_dict",
+      "ore": "plateIron"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:electron_tube"
+  }
+}

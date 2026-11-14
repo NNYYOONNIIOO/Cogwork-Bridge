@@ -1,0 +1,1 @@
+{"variants": {"facing=up": {"model": "create:mechanical_arm/base"}, "facing=down": {"model": "create:mechanical_arm/base"}, "facing=north": {"model": "create:mechanical_arm/base"}, "facing=south": {"model": "create:mechanical_arm/base"}, "facing=east": {"model": "create:mechanical_arm/base"}, "facing=west": {"model": "create:mechanical_arm/base"}}}

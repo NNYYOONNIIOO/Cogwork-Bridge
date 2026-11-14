@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:linear_chassis"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:secondary_linear_chassis"
+  }
+}

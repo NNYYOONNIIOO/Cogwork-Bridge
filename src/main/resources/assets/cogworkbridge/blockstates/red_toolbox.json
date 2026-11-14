@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"create:red_toolbox"},"facing=east":{"model":"create:red_toolbox","y":90},"facing=south":{"model":"create:red_toolbox","y":180},"facing=west":{"model":"create:red_toolbox","y":270}}}

@@ -1,0 +1,1 @@
+{"variants": {"facing=up": {"model": "create:schematicannon/pipe"}, "facing=down": {"model": "create:schematicannon/pipe"}, "facing=north": {"model": "create:schematicannon/pipe"}, "facing=south": {"model": "create:schematicannon/pipe"}, "facing=east": {"model": "create:schematicannon/pipe"}, "facing=west": {"model": "create:schematicannon/pipe"}}}

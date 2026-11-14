@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:fluid_valve/pointer" },
+    "facing=up": { "model": "create:fluid_valve/pointer" },
+    "facing=north": { "model": "create:fluid_valve/pointer" },
+    "facing=south": { "model": "create:fluid_valve/pointer" },
+    "facing=west": { "model": "create:fluid_valve/pointer" },
+    "facing=east": { "model": "create:fluid_valve/pointer" }
+  }
+}

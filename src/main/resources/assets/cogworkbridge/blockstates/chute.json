@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:chute/block" },
+    "facing=north": { "model": "create:chute/block_diagonal", "y": 180 },
+    "facing=south": { "model": "create:chute/block_diagonal" },
+    "facing=west": { "model": "create:chute/block_diagonal", "y": 90 },
+    "facing=east": { "model": "create:chute/block_diagonal", "y": 270 }
+  }
+}

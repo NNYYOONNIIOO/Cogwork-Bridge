@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=up": { "model": "create:belt_pulley" },
+    "facing=down": { "model": "create:belt_pulley", "x": 180 },
+    "facing=north": { "model": "create:belt_pulley", "x": 90 },
+    "facing=south": { "model": "create:belt_pulley", "x": 90, "y": 180 },
+    "facing=west": { "model": "create:belt_pulley", "x": 90, "y": 270 },
+    "facing=east": { "model": "create:belt_pulley", "x": 90, "y": 90 }
+  }
+}

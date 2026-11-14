@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "C",
+    "S",
+    "I"
+  ],
+  "key": {
+    "C": {
+      "item": "cogworkbridge:cogwheel"
+    },
+    "I": {
+      "item": "minecraft:stone"
+    },
+    "S": {
+      "item": "cogworkbridge:andesite_casing"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:millstone"
+  }
+}

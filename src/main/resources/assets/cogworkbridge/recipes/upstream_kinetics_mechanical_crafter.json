@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "C",
+    "R"
+  ],
+  "key": {
+    "B": {
+      "item": "cogworkbridge:electron_tube"
+    },
+    "C": {
+      "item": "cogworkbridge:brass_casing"
+    },
+    "R": {
+      "item": "minecraft:crafting_table"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:mechanical_crafter",
+    "count": 3
+  }
+}

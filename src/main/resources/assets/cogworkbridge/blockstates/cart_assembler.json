@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "shape=east_west": {
+      "model": "create:cart_assembler/block_regular",
+      "y": 270
+    },
+    "shape=north_south": {
+      "model": "create:cart_assembler/block_regular"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "C",
+    "B"
+  ],
+  "key": {
+    "B": {
+      "type": "forge:ore_dict",
+      "ore": "plateCopper"
+    },
+    "C": {
+      "type": "forge:ore_dict",
+      "ore": "blockBarrelWood"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:fluid_tank"
+  }
+}

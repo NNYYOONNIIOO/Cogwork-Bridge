@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": { "model": "create:clutch/block", "x": 90, "y": 90 },
+    "axis=y": { "model": "create:clutch/block" },
+    "axis=z": { "model": "create:clutch/block", "x": 90 }
+  }
+}

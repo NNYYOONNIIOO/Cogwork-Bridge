@@ -1,0 +1,1 @@
+{"pattern": ["P", "S"], "key": {"P": {"type": "forge:ore_dict", "ore": "slabWood"}, "S": {"item": "cogworkbridge:shaft"}}, "type": "forge:ore_shaped", "result": {"item": "cogworkbridge:turntable"}}

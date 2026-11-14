@@ -1,0 +1,1 @@
+{"variants":{"facing=east":{"model":"create:brass_ladder","y":90},"facing=north":{"model":"create:brass_ladder"},"facing=south":{"model":"create:brass_ladder","y":180},"facing=west":{"model":"create:brass_ladder","y":270}}}

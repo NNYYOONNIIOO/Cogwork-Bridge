@@ -1,0 +1,1 @@
+{"variants": {"facing=north": {"model": "farmers_future_delight:lectern"}, "facing=east": {"model": "farmers_future_delight:lectern", "y": 90}, "facing=south": {"model": "farmers_future_delight:lectern", "y": 180}, "facing=west": {"model": "farmers_future_delight:lectern", "y": 270}}}

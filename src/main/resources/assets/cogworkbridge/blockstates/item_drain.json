@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "normal": { "model": "create:item_drain" }
+  }
+}

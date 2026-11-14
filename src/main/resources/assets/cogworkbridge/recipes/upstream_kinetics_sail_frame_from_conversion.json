@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:white_sail"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:sail_frame"
+  }
+}

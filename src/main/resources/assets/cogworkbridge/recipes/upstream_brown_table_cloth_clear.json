@@ -1,0 +1,11 @@
+{
+  "type": "forge:ore_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:brown_table_cloth"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:brown_table_cloth"
+  }
+}

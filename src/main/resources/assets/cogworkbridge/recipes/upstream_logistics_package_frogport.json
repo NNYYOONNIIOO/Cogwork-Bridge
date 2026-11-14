@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "A",
+    "C"
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:item_vault"
+    },
+    "B": {
+      "item": "minecraft:slime_ball"
+    },
+    "C": {
+      "item": "cogworkbridge:andesite_alloy"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:package_frogport"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": {"model": "create:radial_chassis/base", "x": 90, "y": 90},
+    "axis=y": {"model": "create:radial_chassis/base"},
+    "axis=z": {"model": "create:radial_chassis/base", "x": 90}
+  }
+}

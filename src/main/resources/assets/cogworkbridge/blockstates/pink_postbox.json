@@ -1,0 +1,1 @@
+{"variants": {"facing=north": {"model": "create:pink_postbox_closed"}, "facing=east": {"model": "create:pink_postbox_closed", "y": 90}, "facing=south": {"model": "create:pink_postbox_closed", "y": 180}, "facing=west": {"model": "create:pink_postbox_closed", "y": 270}}}

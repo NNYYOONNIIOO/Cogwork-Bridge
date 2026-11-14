@@ -1,0 +1,1 @@
+{"type": "forge:ore_shaped", "pattern": [" C ", "CBC", " C "], "key": {"C": {"item": "minecraft:gunpowder"}, "B": {"item": "cogworkbridge:cuckoo_clock"}}, "result": {"item": "cogworkbridge:mysterious_cuckoo_clock"}}

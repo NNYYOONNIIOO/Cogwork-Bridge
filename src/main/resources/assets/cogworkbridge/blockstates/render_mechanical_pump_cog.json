@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:mechanical_pump/cog", "x": 270 },
+    "facing=east": { "model": "create:mechanical_pump/cog", "y": 270 },
+    "facing=north": { "model": "create:mechanical_pump/cog", "y": 180 },
+    "facing=south": { "model": "create:mechanical_pump/cog" },
+    "facing=up": { "model": "create:mechanical_pump/cog", "x": 90 },
+    "facing=west": { "model": "create:mechanical_pump/cog", "y": 90 }
+  }
+}

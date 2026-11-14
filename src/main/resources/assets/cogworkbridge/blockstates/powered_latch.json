@@ -1,0 +1,1 @@
+{"variants":{"facing=south":{"model":"create:powered_latch"},"facing=west":{"model":"create:powered_latch","y":90},"facing=north":{"model":"create:powered_latch","y":180},"facing=east":{"model":"create:powered_latch","y":270}}}

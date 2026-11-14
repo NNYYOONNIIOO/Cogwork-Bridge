@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {"layer0": "create:item/empty_clipboard"},
+  "overrides": [
+    {"predicate": {"cogworkbridge:written": 1}, "model": "cogworkbridge:item/clipboard_written"}
+  ]
+}

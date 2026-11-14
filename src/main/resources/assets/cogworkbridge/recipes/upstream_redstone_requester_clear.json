@@ -1,0 +1,11 @@
+{
+  "type": "forge:ore_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:redstone_requester"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:redstone_requester"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [" C ", "CBC", " C "],
+  "key": {
+    "C": {"item": "cogworkbridge:cogwheel"},
+    "B": {"item": "cogworkbridge:andesite_casing"}
+  },
+  "result": {"item": "cogworkbridge:gearbox"}
+}

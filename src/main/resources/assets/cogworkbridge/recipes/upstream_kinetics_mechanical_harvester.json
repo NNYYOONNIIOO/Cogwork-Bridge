@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AIA",
+    "AIA",
+    " C "
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:andesite_alloy"
+    },
+    "C": {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    "I": {
+      "type": "forge:ore_dict",
+      "ore": "plateIron"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:mechanical_harvester"
+  }
+}

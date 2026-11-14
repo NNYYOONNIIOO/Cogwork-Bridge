@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:deployer/hand_punching" },
+    "facing=up": { "model": "create:deployer/hand_punching" },
+    "facing=north": { "model": "create:deployer/hand_punching" },
+    "facing=south": { "model": "create:deployer/hand_punching" },
+    "facing=west": { "model": "create:deployer/hand_punching" },
+    "facing=east": { "model": "create:deployer/hand_punching" }
+  }
+}

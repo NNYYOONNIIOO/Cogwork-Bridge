@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=north": { "model": "create:mechanical_crafter/block" },
+    "facing=east": { "model": "create:mechanical_crafter/block", "y": 90 },
+    "facing=south": { "model": "create:mechanical_crafter/block", "y": 180 },
+    "facing=west": { "model": "create:mechanical_crafter/block", "y": 270 },
+    "facing=up": { "model": "create:mechanical_crafter/block", "x": 270 },
+    "facing=down": { "model": "create:mechanical_crafter/block", "x": 90 }
+  }
+}

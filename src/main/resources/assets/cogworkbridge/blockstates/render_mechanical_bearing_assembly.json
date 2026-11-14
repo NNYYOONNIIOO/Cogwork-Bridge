@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "cogworkbridge:mechanical_bearing_assembly",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "cogworkbridge:mechanical_bearing_assembly",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "cogworkbridge:mechanical_bearing_assembly",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "cogworkbridge:mechanical_bearing_assembly",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "cogworkbridge:mechanical_bearing_assembly"
+    },
+    "facing=west": {
+      "model": "cogworkbridge:mechanical_bearing_assembly",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

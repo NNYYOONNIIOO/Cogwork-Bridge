@@ -1,0 +1,1 @@
+{"type":"forge:ore_shapeless","ingredients":[{"item":"minecraft:paper"},{"type":"forge:ore_dict","ore":"plateObsidian"}],"result":{"item":"cogworkbridge:schedule","count":4}}

@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis_along_first=x,facing=down": { "model": "create:deployer/horizontal", "x": 270 },
+    "axis_along_first=z,facing=down": { "model": "create:deployer/horizontal", "x": 270, "y": 90 },
+    "axis_along_first=x,facing=east": { "model": "create:deployer/vertical", "y": 270 },
+    "axis_along_first=z,facing=east": { "model": "create:deployer/horizontal", "y": 270 },
+    "axis_along_first=x,facing=north": { "model": "create:deployer/horizontal", "y": 180 },
+    "axis_along_first=z,facing=north": { "model": "create:deployer/vertical", "y": 180 },
+    "axis_along_first=x,facing=south": { "model": "create:deployer/horizontal" },
+    "axis_along_first=z,facing=south": { "model": "create:deployer/vertical" },
+    "axis_along_first=x,facing=up": { "model": "create:deployer/horizontal", "x": 90 },
+    "axis_along_first=z,facing=up": { "model": "create:deployer/horizontal", "x": 90, "y": 90 },
+    "axis_along_first=x,facing=west": { "model": "create:deployer/vertical", "y": 90 },
+    "axis_along_first=z,facing=west": { "model": "create:deployer/horizontal", "y": 90 }
+  }
+}

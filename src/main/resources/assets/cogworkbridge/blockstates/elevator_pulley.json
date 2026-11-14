@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "create:elevator_pulley/block" },
+    "facing=east": { "model": "create:elevator_pulley/block", "y": 90 },
+    "facing=south": { "model": "create:elevator_pulley/block", "y": 180 },
+    "facing=west": { "model": "create:elevator_pulley/block", "y": 270 }
+  }
+}

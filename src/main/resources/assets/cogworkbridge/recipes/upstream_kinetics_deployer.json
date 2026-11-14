@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "C",
+    "I"
+  ],
+  "key": {
+    "B": {
+      "item": "cogworkbridge:electron_tube"
+    },
+    "C": {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    "I": {
+      "item": "cogworkbridge:brass_hand"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:deployer"
+  }
+}

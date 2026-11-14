@@ -1,0 +1,1 @@
+{"variants":{"active=false,cross=false":{"model":"create:track_signal/block_entry_signal"},"active=false,cross=true":{"model":"create:track_signal/block_cross_signal"},"active=true,cross=false":{"model":"create:track_signal/block_entry_signal"},"active=true,cross=true":{"model":"create:track_signal/block_cross_signal"}}}

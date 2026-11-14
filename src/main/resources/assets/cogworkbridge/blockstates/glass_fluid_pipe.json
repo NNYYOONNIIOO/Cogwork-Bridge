@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": { "model": "create:fluid_pipe/window", "x": 90, "y": 90 },
+    "axis=y": { "model": "create:fluid_pipe/window" },
+    "axis=z": { "model": "create:fluid_pipe/window", "x": 90 }
+  }
+}

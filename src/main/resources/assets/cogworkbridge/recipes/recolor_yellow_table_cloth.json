@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "type": "forge:ore_dict",
+      "ore": "dyeYellow"
+    },
+    {
+      "type": "forge:ore_dict",
+      "ore": "cogworkBridgeTableCloth"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:yellow_table_cloth"
+  }
+}

@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"create:copper_backtank/block"},"facing=east":{"model":"create:copper_backtank/block","y":90},"facing=south":{"model":"create:copper_backtank/block","y":180},"facing=west":{"model":"create:copper_backtank/block","y":270}}}

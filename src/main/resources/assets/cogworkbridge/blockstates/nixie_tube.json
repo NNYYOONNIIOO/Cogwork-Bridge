@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=south,mount=floor": {"model":"create:nixie_tube/block"},
+    "facing=west,mount=floor": {"model":"create:nixie_tube/block","y":90},
+    "facing=north,mount=floor": {"model":"create:nixie_tube/block","y":180},
+    "facing=east,mount=floor": {"model":"create:nixie_tube/block","y":270},
+    "facing=south,mount=ceiling": {"model":"create:nixie_tube/block","x":180},
+    "facing=west,mount=ceiling": {"model":"create:nixie_tube/block","x":180,"y":90},
+    "facing=north,mount=ceiling": {"model":"create:nixie_tube/block","x":180,"y":180},
+    "facing=east,mount=ceiling": {"model":"create:nixie_tube/block","x":180,"y":270},
+    "facing=south,mount=wall": {"model":"create:nixie_tube/block","x":90,"y":180},
+    "facing=west,mount=wall": {"model":"create:nixie_tube/block","x":90,"y":270},
+    "facing=north,mount=wall": {"model":"create:nixie_tube/block","x":90},
+    "facing=east,mount=wall": {"model":"create:nixie_tube/block","x":90,"y":90},
+    "facing=south,mount=wall_reversed": {"model":"create:nixie_tube/block","x":90,"y":180},
+    "facing=west,mount=wall_reversed": {"model":"create:nixie_tube/block","x":90,"y":270},
+    "facing=north,mount=wall_reversed": {"model":"create:nixie_tube/block","x":90},
+    "facing=east,mount=wall_reversed": {"model":"create:nixie_tube/block","x":90,"y":90}
+  }
+}

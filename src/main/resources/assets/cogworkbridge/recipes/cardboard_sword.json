@@ -1,0 +1,9 @@
+{
+  "type": "forge:ore_shaped",
+  "pattern": ["P", "P", "S"],
+  "key": {
+    "P": {"item": "cogworkbridge:cardboard"},
+    "S": {"type": "forge:ore_dict", "ore": "stickWood"}
+  },
+  "result": {"item": "cogworkbridge:cardboard_sword"}
+}

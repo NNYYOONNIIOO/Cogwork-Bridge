@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "create:item_hatch/block_closed" },
+    "facing=south": { "model": "create:item_hatch/block_closed", "y": 180 },
+    "facing=west": { "model": "create:item_hatch/block_closed", "y": 270 },
+    "facing=east": { "model": "create:item_hatch/block_closed", "y": 90 }
+  }
+}

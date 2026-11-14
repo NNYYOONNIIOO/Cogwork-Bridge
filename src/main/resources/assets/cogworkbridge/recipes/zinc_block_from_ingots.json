@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ZZZ",
+    "ZZZ",
+    "ZZZ"
+  ],
+  "key": {
+    "Z": {
+      "type": "forge:ore_dict",
+      "ore": "ingotZinc"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:zinc_block"
+  }
+}

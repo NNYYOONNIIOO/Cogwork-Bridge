@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    " P ",
+    "SSS"
+  ],
+  "key": {
+    "P": {
+      "item": "cogworkbridge:redstone_link"
+    },
+    "S": {
+      "type": "forge:ore_dict",
+      "ore": "buttonWood"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:linked_controller"
+  }
+}

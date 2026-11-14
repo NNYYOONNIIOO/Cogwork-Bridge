@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "C",
+    "S"
+  ],
+  "key": {
+    "C": {
+      "item": "cogworkbridge:transmitter"
+    },
+    "S": {
+      "item": "cogworkbridge:brass_casing"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:display_link"
+  }
+}

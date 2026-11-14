@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:deployer/pole" },
+    "facing=up": { "model": "create:deployer/pole" },
+    "facing=north": { "model": "create:deployer/pole" },
+    "facing=south": { "model": "create:deployer/pole" },
+    "facing=west": { "model": "create:deployer/pole" },
+    "facing=east": { "model": "create:deployer/pole" }
+  }
+}

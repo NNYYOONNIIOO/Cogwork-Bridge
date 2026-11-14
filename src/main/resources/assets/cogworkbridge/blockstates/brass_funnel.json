@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "create:brass_funnel_vertical_push_unpowered",
+      "x": 180,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "create:brass_funnel_vertical_push_unpowered",
+      "y": 180
+    },
+    "facing=north": {
+      "model": "create:brass_funnel_horizontal_push_unpowered"
+    },
+    "facing=south": {
+      "model": "create:brass_funnel_horizontal_push_unpowered",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "create:brass_funnel_horizontal_push_unpowered",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "create:brass_funnel_horizontal_push_unpowered",
+      "y": 90
+    }
+  }
+}

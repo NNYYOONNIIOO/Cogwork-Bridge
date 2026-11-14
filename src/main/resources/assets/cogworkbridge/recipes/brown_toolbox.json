@@ -1,0 +1,1 @@
+{"type":"forge:ore_shaped","pattern":[" C ","SWS"," L "],"key":{"C":{"item":"cogworkbridge:cogwheel"},"S":{"type":"forge:ore_dict","ore":"plateGold"},"W":{"type":"forge:ore_dict","ore":"chestWood"},"L":{"type":"forge:ore_dict","ore":"leather"}},"result":{"item":"cogworkbridge:brown_toolbox"}}

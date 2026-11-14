@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {"item": "cogworkbridge:shaft"},
+    {"type": "forge:ore_dict", "ore": "plankWood"},
+    {"type": "forge:ore_dict", "ore": "plankWood"}
+  ],
+  "result": {"item": "cogworkbridge:large_cogwheel"}
+}

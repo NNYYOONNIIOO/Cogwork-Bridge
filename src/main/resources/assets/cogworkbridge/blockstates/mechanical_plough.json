@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "create:mechanical_plough" },
+    "facing=east": { "model": "create:mechanical_plough", "y": 90 },
+    "facing=south": { "model": "create:mechanical_plough", "y": 180 },
+    "facing=west": { "model": "create:mechanical_plough", "y": 270 }
+  }
+}

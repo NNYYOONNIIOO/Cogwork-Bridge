@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:smart_chute/block" },
+    "facing=north": { "model": "create:smart_chute/block" },
+    "facing=south": { "model": "create:smart_chute/block" },
+    "facing=west": { "model": "create:smart_chute/block" },
+    "facing=east": { "model": "create:smart_chute/block" }
+  }
+}

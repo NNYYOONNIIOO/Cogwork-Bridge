@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    {
+      "type": "forge:ore_dict",
+      "ore": "nuggetZinc"
+    },
+    {
+      "type": "forge:ore_dict",
+      "ore": "nuggetZinc"
+    },
+    {
+      "type": "forge:ore_dict",
+      "ore": "nuggetZinc"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:encased_chain_drive"
+  }
+}

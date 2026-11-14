@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=up": { "model": "create:rotation_speed_controller/bracket" },
+    "facing=down": { "model": "create:rotation_speed_controller/bracket" },
+    "facing=north": { "model": "create:rotation_speed_controller/bracket" },
+    "facing=south": { "model": "create:rotation_speed_controller/bracket" },
+    "facing=east": { "model": "create:rotation_speed_controller/bracket" },
+    "facing=west": { "model": "create:rotation_speed_controller/bracket" }
+  }
+}

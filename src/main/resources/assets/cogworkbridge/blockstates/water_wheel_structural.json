@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "cogworkbridge:empty"
+    },
+    "facing=up": {
+      "model": "cogworkbridge:empty"
+    },
+    "facing=north": {
+      "model": "cogworkbridge:empty"
+    },
+    "facing=south": {
+      "model": "cogworkbridge:empty"
+    },
+    "facing=east": {
+      "model": "cogworkbridge:empty"
+    },
+    "facing=west": {
+      "model": "cogworkbridge:empty"
+    }
+  }
+}

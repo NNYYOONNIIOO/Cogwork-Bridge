@@ -1,0 +1,31 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "create:brass_encased_large_cogwheel_bottom",
+      "x": 180
+    },
+    "facing=up": {
+      "model": "create:brass_encased_large_cogwheel_bottom"
+    },
+    "facing=north": {
+      "model": "create:brass_encased_large_cogwheel_bottom",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south": {
+      "model": "create:brass_encased_large_cogwheel_bottom",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west": {
+      "model": "create:brass_encased_large_cogwheel_bottom",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east": {
+      "model": "create:brass_encased_large_cogwheel_bottom",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

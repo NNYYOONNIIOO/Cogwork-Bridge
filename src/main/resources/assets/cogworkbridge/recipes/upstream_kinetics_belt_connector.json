@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DDD",
+    "DDD"
+  ],
+  "key": {
+    "D": {
+      "type": "forge:ore_dict",
+      "ore": "foodDriedKelp"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:belt_connector"
+  }
+}

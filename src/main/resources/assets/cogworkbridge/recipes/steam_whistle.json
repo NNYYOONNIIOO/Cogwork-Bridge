@@ -1,0 +1,1 @@
+{"type": "forge:ore_shaped", "pattern": ["P", "C"], "key": {"P": {"type": "forge:ore_dict", "ore": "plateGold"}, "C": {"type": "forge:ore_dict", "ore": "ingotCopper"}}, "result": {"item": "cogworkbridge:steam_whistle"}}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "D",
+    "B",
+    "A"
+  ],
+  "key": {
+    "D": {
+      "type": "forge:ore_dict",
+      "ore": "dyePink"
+    },
+    "B": {
+      "type": "forge:ore_dict",
+      "ore": "blockBarrelWood"
+    },
+    "A": {
+      "item": "cogworkbridge:andesite_alloy"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:pink_postbox"
+  }
+}

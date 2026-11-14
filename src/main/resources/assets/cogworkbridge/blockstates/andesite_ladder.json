@@ -1,0 +1,1 @@
+{"variants":{"facing=east":{"model":"create:andesite_ladder","y":90},"facing=north":{"model":"create:andesite_ladder"},"facing=south":{"model":"create:andesite_ladder","y":180},"facing=west":{"model":"create:andesite_ladder","y":270}}}

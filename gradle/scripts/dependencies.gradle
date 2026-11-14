@@ -1,0 +1,48 @@
+repositories {
+    flatDir { dirs rootProject.file('libs') }
+    // Other repositories described by default:
+    // CleanroomMC: https://maven.cleanroommc.com
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+    }
+    maven {
+        name = 'CleanroomCurseMaven'
+        url = 'https://curse.cleanroommc.com'
+    }
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+    }
+    mavenCentral()
+    mavenLocal() // Must be last for caching to work
+}
+
+dependencies {
+    // MixinBooter: provides IMixinConfigHijacker / IEarlyMixinLoader.
+    // NOTE: Unimined has no modUtils (that is RetroFuturaGradle); refmaps are handled
+    // by Unimined's mixin remap extension instead.
+    def mixin = 'zone.rong:mixinbooter:11.17'
+    implementation(mixin) { transitive = false }
+    annotationProcessor mixin
+
+    if (enable_lwjglx.toBoolean()) {
+        compileOnly "com.cleanroommc:lwjglx:1.0.0"
+    }
+
+    // Optional JEI API for the 1.12.2 compatibility plugin. Unimined remaps the
+    // CurseMaven artifact for development without bundling JEI into Cogwork Bridge.
+    modCompileOnly 'curse.maven:jei-238222:9334752'
+    modRuntimeOnly 'curse.maven:jei-238222:9334752'
+
+    // Unimined equivalent of fg.deobf: remap the mod for both compilation and
+    // development runtime, without embedding its jar in the Cogwork Bridge jar.
+    modCompileOnly 'curse.maven:farmers-future-delight-1637097:9521358'
+    modRuntimeOnly 'curse.maven:farmers-future-delight-1637097:9521358'
+
+    // Standalone, optional tutorial runtime. Remap its SRG API for development;
+    // do not embed Ponder or its assets into the Cogwork Bridge distribution.
+    modCompileOnly 'local.ponder:ponder-legacy:1.7.1'
+    modRuntimeOnly 'local.ponder:ponder-legacy:1.7.1'
+
+}

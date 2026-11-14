@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "LLA",
+    "L  ",
+    "IC "
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:andesite_alloy"
+    },
+    "C": {
+      "item": "cogworkbridge:brass_casing"
+    },
+    "I": {
+      "item": "cogworkbridge:precision_mechanism"
+    },
+    "L": {
+      "type": "forge:ore_dict",
+      "ore": "plateBrass"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:mechanical_arm"
+  }
+}

@@ -1,0 +1,1 @@
+{"variants":{"facing=south":{"model":"create:repackager/block"},"facing=west":{"model":"create:repackager/block","y":90},"facing=north":{"model":"create:repackager/block","y":180},"facing=east":{"model":"create:repackager/block","y":270},"facing=up":{"model":"create:repackager/block_vertical"},"facing=down":{"model":"create:repackager/block_vertical"}}}

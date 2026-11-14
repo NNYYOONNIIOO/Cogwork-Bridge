@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "I",
+    "S",
+    "P"
+  ],
+  "key": {
+    "I": {
+      "type": "forge:ore_dict",
+      "ore": "plateBrass"
+    },
+    "P": {
+      "item": "cogworkbridge:electron_tube"
+    },
+    "S": {
+      "item": "cogworkbridge:fluid_pipe"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:smart_fluid_pipe"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "R",
+    "B",
+    "I"
+  ],
+  "key": {
+    "B": {
+      "item": "cogworkbridge:brass_casing"
+    },
+    "I": {
+      "item": "minecraft:observer"
+    },
+    "R": {
+      "item": "cogworkbridge:electron_tube"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:content_observer"
+  }
+}

@@ -1,0 +1,1 @@
+{"variants": {"facing=north": {"model": "create:package_frogport/block"}, "facing=east": {"model": "create:package_frogport/block"}, "facing=south": {"model": "create:package_frogport/block"}, "facing=west": {"model": "create:package_frogport/block"}}}

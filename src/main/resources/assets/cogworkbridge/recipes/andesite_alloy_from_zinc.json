@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["ZA", "AZ"],
+  "key": {
+    "A": {"item": "minecraft:stone", "data": 5},
+    "Z": {"type": "forge:ore_dict", "ore": "nuggetZinc"}
+  },
+  "result": {"item": "cogworkbridge:andesite_alloy"}
+}

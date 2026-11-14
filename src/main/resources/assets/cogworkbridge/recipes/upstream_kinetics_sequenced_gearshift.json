@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:brass_casing"
+    },
+    {
+      "item": "cogworkbridge:cogwheel"
+    },
+    {
+      "item": "cogworkbridge:electron_tube"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:sequenced_gearshift"
+  }
+}

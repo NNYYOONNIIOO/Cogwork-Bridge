@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "C",
+    "I"
+  ],
+  "key": {
+    "B": {
+      "type": "forge:ore_dict",
+      "ore": "slabWood"
+    },
+    "C": {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    "I": {
+      "item": "cogworkbridge:shaft"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:mechanical_bearing"
+  }
+}

@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"create:controls/block_closed"},"facing=east":{"model":"create:controls/block_closed","y":90},"facing=south":{"model":"create:controls/block_closed","y":180},"facing=west":{"model":"create:controls/block_closed","y":270}}}

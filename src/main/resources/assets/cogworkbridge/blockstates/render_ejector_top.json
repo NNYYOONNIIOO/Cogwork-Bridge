@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=up": { "model": "create:weighted_ejector/top" },
+    "facing=down": { "model": "create:weighted_ejector/top" },
+    "facing=north": { "model": "create:weighted_ejector/top" },
+    "facing=south": { "model": "create:weighted_ejector/top" },
+    "facing=west": { "model": "create:weighted_ejector/top" },
+    "facing=east": { "model": "create:weighted_ejector/top" }
+  }
+}

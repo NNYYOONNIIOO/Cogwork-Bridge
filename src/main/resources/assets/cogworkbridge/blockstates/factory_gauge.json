@@ -1,0 +1,1 @@
+{"variants":{"facing=up":{"model":"create:factory_gauge/block"},"facing=down":{"model":"create:factory_gauge/block"},"facing=north":{"model":"create:factory_gauge/block"},"facing=south":{"model":"create:factory_gauge/block"},"facing=west":{"model":"create:factory_gauge/block"},"facing=east":{"model":"create:factory_gauge/block"}}}

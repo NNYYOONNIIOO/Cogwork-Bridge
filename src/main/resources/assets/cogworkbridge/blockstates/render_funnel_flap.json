@@ -1,0 +1,1 @@
+{"variants": {"facing=up": {"model": "create:funnel/flap"}, "facing=down": {"model": "create:funnel/flap"}, "facing=north": {"model": "create:funnel/flap"}, "facing=south": {"model": "create:funnel/flap"}, "facing=east": {"model": "create:funnel/flap"}, "facing=west": {"model": "create:funnel/flap"}}}

@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "cogworkbridge:creative_motor_rotor",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "cogworkbridge:creative_motor_rotor",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "cogworkbridge:creative_motor_rotor",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "cogworkbridge:creative_motor_rotor",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "cogworkbridge:creative_motor_rotor"
+    },
+    "facing=west": {
+      "model": "cogworkbridge:creative_motor_rotor",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

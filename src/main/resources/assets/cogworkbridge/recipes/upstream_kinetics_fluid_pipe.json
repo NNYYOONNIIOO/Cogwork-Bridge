@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SCS"
+  ],
+  "key": {
+    "C": {
+      "type": "forge:ore_dict",
+      "ore": "ingotCopper"
+    },
+    "S": {
+      "type": "forge:ore_dict",
+      "ore": "plateCopper"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:fluid_pipe",
+    "count": 4
+  }
+}

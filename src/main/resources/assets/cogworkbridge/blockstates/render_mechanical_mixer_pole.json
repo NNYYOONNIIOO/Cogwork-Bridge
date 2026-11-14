@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:mechanical_mixer/pole" },
+    "facing=up": { "model": "create:mechanical_mixer/pole" },
+    "facing=north": { "model": "create:mechanical_mixer/pole" },
+    "facing=south": { "model": "create:mechanical_mixer/pole" },
+    "facing=west": { "model": "create:mechanical_mixer/pole" },
+    "facing=east": { "model": "create:mechanical_mixer/pole" }
+  }
+}

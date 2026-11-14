@@ -1,0 +1,1 @@
+{"variants": {"facing=north": {"model": "create:schematicannon/block"}, "facing=south": {"model": "create:schematicannon/block"}, "facing=east": {"model": "create:schematicannon/block"}, "facing=west": {"model": "create:schematicannon/block"}}}

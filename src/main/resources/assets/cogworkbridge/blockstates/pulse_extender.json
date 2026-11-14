@@ -1,0 +1,1 @@
+{"variants": {"facing=south": {"model": "create:diodes/pulse_extender"}, "facing=west": {"model": "create:diodes/pulse_extender", "y": 90}, "facing=north": {"model": "create:diodes/pulse_extender", "y": 180}, "facing=east": {"model": "create:diodes/pulse_extender", "y": 270}}}

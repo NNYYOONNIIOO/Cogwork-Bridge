@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis_along_first=false,facing=down": { "model": "create:fluid_valve/block_horizontal_closed", "x": 270, "y": 90 },
+    "axis_along_first=false,facing=east": { "model": "create:fluid_valve/block_horizontal_closed", "y": 270 },
+    "axis_along_first=false,facing=north": { "model": "create:fluid_valve/block_vertical_closed", "y": 180 },
+    "axis_along_first=false,facing=south": { "model": "create:fluid_valve/block_vertical_closed" },
+    "axis_along_first=false,facing=up": { "model": "create:fluid_valve/block_horizontal_closed", "x": 90, "y": 90 },
+    "axis_along_first=false,facing=west": { "model": "create:fluid_valve/block_horizontal_closed", "y": 90 },
+    "axis_along_first=true,facing=down": { "model": "create:fluid_valve/block_horizontal_closed", "x": 270 },
+    "axis_along_first=true,facing=east": { "model": "create:fluid_valve/block_vertical_closed", "y": 270 },
+    "axis_along_first=true,facing=north": { "model": "create:fluid_valve/block_horizontal_closed", "y": 180 },
+    "axis_along_first=true,facing=south": { "model": "create:fluid_valve/block_horizontal_closed" },
+    "axis_along_first=true,facing=up": { "model": "create:fluid_valve/block_horizontal_closed", "x": 90 },
+    "axis_along_first=true,facing=west": { "model": "create:fluid_valve/block_vertical_closed", "y": 90 }
+  }
+}

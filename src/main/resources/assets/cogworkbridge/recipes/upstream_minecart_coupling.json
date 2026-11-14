@@ -1,0 +1,9 @@
+{
+  "type": "forge:ore_shaped",
+  "pattern": ["  E", " O ", "E  "],
+  "key": {
+    "E": {"item": "cogworkbridge:andesite_alloy"},
+    "O": {"type": "forge:ore_dict", "ore": "plateIron"}
+  },
+  "result": {"item": "cogworkbridge:minecart_coupling"}
+}

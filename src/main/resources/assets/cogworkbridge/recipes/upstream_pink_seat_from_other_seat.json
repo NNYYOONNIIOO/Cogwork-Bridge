@@ -1,0 +1,16 @@
+{
+  "type": "forge:ore_shapeless",
+  "ingredients": [
+    {
+      "type": "forge:ore_dict",
+      "ore": "dyePink"
+    },
+    {
+      "type": "forge:ore_dict",
+      "ore": "cogworkBridgeSeat"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:pink_seat"
+  }
+}

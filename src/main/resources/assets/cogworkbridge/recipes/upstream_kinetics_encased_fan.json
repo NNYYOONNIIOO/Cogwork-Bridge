@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "S",
+    "A",
+    "P"
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    "P": {
+      "item": "cogworkbridge:propeller"
+    },
+    "S": {
+      "item": "cogworkbridge:shaft"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:encased_fan"
+  }
+}

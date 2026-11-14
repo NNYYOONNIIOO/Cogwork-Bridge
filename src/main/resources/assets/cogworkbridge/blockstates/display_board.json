@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "create:display_board/block"
+    },
+    "facing=east": {
+      "model": "create:display_board/block",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "create:display_board/block",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "create:display_board/block",
+      "y": 270
+    }
+  }
+}

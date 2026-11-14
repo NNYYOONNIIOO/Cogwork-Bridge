@@ -1,0 +1,1 @@
+{"type":"forge:ore_shaped","pattern":["AGA","PBP"," P "],"key":{"A":{"item":"cogworkbridge:andesite_alloy"},"G":{"item":"cogworkbridge:shaft"},"P":{"type":"forge:ore_dict","ore":"ingotCopper"},"B":{"type":"forge:ore_dict","ore":"blockCopper"}},"result":{"item":"cogworkbridge:copper_backtank"}}

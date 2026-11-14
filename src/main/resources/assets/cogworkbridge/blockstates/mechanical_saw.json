@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=down,shaft_axis=x": { "model": "create:mechanical_saw/vertical", "x": 180, "y": 270 },
+    "facing=down,shaft_axis=z": { "model": "create:mechanical_saw/vertical", "x": 180 },
+    "facing=up,shaft_axis=x": { "model": "create:mechanical_saw/vertical", "y": 270 },
+    "facing=up,shaft_axis=z": { "model": "create:mechanical_saw/vertical" },
+    "facing=north,shaft_axis=x": { "model": "create:mechanical_saw/horizontal", "y": 180 },
+    "facing=north,shaft_axis=z": { "model": "create:mechanical_saw/horizontal", "y": 180 },
+    "facing=south,shaft_axis=x": { "model": "create:mechanical_saw/horizontal" },
+    "facing=south,shaft_axis=z": { "model": "create:mechanical_saw/horizontal" },
+    "facing=west,shaft_axis=x": { "model": "create:mechanical_saw/horizontal", "y": 90 },
+    "facing=west,shaft_axis=z": { "model": "create:mechanical_saw/horizontal", "y": 90 },
+    "facing=east,shaft_axis=x": { "model": "create:mechanical_saw/horizontal", "y": 270 },
+    "facing=east,shaft_axis=z": { "model": "create:mechanical_saw/horizontal", "y": 270 }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=up": {"model": "create:stock_link/block_vertical"},
+    "facing=down": {"model": "create:stock_link/block_vertical", "x": 180},
+    "facing=north": {"model": "create:stock_link/block_horizontal", "y": 180},
+    "facing=east": {"model": "create:stock_link/block_horizontal", "y": 270},
+    "facing=south": {"model": "create:stock_link/block_horizontal"},
+    "facing=west": {"model": "create:stock_link/block_horizontal", "y": 90}
+  }
+}

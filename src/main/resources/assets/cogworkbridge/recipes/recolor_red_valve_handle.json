@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "type": "forge:ore_dict",
+      "ore": "dyeRed"
+    },
+    {
+      "type": "forge:ore_dict",
+      "ore": "cogworkBridgeValveHandle"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:red_valve_handle"
+  }
+}

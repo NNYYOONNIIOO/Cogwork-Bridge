@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=up": {"model": "cogworkbridge:copycat_panel_base"},
+    "facing=down": {"model": "cogworkbridge:copycat_panel_base", "x": 180},
+    "facing=south": {"model": "cogworkbridge:copycat_panel_south"},
+    "facing=north": {"model": "cogworkbridge:copycat_panel_north"},
+    "facing=east": {"model": "cogworkbridge:copycat_panel_east"},
+    "facing=west": {"model": "cogworkbridge:copycat_panel_west"}
+  }
+}

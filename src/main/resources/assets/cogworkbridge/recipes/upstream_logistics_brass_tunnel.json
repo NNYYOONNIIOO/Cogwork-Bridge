@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "E ",
+    "AA",
+    "KK"
+  ],
+  "key": {
+    "A": {
+      "type": "forge:ore_dict",
+      "ore": "ingotBrass"
+    },
+    "E": {
+      "item": "cogworkbridge:electron_tube"
+    },
+    "K": {
+      "type": "forge:ore_dict",
+      "ore": "foodDriedKelp"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:brass_tunnel",
+    "count": 2
+  }
+}

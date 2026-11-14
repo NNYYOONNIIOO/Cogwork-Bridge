@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": { "model": "create:encased_shaft/block_andesite", "x": 90, "y": 90 },
+    "axis=y": { "model": "create:encased_shaft/block_andesite" },
+    "axis=z": { "model": "create:encased_shaft/block_andesite", "x": 90 }
+  }
+}

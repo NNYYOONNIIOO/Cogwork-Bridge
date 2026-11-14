@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "create:redstone_contact/block",
+      "x": 180
+    },
+    "facing=up": {
+      "model": "create:redstone_contact/block"
+    },
+    "facing=north": {
+      "model": "create:redstone_contact/block",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "create:redstone_contact/block",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west": {
+      "model": "create:redstone_contact/block",
+      "x": 90,
+      "y": 270
+    },
+    "facing=east": {
+      "model": "create:redstone_contact/block",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

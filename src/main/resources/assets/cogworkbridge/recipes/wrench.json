@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["GG", "GC", " S"],
+  "key": {
+    "G": {"type": "forge:ore_dict", "ore": "plateGold"},
+    "C": {"item": "cogworkbridge:cogwheel"},
+    "S": {"type": "forge:ore_dict", "ore": "stickWood"}
+  },
+  "result": {"item": "cogworkbridge:wrench"}
+}

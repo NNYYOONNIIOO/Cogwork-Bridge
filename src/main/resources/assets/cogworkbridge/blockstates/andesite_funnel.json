@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "create:andesite_funnel_vertical_filterless_push_unpowered",
+      "x": 180,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "create:andesite_funnel_vertical_filterless_push_unpowered",
+      "y": 180
+    },
+    "facing=north": {
+      "model": "create:andesite_funnel_horizontal_push_unpowered"
+    },
+    "facing=south": {
+      "model": "create:andesite_funnel_horizontal_push_unpowered",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "create:andesite_funnel_horizontal_push_unpowered",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "create:andesite_funnel_horizontal_push_unpowered",
+      "y": 90
+    }
+  }
+}

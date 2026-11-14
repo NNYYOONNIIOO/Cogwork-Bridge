@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "axis=x": { "model": "create:mechanical_press/block", "y": 90 },
+    "axis=z": { "model": "create:mechanical_press/block" }
+  }
+}

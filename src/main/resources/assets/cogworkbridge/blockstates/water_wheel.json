@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": { "model": "create:water_wheel/block", "x": 90, "y": 90 },
+    "axis=y": { "model": "create:water_wheel/block" },
+    "axis=z": { "model": "create:water_wheel/block", "x": 90 }
+  }
+}

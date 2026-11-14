@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:clutch/block_powered", "x": 180 },
+    "facing=up": { "model": "create:clutch/block_powered" },
+    "facing=north": { "model": "create:clutch/block_powered", "x": 90 },
+    "facing=south": { "model": "create:clutch/block_powered", "x": 90 },
+    "facing=west": { "model": "create:clutch/block_powered", "x": 90, "y": 90 },
+    "facing=east": { "model": "create:clutch/block_powered", "x": 90, "y": 90 }
+  }
+}

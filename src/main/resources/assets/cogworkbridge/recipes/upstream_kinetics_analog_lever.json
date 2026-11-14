@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "P",
+    "S"
+  ],
+  "key": {
+    "P": {
+      "type": "forge:ore_dict",
+      "ore": "stickWood"
+    },
+    "S": {
+      "item": "cogworkbridge:andesite_casing"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:analog_lever"
+  }
+}

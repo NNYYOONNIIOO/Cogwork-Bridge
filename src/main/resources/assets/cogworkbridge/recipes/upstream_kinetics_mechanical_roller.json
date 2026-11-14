@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "A",
+    "C",
+    "I"
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:electron_tube"
+    },
+    "C": {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    "I": {
+      "item": "cogworkbridge:crushing_wheel"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:mechanical_roller"
+  }
+}

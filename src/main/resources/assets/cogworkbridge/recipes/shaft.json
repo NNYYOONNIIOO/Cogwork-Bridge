@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["A", "A"],
+  "key": {"A": {"item": "cogworkbridge:andesite_alloy"}},
+  "result": {"item": "cogworkbridge:shaft", "count": 8}
+}

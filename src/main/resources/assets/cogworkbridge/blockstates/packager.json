@@ -1,0 +1,1 @@
+{"variants": {"facing=south": {"model": "create:packager/block"}, "facing=west": {"model": "create:packager/block", "y": 90}, "facing=north": {"model": "create:packager/block", "y": 180}, "facing=east": {"model": "create:packager/block", "y": 270}, "facing=up": {"model": "create:packager/block_vertical"}, "facing=down": {"model": "create:packager/block_vertical"}}}

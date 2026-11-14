@@ -1,0 +1,31 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "create:andesite_encased_cogwheel_bottom",
+      "x": 180
+    },
+    "facing=up": {
+      "model": "create:andesite_encased_cogwheel_bottom"
+    },
+    "facing=north": {
+      "model": "create:andesite_encased_cogwheel_bottom",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south": {
+      "model": "create:andesite_encased_cogwheel_bottom",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west": {
+      "model": "create:andesite_encased_cogwheel_bottom",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east": {
+      "model": "create:andesite_encased_cogwheel_bottom",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

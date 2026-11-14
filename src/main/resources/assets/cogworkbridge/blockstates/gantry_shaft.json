@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "create:gantry_shaft/block_single",
+      "x": 180
+    },
+    "facing=up": {
+      "model": "create:gantry_shaft/block_single"
+    },
+    "facing=north": {
+      "model": "create:gantry_shaft/block_single",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "create:gantry_shaft/block_single",
+      "x": 90,
+      "y": 180
+    },
+    "facing=east": {
+      "model": "create:gantry_shaft/block_single",
+      "x": 90,
+      "y": 90
+    },
+    "facing=west": {
+      "model": "create:gantry_shaft/block_single",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

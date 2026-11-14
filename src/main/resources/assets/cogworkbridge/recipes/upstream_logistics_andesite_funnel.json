@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "A",
+    "K"
+  ],
+  "key": {
+    "A": {
+      "item": "cogworkbridge:andesite_alloy"
+    },
+    "K": {
+      "type": "forge:ore_dict",
+      "ore": "foodDriedKelp"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:andesite_funnel",
+    "count": 2
+  }
+}

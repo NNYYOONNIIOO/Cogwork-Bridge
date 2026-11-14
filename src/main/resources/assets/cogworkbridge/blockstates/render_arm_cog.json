@@ -1,0 +1,1 @@
+{"variants": {"facing=up": {"model": "create:mechanical_arm/cog"}, "facing=down": {"model": "create:mechanical_arm/cog"}, "facing=north": {"model": "create:mechanical_arm/cog"}, "facing=south": {"model": "create:mechanical_arm/cog"}, "facing=east": {"model": "create:mechanical_arm/cog"}, "facing=west": {"model": "create:mechanical_arm/cog"}}}

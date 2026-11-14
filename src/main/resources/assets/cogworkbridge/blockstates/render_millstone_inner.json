@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:millstone/inner" },
+    "facing=up": { "model": "create:millstone/inner" },
+    "facing=north": { "model": "create:millstone/inner" },
+    "facing=south": { "model": "create:millstone/inner" },
+    "facing=west": { "model": "create:millstone/inner" },
+    "facing=east": { "model": "create:millstone/inner" }
+  }
+}

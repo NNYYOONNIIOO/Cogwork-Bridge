@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cogworkbridge:packager"
+    }
+  ],
+  "result": {
+    "item": "cogworkbridge:repackager"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": { "model": "create:mechanical_roller/wheel" },
+    "facing=up": { "model": "create:mechanical_roller/wheel" },
+    "facing=north": { "model": "create:mechanical_roller/wheel" },
+    "facing=east": { "model": "create:mechanical_roller/wheel" },
+    "facing=south": { "model": "create:mechanical_roller/wheel" },
+    "facing=west": { "model": "create:mechanical_roller/wheel" }
+  }
+}

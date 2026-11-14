@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RCT",
+    "SSS"
+  ],
+  "key": {
+    "C": {
+      "type": "forge:ore_dict",
+      "ore": "plateBrass"
+    },
+    "R": {
+      "type": "forge:ore_dict",
+      "ore": "gemAmethyst"
+    },
+    "S": {
+      "item": "minecraft:stone"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:pulse_timer"
+  }
+}

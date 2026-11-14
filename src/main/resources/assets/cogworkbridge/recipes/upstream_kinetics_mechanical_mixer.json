@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "S",
+    "C",
+    "I"
+  ],
+  "key": {
+    "C": {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    "I": {
+      "item": "cogworkbridge:whisk"
+    },
+    "S": {
+      "item": "cogworkbridge:cogwheel"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:mechanical_mixer"
+  }
+}

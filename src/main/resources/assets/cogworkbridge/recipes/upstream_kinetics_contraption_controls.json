@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "C",
+    "I"
+  ],
+  "key": {
+    "B": [
+      {
+        "item": "minecraft:stone_button"
+      },
+      {
+        "item": "minecraft:wooden_button"
+      }
+    ],
+    "C": {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    "I": {
+      "item": "cogworkbridge:electron_tube"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:contraption_controls"
+  }
+}

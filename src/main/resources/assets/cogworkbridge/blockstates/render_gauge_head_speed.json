@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "facing=up": {
+      "model": "create:gauge/speedometer/head"
+    },
+    "facing=down": {
+      "model": "create:gauge/speedometer/head"
+    },
+    "facing=north": {
+      "model": "create:gauge/speedometer/head"
+    },
+    "facing=south": {
+      "model": "create:gauge/speedometer/head"
+    },
+    "facing=east": {
+      "model": "create:gauge/speedometer/head"
+    },
+    "facing=west": {
+      "model": "create:gauge/speedometer/head"
+    }
+  }
+}

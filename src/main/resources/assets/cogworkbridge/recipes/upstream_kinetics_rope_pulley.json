@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "C",
+    "I"
+  ],
+  "key": {
+    "B": {
+      "item": "cogworkbridge:andesite_casing"
+    },
+    "C": {
+      "type": "forge:ore_dict",
+      "ore": "blockWool"
+    },
+    "I": {
+      "type": "forge:ore_dict",
+      "ore": "plateIron"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:rope_pulley"
+  }
+}

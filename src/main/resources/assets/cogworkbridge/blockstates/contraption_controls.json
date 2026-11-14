@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"create:contraption_controls/block"},"facing=east":{"model":"create:contraption_controls/block","y":90},"facing=south":{"model":"create:contraption_controls/block","y":180},"facing=west":{"model":"create:contraption_controls/block","y":270}}}

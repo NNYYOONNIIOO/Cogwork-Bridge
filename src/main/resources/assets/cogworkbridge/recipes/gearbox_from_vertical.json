@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [{"item": "cogworkbridge:vertical_gearbox"}],
+  "result": {"item": "cogworkbridge:gearbox"}
+}

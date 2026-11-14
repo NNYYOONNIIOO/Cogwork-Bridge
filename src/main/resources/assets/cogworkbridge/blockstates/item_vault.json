@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "axis=x": { "model": "create:item_vault", "y": 90 },
+    "axis=z": { "model": "create:item_vault" }
+  }
+}

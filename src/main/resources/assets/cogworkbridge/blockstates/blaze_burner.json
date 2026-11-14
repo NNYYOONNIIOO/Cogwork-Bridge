@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "create:blaze_burner/block" },
+    "facing=east": { "model": "create:blaze_burner/block" },
+    "facing=south": { "model": "create:blaze_burner/block" },
+    "facing=west": { "model": "create:blaze_burner/block" }
+  }
+}

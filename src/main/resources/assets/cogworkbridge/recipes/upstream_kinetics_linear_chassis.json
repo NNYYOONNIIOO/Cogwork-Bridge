@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " P ",
+    "LLL",
+    " P "
+  ],
+  "key": {
+    "L": {
+      "type": "forge:ore_dict",
+      "ore": "logWood"
+    },
+    "P": {
+      "item": "cogworkbridge:andesite_alloy"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:linear_chassis",
+    "count": 3
+  }
+}

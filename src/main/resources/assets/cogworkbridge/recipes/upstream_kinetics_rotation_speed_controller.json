@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "C"
+  ],
+  "key": {
+    "B": {
+      "item": "cogworkbridge:precision_mechanism"
+    },
+    "C": {
+      "item": "cogworkbridge:brass_casing"
+    }
+  },
+  "result": {
+    "item": "cogworkbridge:rotation_speed_controller"
+  }
+}

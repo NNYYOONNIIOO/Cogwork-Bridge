@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": {"model": "create:linear_chassis", "x": 90, "y": 90},
+    "axis=y": {"model": "create:linear_chassis"},
+    "axis=z": {"model": "create:linear_chassis", "x": 90, "y": 180}
+  }
+}

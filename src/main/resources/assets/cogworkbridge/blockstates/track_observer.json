@@ -1,0 +1,1 @@
+{"variants":{"active=false,cross=false":{"model":"create:track_observer/block"},"active=false,cross=true":{"model":"create:track_observer/block"},"active=true,cross=false":{"model":"create:track_observer/block_powered"},"active=true,cross=true":{"model":"create:track_observer/block_powered"}}}
