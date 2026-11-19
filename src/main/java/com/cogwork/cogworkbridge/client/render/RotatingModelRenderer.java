@@ -2,6 +2,7 @@ package com.cogwork.cogworkbridge.client.render;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -24,6 +25,12 @@ public final class RotatingModelRenderer {
      */
     public static void renderRotated(World world, BlockPos pos, IBlockState state,
                                      EnumFacing.Axis axis, float angleDegrees) {
+        renderRotated(world, pos, null, state, axis, angleDegrees);
+    }
+
+    /** A dedicated submodel can share the same transform without changing its other users. */
+    public static void renderRotated(World world, BlockPos pos, IBakedModel model, IBlockState state,
+                                     EnumFacing.Axis axis, float angleDegrees) {
         GlStateManager.pushMatrix();
         GlStateManager.translate(0.5D, 0.5D, 0.5D);
         switch (axis) {
@@ -39,7 +46,7 @@ public final class RotatingModelRenderer {
                 break;
         }
         GlStateManager.translate(-0.5D, -0.5D, -0.5D);
-        FastStateRendering.getInstance().renderFast(state);
+        FastStateRendering.getInstance().renderRotating(model, state, world, pos, axis);
         GlStateManager.popMatrix();
     }
 

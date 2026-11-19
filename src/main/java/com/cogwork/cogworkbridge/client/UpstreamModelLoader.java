@@ -29,6 +29,7 @@ public final class UpstreamModelLoader implements ICustomModelLoader {
     @Override
     public void onResourceManagerReload(IResourceManager resourceManager) {
         resources = resourceManager;
+        com.cogwork.cogworkbridge.client.model.OcclusionGeometry.clear();
     }
 
     @Override
@@ -51,6 +52,10 @@ public final class UpstreamModelLoader implements ICustomModelLoader {
 
     @Override
     public IModel loadModel(ResourceLocation location) throws Exception {
+        return new com.cogwork.cogworkbridge.client.model.OcclusionModel(loadUpstreamModel(location));
+    }
+
+    private IModel loadUpstreamModel(ResourceLocation location) throws Exception {
         if (UpstreamTrackObjModel.accepts(location)) return UpstreamTrackObjModel.load(resources, location);
         if (UpstreamFlywheelObjModel.accepts(location)) return UpstreamFlywheelObjModel.load(resources, location);
         if (UpstreamPowerObjModel.accepts(location)) {

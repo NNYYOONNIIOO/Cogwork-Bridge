@@ -20,10 +20,31 @@ final class SchematicPreviewWorld extends World {
     private final Map<BlockPos, IBlockState> states = new LinkedHashMap<>();
     private final Map<BlockPos, TileEntity> tiles = new LinkedHashMap<>();
     private final Map<Long, Chunk> chunks = new HashMap<>();
-    SchematicPreviewWorld(World parent, SchematicData data, Mirror mirror, Rotation rotation) {
+    private SchematicPreviewWorld(World parent) {
         super(parent.getSaveHandler(), parent.getWorldInfo(), parent.provider, parent.profiler, true);
         this.parent = parent;
         this.chunkProvider = createChunkProvider();
+    }
+
+    SchematicPreviewWorld(World parent, BlockPos at, IBlockState state, TileEntity source) {
+        this(parent);
+        states.put(at.toImmutable(), state);
+        if (state.getBlock().hasTileEntity(state)) {
+            TileEntity tile = state.getBlock().createTileEntity(this, state);
+            if (tile != null) {
+                tiles.put(at.toImmutable(), tile);
+                tile.setWorld(this);
+                tile.setPos(at);
+                if (source != null) tile.readFromNBT(source.writeToNBT(new NBTTagCompound()));
+                tile.setWorld(this);
+                tile.setPos(at);
+                tile.updateContainingBlockInfo();
+            }
+        }
+    }
+
+    SchematicPreviewWorld(World parent, SchematicData data, Mirror mirror, Rotation rotation) {
+        this(parent);
         for (SchematicData.Entry entry : data.blocks) {
             try { states.put(SchematicData.transformed(entry.local, mirror, rotation), entry.transformedState(mirror, rotation)); }
             catch (RuntimeException ignored) { }

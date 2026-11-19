@@ -1,5 +1,6 @@
 package com.cogwork.cogworkbridge.client.render;
 
+import com.cogwork.cogworkbridge.client.EncasedCogModels;
 import com.cogwork.cogworkbridge.content.kinetics.encased.EncasedCogwheelBlock;
 import com.cogwork.cogworkbridge.content.kinetics.encased.EncasedCogwheelTileEntity;
 import com.cogwork.cogworkbridge.registry.AllBlocks;
@@ -30,7 +31,9 @@ public final class EncasedCogwheelRenderer extends TileEntitySpecialRenderer<Enc
                 : axis == EnumFacing.Axis.Z ? EnumFacing.SOUTH : EnumFacing.UP;
         IBlockState wheel = (cog.isLarge() ? AllBlocks.LARGE_COGWHEEL_SHAFTLESS : AllBlocks.COGWHEEL_SHAFTLESS)
                 .getDefaultState().withProperty(RenderPartBlock.FACING, orientation);
-        RotatingModelRenderer.renderRotated(tile.getWorld(), renderPos, wheel, axis, angle);
+        int openPorts = tile.modelPorts(axis);
+        RotatingModelRenderer.renderRotated(tile.getWorld(), renderPos,
+                cog.isLarge() ? null : EncasedCogModels.smallWheel(state, axis, openPorts), wheel, axis, angle);
         for (EnumFacing face : EnumFacing.VALUES) {
             if (face.getAxis() != axis || !tile.isOpen(face)) {
                 continue;

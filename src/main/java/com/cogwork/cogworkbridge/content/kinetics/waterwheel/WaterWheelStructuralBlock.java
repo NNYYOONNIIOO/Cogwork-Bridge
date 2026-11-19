@@ -6,6 +6,7 @@ import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -16,6 +17,7 @@ import java.util.Random;
 public final class WaterWheelStructuralBlock extends Block {
     public static final PropertyDirection FACING = PropertyDirection.create("facing");
     private static final ThreadLocal<RemovedPart> REMOVED_PART = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> DROP_CENTRE = ThreadLocal.withInitial(() -> true);
     private record RemovedPart(IBlockAccess world, BlockPos pos, IBlockState state) { }
     public WaterWheelStructuralBlock() { super(Material.WOOD); setHardness(2F); setDefaultState(getDefaultState().withProperty(FACING, EnumFacing.NORTH)); }
     @Override protected BlockStateContainer createBlockState() { return new BlockStateContainer(this, FACING); }
@@ -74,12 +76,23 @@ public final class WaterWheelStructuralBlock extends Block {
                 RemovedPart previous = REMOVED_PART.get();
                 REMOVED_PART.set(new RemovedPart(world, pos.toImmutable(), state));
                 try {
-                    world.destroyBlock(master, true);
+                    world.destroyBlock(master, DROP_CENTRE.get());
                 } finally {
                     if (previous == null) REMOVED_PART.remove(); else REMOVED_PART.set(previous);
                 }
             }
         }
         super.breakBlock(world, pos, state);
+    }
+
+    @Override public boolean removedByPlayer(IBlockState state, World world, BlockPos pos,
+                                             EntityPlayer player, boolean willHarvest) {
+        boolean previous = DROP_CENTRE.get();
+        DROP_CENTRE.set(!player.capabilities.isCreativeMode);
+        try {
+            return super.removedByPlayer(state, world, pos, player, willHarvest);
+        } finally {
+            if (previous) DROP_CENTRE.remove(); else DROP_CENTRE.set(false);
+        }
     }
 }

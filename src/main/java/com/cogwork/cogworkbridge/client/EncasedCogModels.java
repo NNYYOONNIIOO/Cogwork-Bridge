@@ -2,6 +2,7 @@ package com.cogwork.cogworkbridge.client;
 
 import com.cogwork.cogworkbridge.CogworkBridge;
 import com.cogwork.cogworkbridge.Reference;
+import com.cogwork.cogworkbridge.client.model.OcclusionGeometry;
 import com.cogwork.cogworkbridge.content.kinetics.encased.EncasedCogwheelBlock;
 import com.cogwork.cogworkbridge.registry.AllBlocks;
 import net.minecraft.block.Block;
@@ -23,12 +24,14 @@ import java.util.List;
 /** Selects a baked housing matching the two configured shaft ports. */
 @Mod.EventBusSubscriber(modid = Reference.MOD_ID, value = Side.CLIENT)
 public final class EncasedCogModels {
+    private static IBakedModel[][][] smallWheels = new IBakedModel[2][3][4];
 
     private EncasedCogModels() {
     }
 
     @SubscribeEvent
     public static void onModelBake(ModelBakeEvent event) {
+        smallWheels = new IBakedModel[2][3][4];
         Block[] blocks = {AllBlocks.COGWHEEL_ENCASED_ANDESITE, AllBlocks.COGWHEEL_ENCASED_BRASS,
                 AllBlocks.LARGE_COGWHEEL_ENCASED_ANDESITE, AllBlocks.LARGE_COGWHEEL_ENCASED_BRASS};
         for (int family = 0; family < blocks.length; family++) {
@@ -49,11 +52,26 @@ public final class EncasedCogModels {
                 }
                 if (complete) {
                     event.getModelRegistry().putObject(baseKey, new PortModel(base, variants));
+                    if (family < 2) {
+                        IBakedModel wheel = event.getModelRegistry().getObject(new ModelResourceLocation(
+                                AllBlocks.COGWHEEL_SHAFTLESS.getRegistryName(), "facing=" + facing));
+                        if (wheel != null) {
+                            for (int mask = 0; mask < variants.length; mask++) {
+                                smallWheels[family][axis.ordinal()][mask] = OcclusionGeometry.encasedCog(wheel, axis, variants[mask]);
+                            }
+                        }
+                    }
                 } else {
                     CogworkBridge.LOGGER.error("Missing encased cog model for {}", baseKey);
                 }
             }
         }
+    }
+
+    @Nullable
+    public static IBakedModel smallWheel(IBlockState state, EnumFacing.Axis axis, int openPorts) {
+        int family = state.getBlock() == AllBlocks.COGWHEEL_ENCASED_ANDESITE ? 0 : 1;
+        return smallWheels[family][axis.ordinal()][openPorts];
     }
 
     private static final class PortModel extends BakedModelWrapper<IBakedModel> {

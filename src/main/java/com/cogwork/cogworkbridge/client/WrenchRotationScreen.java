@@ -19,8 +19,8 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.world.World;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
@@ -33,6 +33,8 @@ import org.lwjgl.opengl.GL14;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Radial selector for the target block's persistent orientation properties. */
 public final class WrenchRotationScreen extends GuiScreen {
@@ -47,7 +49,7 @@ public final class WrenchRotationScreen extends GuiScreen {
     private final int openKey;
     private List<IBlockState> choices;
     private int propertyIndex, selected;
-    private KineticTileEntity previewTile;
+    private final Map<IBlockState, SchematicPreviewWorld> previewWorlds = new HashMap<>();
     private boolean finished;
 
     public WrenchRotationScreen(BlockPos pos, EnumFacing face, IBlockState state, List<IProperty<?>> properties,
@@ -61,17 +63,7 @@ public final class WrenchRotationScreen extends GuiScreen {
     }
     @Override public void initGui() {
         selectProperty();
-        if (previewTile == null && mc.world != null) {
-            TileEntity originalTile = mc.world.getTileEntity(pos);
-            if (originalTile instanceof KineticTileEntity) {
-                try {
-                    TileEntity copy = TileEntity.create(mc.world, originalTile.writeToNBT(new NBTTagCompound()));
-                    if (copy instanceof KineticTileEntity kinetic) previewTile = kinetic;
-                } catch (RuntimeException ignored) {
-                    // The ordinary baked model remains available if a tile cannot be copied.
-                }
-            }
-        }
+        previewWorlds.clear();
     }
     @Override public boolean doesGuiPauseGame() { return false; }
 
@@ -204,15 +196,20 @@ public final class WrenchRotationScreen extends GuiScreen {
                 GlStateManager.rotate(pitch, 1F, 0F, 0F);
                 GlStateManager.rotate(yaw + 180F, 0F, 1F, 0F);
                 GlStateManager.translate(-.5, -.5, -.5);
-                TileEntitySpecialRenderer<KineticTileEntity> renderer = previewTile == null ? null
+                SchematicPreviewWorld previewWorld = previewWorlds.computeIfAbsent(state,
+                        candidate -> new SchematicPreviewWorld(mc.world, pos, candidate, mc.world.getTileEntity(pos)));
+                TileEntity previewTile = previewWorld.getTileEntity(pos);
+                TileEntitySpecialRenderer<TileEntity> renderer = previewTile == null ? null
                         : TileEntityRendererDispatcher.instance.getRenderer(previewTile);
                 if (state.getRenderType() == EnumBlockRenderType.MODEL || renderer == null) {
-                    IBlockState preview = state.getBlock().getExtendedState(state, mc.world, pos);
-                    FastStateRendering.getInstance().renderFast(preview);
+                    IBlockState actual = state.getActualState(previewWorld, pos);
+                    IBlockState preview = actual.getBlock().getExtendedState(actual, previewWorld, pos);
+                    FastStateRendering.getInstance().renderUncached(preview);
                 }
                 if (renderer != null) {
-                    previewTile.setContraptionRenderContext(state, null);
-                    renderer.render(previewTile, 0D, 0D, 0D, partialTicks, -1, 1F);
+                    if (previewTile instanceof KineticTileEntity kinetic) kinetic.setContraptionRenderContext(state, null);
+                    FastStateRendering.getInstance().renderIsolated(
+                            () -> renderPreviewTile(previewWorld, previewTile, renderer, partialTicks));
                 }
             } catch (RuntimeException ignoredModel) {
                 // A third-party model can require world-only data; the menu remains usable.
@@ -221,6 +218,31 @@ public final class WrenchRotationScreen extends GuiScreen {
             }
         }
         GlStateManager.color(1, 1, 1, 1);
+    }
+
+    private static void renderPreviewTile(World previewWorld, TileEntity tile,
+                                          TileEntitySpecialRenderer<TileEntity> renderer, float partialTicks) {
+        TileEntityRendererDispatcher dispatcher = TileEntityRendererDispatcher.instance;
+        World previous = dispatcher.world;
+        dispatcher.setWorld(previewWorld);
+        try {
+            if (tile.hasFastRenderer()) {
+                BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+                buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+                try {
+                    renderer.renderTileEntityFast(tile, 0D, 0D, 0D, partialTicks, -1, 1F, buffer);
+                } catch (RuntimeException failure) {
+                    buffer.finishDrawing();
+                    buffer.reset();
+                    throw failure;
+                } finally {
+                    buffer.setTranslation(0D, 0D, 0D);
+                }
+                Tessellator.getInstance().draw();
+            } else renderer.render(tile, 0D, 0D, 0D, partialTicks, -1, 1F);
+        } finally {
+            dispatcher.setWorld(previous);
+        }
     }
 
     private void drawPropertyIcon(int cx, int y, boolean up) {
