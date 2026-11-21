@@ -29,6 +29,7 @@ Some recipes and interactions between machines are still incomplete.
 | Required mod | **Farmer's Future Delight 1.6.0+**, mod ID: `farmers_future_delight` |
 | Required upstream JAR | **Create for Minecraft 1.21.1**, installed separately in `mods/` |
 | Optional mod | **JEI**, for supported machine recipes and item information |
+| Optional search integration | **Just Enough Characters**, for pinyin search in the Cogwork Bridge creative tab, using JEC's spelling and fuzzy matching settings |
 | Optional tutorial runtime | **Ponder Legacy 1.7.1+**, installed as a separate JAR to enable Ponder scenes |
 
 Use Cleanroom to launch the game. Standard Forge 1.12.2 cannot replace the required loader.
@@ -89,6 +90,7 @@ See the [third-party notices](src/main/resources/META-INF/licenses/THIRD-PARTY-N
 | 必需模组 | **未世之乐（Farmer's Future Delight）1.6.0+**，模组 ID：`farmers_future_delight` |
 | 必需原版文件 | 适用于 **Minecraft 1.21.1 的 Create 原版 JAR**，单独放入 `mods/` |
 | 可选模组 | **JEI**，用于查看已接入的机器处理配方和物品信息 |
+| 可选搜索联动 | **Just Enough Characters（通用拼音搜索）**，使齿轮桥接器创造标签栏支持拼音搜索，沿用 JEC 的拼法与模糊音设置 |
 | 可选思索运行库 | **Ponder Legacy 1.7.1+**，单独安装 JAR 后启用思索场景 |
 
 请使用 Cleanroom 启动游戏；普通 Forge 1.12.2 不能替代本项目要求的加载器。

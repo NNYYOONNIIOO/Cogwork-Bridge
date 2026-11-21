@@ -1,6 +1,7 @@
 package com.cogwork.cogworkbridge.client;
 
 import com.cogwork.cogworkbridge.Reference;
+import com.cogwork.cogworkbridge.compat.jecharacters.CreativeSearchCompat;
 import com.cogwork.cogworkbridge.registry.ModCreativeTab;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
@@ -100,7 +101,7 @@ public final class CreativeTabSearchEvents {
         } else {
             String previous = field.getText();
             field.textboxKeyTyped(character, key);
-            if (!previous.equals(field.getText())) gui.updateCreativeSearch();
+            if (!previous.equals(field.getText()) && !CreativeSearchCompat.updateSearch(gui)) gui.updateCreativeSearch();
         }
         event.setCanceled(true);
     }

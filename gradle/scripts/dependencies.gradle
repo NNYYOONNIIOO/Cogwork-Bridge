@@ -36,6 +36,11 @@ dependencies {
     modCompileOnly 'curse.maven:jei-238222:9334752'
     modRuntimeOnly 'curse.maven:jei-238222:9334752'
 
+    // Optional pinyin search integration. Use JEC's matcher and configuration;
+    // the dependency remains a separate mod and is never included in our jar.
+    modCompileOnly 'curse.maven:just-enough-characters-250702:9163752'
+    modRuntimeOnly 'curse.maven:just-enough-characters-250702:9163752'
+
     // Unimined equivalent of fg.deobf: remap the mod for both compilation and
     // development runtime, without embedding its jar in the Cogwork Bridge jar.
     modCompileOnly 'curse.maven:farmers-future-delight-1637097:9594118'
