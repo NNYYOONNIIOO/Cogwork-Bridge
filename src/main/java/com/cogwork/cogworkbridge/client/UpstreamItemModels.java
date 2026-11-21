@@ -53,6 +53,9 @@ public final class UpstreamItemModels {
         for (Item item : AllItems.COMPAT_CRUSHED_ORES)
             ModelLoader.setCustomModelResourceLocation(item, 0,
                     new ModelResourceLocation(new ResourceLocation("create", item.getRegistryName().getPath()), "inventory"));
+        for (Item item : com.cogwork.cogworkbridge.content.processing.CompatCrushedOres.configuredItems())
+            ModelLoader.setCustomModelResourceLocation(item, 0,
+                    new ModelResourceLocation(new ResourceLocation(Reference.MOD_ID, "configured_crushed_ore"), "inventory"));
         for (String fluidName : new String[]{"honey", "chocolate"}) {
             net.minecraftforge.fluids.Fluid fluid = net.minecraftforge.fluids.FluidRegistry.getFluid(fluidName);
             Block block = fluid == null ? null : fluid.getBlock();
@@ -249,6 +252,12 @@ public final class UpstreamItemModels {
                 new ModelResourceLocation(new ResourceLocation(Reference.MOD_ID, "creative_blaze_cake"), "inventory"));
         ModelLoader.setCustomModelResourceLocation(AllItems.CRAFTER_SLOT_COVER, 0,
                 new ModelResourceLocation(new ResourceLocation("create", "crafter_slot_cover"), "inventory"));
+    }
+
+    @SubscribeEvent
+    public static void colors(net.minecraftforge.client.event.ColorHandlerEvent.Item event) {
+        for (var item : com.cogwork.cogworkbridge.content.processing.CompatCrushedOres.configuredItems())
+            event.getItemColors().registerItemColorHandler((stack, tint) -> tint == 0 ? item.color() : 0xffffff, item);
     }
 
     private static void registerLocal(Block block) {

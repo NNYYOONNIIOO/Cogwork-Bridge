@@ -12,6 +12,7 @@ import com.cogwork.cogworkbridge.content.equipment.SandPaperItem;
 import com.cogwork.cogworkbridge.content.equipment.GogglesItem;
 import com.cogwork.cogworkbridge.content.redstone.LinkedControllerItem;
 import com.cogwork.cogworkbridge.content.equipment.SymmetryWandItem;
+import com.cogwork.cogworkbridge.content.processing.CompatCrushedOres;
 import net.minecraft.item.Item;
 import net.minecraft.entity.item.EntityMinecart;
 import net.minecraftforge.event.RegistryEvent;
@@ -192,6 +193,7 @@ public final class AllItems {
         event.getRegistry().register(BLAZE_CAKE_BASE);
         event.getRegistry().register(CREATIVE_BLAZE_CAKE);
         event.getRegistry().register(CRAFTER_SLOT_COVER);
+        CompatCrushedOres.registerConfiguredItems(event.getRegistry());
         OreDictionary.registerOre("plateGold", GOLDEN_SHEET);
         OreDictionary.registerOre("plateIron", IRON_SHEET);
         OreDictionary.registerOre("plateCopper", COPPER_SHEET);

@@ -8,6 +8,10 @@ CraftTweaker 是可选联动：把 CraftTweaker JAR 放在实例的 `mods`，脚
 
 使用普通配方加载器，**不要**使用 `#loader preinit`。修改后重启游戏；本联动不实现 `/ct reload` 的回滚、JEI 动态重建或服务端脚本自动同步。服务器和客户端应安装相同的模组及脚本。错误和显式调用 `dump()` 的输出写入 `crafttweaker.log`。
 
+## 新增粉碎粗矿物品
+
+可以先在 `config/cogworkbridge/crushed_ores.cfg` 声明材料，由配置在物品注册阶段生成 `cogworkbridge:crushed_raw_<材料>` 及对应矿辞，再使用本页的普通 CRT 配方接口调整。支持矿辞自动粉碎、水洗、熔炉和 FFD 高炉配方，也可关闭自动配方。完整配置与可复制脚本见 [可配置粉碎粗矿](configurable-crushed-ores.md)。CRT 普通配方脚本本身不注册新物品。
+
 ## 配方类型
 
 | 类型字符串 | 机器 / 加工 |
