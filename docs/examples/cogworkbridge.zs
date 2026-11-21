@@ -33,6 +33,9 @@ Assembly.add("example/assembly", <minecraft:iron_ingot>, <cogworkbridge:incomple
 ], 2, [<minecraft:diamond>, <minecraft:flint>], [9.0, 1.0]);
 
 // Other removal methods (uncomment as needed):
+// Ore-dictionary outputs select one concrete member once; JEI and processing use that same member.
+// Recipes.remove("mixing", <ore:ingotBrass>);
+// Recipes.addBasin("mixing", "alloys/brass", [<ore:ingotCopper>, <ore:ingotZinc>], [], <ore:ingotBrass> * 2, null, 1);
 // Recipes.removeInput("cutting", <minecraft:log>);
 // Recipes.removeWithHeld("deploying", <minecraft:iron_ingot>, <minecraft:redstone>);
 // Recipes.removeFluidInput("mixing", <liquid:water>);

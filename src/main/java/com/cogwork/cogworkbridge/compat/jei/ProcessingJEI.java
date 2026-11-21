@@ -10,6 +10,7 @@ import com.cogwork.cogworkbridge.content.processing.press.PressingRecipes;
 import com.cogwork.cogworkbridge.content.processing.UpstreamProcessingRecipes;
 import com.cogwork.cogworkbridge.content.processing.RecipeControl;
 import com.cogwork.cogworkbridge.client.render.FastStateRendering;
+import com.cogwork.cogworkbridge.client.render.GuiLightingState;
 import com.cogwork.cogworkbridge.client.render.FluidTankRenderer;
 import com.cogwork.cogworkbridge.client.BlazeBurnerModels;
 import com.cogwork.cogworkbridge.kinetic.KineticBlock;
@@ -545,28 +546,24 @@ public final class ProcessingJEI {
                 mezz.jei.api.gui.IGuiIngredient<ItemStack> ingredient = layout == null ? null : layout.getItemStacks().getGuiIngredients().get(0);
                 ItemStack shown = ingredient == null ? null : ingredient.getDisplayedIngredient();
                 if (shown != null && !shown.isEmpty()) {
-                    if (shown.getItem() instanceof net.minecraft.item.ItemBlock) {
-                        net.minecraft.block.Block block = net.minecraft.block.Block.getBlockFromItem(shown.getItem());
-                        boolean lighting = GL11.glIsEnabled(GL11.GL_LIGHTING), depth = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
-                        boolean rescale = GL11.glIsEnabled(32826);
-                        float oldX = OpenGlHelper.lastBrightnessX, oldY = OpenGlHelper.lastBrightnessY;
-                        GlStateManager.pushMatrix();
-                        try {
-                            GlStateManager.enableDepth(); GlStateManager.enableRescaleNormal();
-                            RenderHelper.enableGUIStandardItemLighting();
-                            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
-                            GlStateManager.translate(74, 51, 100); GlStateManager.scale(20F, -20F, 20F);
-                            GlStateManager.rotate(15.5F, 1, 0, 0); GlStateManager.rotate(-22.5F, 0, 1, 0);
-                            GlStateManager.translate(-.5D, -.5D, -.5D);
-                            FastStateRendering.getInstance().renderFast(block.getStateFromMeta(
-                                    shown.getMetadata() == OreDictionary.WILDCARD_VALUE ? 0 : shown.getMetadata()));
-                        } finally {
-                            GlStateManager.popMatrix();
-                            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, oldX, oldY);
-                            RenderHelper.disableStandardItemLighting();
-                            if (lighting) RenderHelper.enableStandardItemLighting();
-                            if (depth) GlStateManager.enableDepth(); else GlStateManager.disableDepth();
-                            if (rescale) GlStateManager.enableRescaleNormal(); else GlStateManager.disableRescaleNormal();
+                    if (shown.getItem() instanceof net.minecraft.item.ItemBlock item) {
+                        net.minecraft.block.Block block = item.getBlock();
+                        try (GuiLightingState ignored = new GuiLightingState()) {
+                            GlStateManager.pushMatrix();
+                            try {
+                                GlStateManager.color(1F, 1F, 1F, 1F);
+                                GlStateManager.enableDepth(); GlStateManager.enableRescaleNormal(); GlStateManager.disableCull();
+                                RenderHelper.enableGUIStandardItemLighting();
+                                OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240F, 240F);
+                                GlStateManager.translate(74, 51, 100); GlStateManager.scale(20F, -20F, 20F);
+                                GlStateManager.rotate(15.5F, 1, 0, 0); GlStateManager.rotate(-22.5F, 0, 1, 0);
+                                GlStateManager.translate(-.5D, -.5D, -.5D);
+                                FastStateRendering.getInstance().renderGuiBlock(block.getStateFromMeta(
+                                        shown.getMetadata() == OreDictionary.WILDCARD_VALUE ? 0 : item.getMetadata(shown.getMetadata())));
+                            } finally {
+                                GlStateManager.popMatrix();
+                                GlStateManager.color(1F, 1F, 1F, 1F);
+                            }
                         }
                     }
                 }

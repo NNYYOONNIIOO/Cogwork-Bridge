@@ -38,6 +38,23 @@ import mods.cogworkbridge.AssemblyStep;
 
 无命名空间的配方名自动使用 `cogworkbridge:`。同类型同名新增会替换旧配方。脚本按执行顺序生效：通常先删除，再添加替代配方。新增配方优先于导入配方和内置回退。
 
+## 金属锭与矿辞产物
+
+导入的机器配方会把未附带 NBT 的金属锭原料扩展为其 `ingot…` 矿辞候选，原料与手持材料槽均适用，JEI 同步显示这些候选。工作台配方使用 Forge 矿辞原料。CRT 输入可直接写 `<ore:ingotBrass>` 等；显式指定的物品/NBT/条件仍按脚本匹配。
+
+所有加工配方的物品产物参数，以及 `Assembly.add` 的最终产物数组，现在也可写矿辞，并支持 `* 数量`：
+
+```zenscript
+// 用矿辞产物替代原黄铜搅拌配方，保留铜 + 锌、加热、产出 2 个锭的规则。
+Recipes.remove("mixing", <ore:ingotBrass>);
+Recipes.addBasin("mixing", "alloys/brass", [<ore:ingotCopper>, <ore:ingotZinc>],
+    [], <ore:ingotBrass> * 2, null, 1);
+```
+
+矿辞产物在脚本加载时按候选顺序选取第一个满足条件、具有具体 metadata 且堆叠数量合法的物品，之后机器与 JEI 都使用同一个确定产物。它不是随机产物，也不会同时产出多个候选；若要固定为某模组的锭，填写该物品 ID。矿辞为空或没有合法成员时报告脚本错误。已有物品 ID 产物继续支持 NBT。
+
+输入和输出的数量限制不变；物品应用的产物仍须为一个方块，流水线的中间物品仍须指定具体物品。普通工作台和熔炉的产物仍使用 CRT 自带 API。
+
 ### 单输入配方
 
 ```zenscript

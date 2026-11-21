@@ -35,11 +35,25 @@ public final class CTRecipes {
     static String type(String type) {
         require(type != null && RecipeControl.TYPES.contains(type), "Unknown recipe type: " + type); return type;
     }
-    static ItemStack output(IItemStack stack) {
+    static ItemStack output(IIngredient stack) {
         require(stack != null, "Output must not be null");
-        ItemStack result = CraftTweakerMC.getItemStack(stack).copy();
-        require(!result.isEmpty() && result.getCount() <= result.getMaxStackSize(), "Output must fit one legal item stack");
-        return result;
+        require(stack.getAmount() > 0, "Output amount must be positive");
+        require(!stack.hasTransformers() && !stack.hasNewTransformers(), "Output transformers are unsupported");
+        if (stack instanceof IItemStack item) {
+            ItemStack result = CraftTweakerMC.getItemStack(item).copy();
+            require(!result.isEmpty() && result.getMetadata() != net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE
+                    && result.getCount() <= result.getMaxStackSize(), "Output must fit one concrete legal item stack");
+            return result;
+        }
+        List<IItemStack> examples = stack.getItems();
+        if (examples != null) for (IItemStack example : examples) {
+            ItemStack result = CraftTweakerMC.getItemStack(example).copy();
+            if (result.isEmpty() || result.getMetadata() == net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE
+                    || stack.getAmount() > result.getMaxStackSize()) continue;
+            result.setCount(stack.getAmount());
+            if (stack.matches(CraftTweakerMC.getIItemStack(result))) return result;
+        }
+        throw new IllegalArgumentException("Cogwork Bridge: output ingredient has no concrete matching item with a legal stack size");
     }
     static FluidStack fluid(ILiquidStack stack) {
         require(stack != null, "Fluid must not be null");
@@ -71,7 +85,7 @@ public final class CTRecipes {
             return ingredient.matches(CraftTweakerMC.getIItemStack(copy));
         };
     }
-    static List<UpstreamProcessingRecipes.Output> outputs(IItemStack[] outputs, double[] chances) {
+    static List<UpstreamProcessingRecipes.Output> outputs(IIngredient[] outputs, double[] chances) {
         require(outputs != null && outputs.length > 0 && outputs.length <= 9, "Supply 1..9 outputs");
         require(chances != null && chances.length == outputs.length, "One chance is required per output");
         List<UpstreamProcessingRecipes.Output> result = new ArrayList<>();
@@ -81,10 +95,10 @@ public final class CTRecipes {
         }
         return result;
     }
-    @ZenMethod public static void add(String type, String name, IItemStack output, IIngredient input) {
-        addRecipe(type, name, input, new IItemStack[]{output}, new double[]{1}, 100);
+    @ZenMethod public static void add(String type, String name, IIngredient output, IIngredient input) {
+        addRecipe(type, name, input, new IIngredient[]{output}, new double[]{1}, 100);
     }
-    @ZenMethod public static void addRecipe(String type, String name, IIngredient input, IItemStack[] outputs, double[] chances, int duration) {
+    @ZenMethod public static void addRecipe(String type, String name, IIngredient input, IIngredient[] outputs, double[] chances, int duration) {
         type(type); require(SINGLE.contains(type), "Use the specialized method for " + type);
         require(duration > 0, "Duration must be positive");
         List<ItemStack> choices = ingredient(input, true); var result = outputs(outputs, chances);
@@ -93,10 +107,10 @@ public final class CTRecipes {
         var recipe = new UpstreamProcessingRecipes.Recipe(type, choices, List.of(), result, duration, false, null, RecipeControl.id(name), null);
         change("add " + type + " " + recipe.id(), () -> UpstreamProcessingRecipes.add(recipe));
     }
-    @ZenMethod public static void addDeploying(String name, IItemStack output, IIngredient input, IIngredient held, boolean keepHeld) {
+    @ZenMethod public static void addDeploying(String name, IIngredient output, IIngredient input, IIngredient held, boolean keepHeld) {
         addApplication("deploying", name, output, input, held, keepHeld);
     }
-    @ZenMethod public static void addApplication(String type, String name, IItemStack output, IIngredient input, IIngredient held, boolean keepHeld) {
+    @ZenMethod public static void addApplication(String type, String name, IIngredient output, IIngredient input, IIngredient held, boolean keepHeld) {
         require(type.equals("deploying") || type.equals("item_application"), "Expected deploying or item_application");
         var recipe = new UpstreamProcessingRecipes.Recipe(type, ingredient(input, true), ingredient(held, true),
                 List.of(new UpstreamProcessingRecipes.Output(output(output), 1)), 100, keepHeld, null, RecipeControl.id(name), null);
@@ -104,20 +118,20 @@ public final class CTRecipes {
                 && recipe.outputs().get(0).stack().getCount() == 1, "World item application must output one block");
         change("add " + type + " " + recipe.id(), () -> UpstreamProcessingRecipes.add(recipe));
     }
-    @ZenMethod public static void addFilling(String name, IItemStack output, IIngredient input, ILiquidStack fluid) {
+    @ZenMethod public static void addFilling(String name, IIngredient output, IIngredient input, ILiquidStack fluid) {
         var recipe = new UpstreamProcessingRecipes.Recipe("filling", ingredient(input, true), List.of(),
                 List.of(new UpstreamProcessingRecipes.Output(output(output), 1)), 100, false, fluid(fluid), RecipeControl.id(name), null);
         require(recipe.fluid().amount <= 1000, "Spout capacity is 1000 mB");
         change("add filling " + recipe.id(), () -> UpstreamProcessingRecipes.add(recipe));
     }
-    @ZenMethod public static void addEmptying(String name, IItemStack container, ILiquidStack fluid, IIngredient input) {
+    @ZenMethod public static void addEmptying(String name, IIngredient container, ILiquidStack fluid, IIngredient input) {
         var recipe = new UpstreamProcessingRecipes.Recipe("emptying", ingredient(input, true), List.of(),
                 List.of(new UpstreamProcessingRecipes.Output(output(container), 1)), 100, false, null, RecipeControl.id(name), fluid(fluid));
         require(recipe.fluidOutput().amount <= 1500, "Drain capacity is 1500 mB");
         change("add emptying " + recipe.id(), () -> UpstreamProcessingRecipes.add(recipe));
     }
     @ZenMethod public static void addBasin(String type, String name, IIngredient[] inputs, ILiquidStack[] fluids,
-                                          IItemStack output, ILiquidStack fluidOutput, int heat) {
+                                          IIngredient output, ILiquidStack fluidOutput, int heat) {
         require(type.equals("mixing") || type.equals("compacting"), "Expected mixing or compacting");
         require(inputs != null && fluids != null && heat >= 0 && heat <= 2, "Supply input/fluid arrays and heat 0, 1 or 2");
         List<List<ItemStack>> groups = new ArrayList<>();
@@ -140,7 +154,7 @@ public final class CTRecipes {
         require(recipe.fluidOutput() == null || recipe.fluidOutput().amount <= 1000, "Basin fluid output must fit a 1000 mB tank");
         change("add " + type + " " + recipe.id(), () -> UpstreamProcessingRecipes.add(type, recipe));
     }
-    @ZenMethod public static void addMechanical(String name, IItemStack output, IIngredient[][] pattern, boolean mirrored) {
+    @ZenMethod public static void addMechanical(String name, IIngredient output, IIngredient[][] pattern, boolean mirrored) {
         require(pattern != null && pattern.length > 0 && pattern.length <= 32 && pattern[0] != null, "Pattern height must be 1..32");
         int width = pattern[0].length; require(width > 0 && width <= 32, "Pattern width must be 1..32");
         List<List<ItemStack>> slots = new ArrayList<>(); boolean nonempty = false;

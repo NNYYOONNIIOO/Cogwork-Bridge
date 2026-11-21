@@ -29,9 +29,12 @@ import java.util.jar.JarFile;
 public final class UpstreamProcessingRecipes {
     public record Output(ItemStack stack, float chance) { }
     public record MixingRecipe(String id, List<List<ItemStack>> items, List<net.minecraftforge.fluids.FluidStack> fluids,
-                               ItemStack itemOutput, net.minecraftforge.fluids.FluidStack fluidOutput, int heat) { }
+                               ItemStack itemOutput, net.minecraftforge.fluids.FluidStack fluidOutput, int heat) {
+        public MixingRecipe { items = items.stream().map(MetalIngotIngredients::expand).toList(); }
+    }
     public record MechanicalRecipe(String id, int width, int height, List<List<ItemStack>> ingredients,
                                    ItemStack result, boolean mirrored) {
+        public MechanicalRecipe { ingredients = ingredients.stream().map(MetalIngotIngredients::expand).toList(); }
         public boolean matches(net.minecraft.inventory.InventoryCrafting inventory) {
             for (int y = 0; y <= inventory.getHeight() - height; y++)
                 for (int x = 0; x <= inventory.getWidth() - width; x++)
@@ -56,6 +59,10 @@ public final class UpstreamProcessingRecipes {
     public record Recipe(String type, List<ItemStack> inputs, List<ItemStack> heldItems, List<Output> outputs,
                          int duration, boolean keepHeld, net.minecraftforge.fluids.FluidStack fluid,
                          String id, net.minecraftforge.fluids.FluidStack fluidOutput) {
+        public Recipe {
+            inputs = MetalIngotIngredients.expand(inputs);
+            heldItems = MetalIngotIngredients.expand(heldItems);
+        }
         public Recipe(String type, List<ItemStack> inputs, List<ItemStack> heldItems, List<Output> outputs,
                       int duration, boolean keepHeld, net.minecraftforge.fluids.FluidStack fluid) {
             this(type, inputs, heldItems, outputs, duration, keepHeld, fluid, "", null);

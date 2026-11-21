@@ -80,6 +80,27 @@ public final class FastStateRendering implements ISelectiveResourceReloadListene
         draw(geometry(state), 0);
     }
 
+    /** Standalone GUI blocks need their block-colour handler, independently of kinetic part tints. */
+    public void renderGuiBlock(IBlockState state) {
+        minecraft.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(7, DefaultVertexFormats.ITEM);
+        IBakedModel model = model(state);
+        for (int bucket = 0; bucket < 7; bucket++) {
+            for (BakedQuad quad : model.getQuads(state, bucket == 6 ? null : EnumFacing.VALUES[bucket], 0L)) {
+                buffer.addVertexData(quad.getVertexData());
+                if (quad.hasTintIndex()) {
+                    int rgb = minecraft.getBlockColors().colorMultiplier(state, null, null, quad.getTintIndex());
+                    float red = (rgb >> 16 & 255) / 255F, green = (rgb >> 8 & 255) / 255F, blue = (rgb & 255) / 255F;
+                    for (int vertex = 1; vertex <= 4; vertex++) buffer.putColorMultiplier(red, green, blue, vertex);
+                }
+                Vec3i normal = quad.getFace() == null ? new Vec3i(0, 1, 0) : quad.getFace().getDirectionVec();
+                buffer.putNormal(normal.getX(), normal.getY(), normal.getZ());
+            }
+        }
+        tessellator.draw();
+    }
+
     public void renderFast(IBlockState state, World world, BlockPos pos, EnumFacing.Axis axis) {
         Geometry geometry = geometry(state);
         draw(geometry, hiddenSides(geometry, world, pos, axis));

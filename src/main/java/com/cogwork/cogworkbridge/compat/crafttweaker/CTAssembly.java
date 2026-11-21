@@ -15,7 +15,7 @@ import java.util.*;
 public final class CTAssembly {
     private CTAssembly() { }
     @ZenMethod public static void add(String name, IIngredient input, IItemStack transitional,
-                                      CTAssemblyStep[] steps, int loops, IItemStack[] outputs, double[] weights) {
+                                      CTAssemblyStep[] steps, int loops, IIngredient[] outputs, double[] weights) {
         CTRecipes.require(steps != null && steps.length > 0 && steps.length <= 6 && loops > 0 && loops <= 64,
                 "Assembly requires 1..6 steps and 1..64 loops");
         CTRecipes.require(outputs != null && outputs.length > 0 && outputs.length <= 9 && weights != null && weights.length == outputs.length,
