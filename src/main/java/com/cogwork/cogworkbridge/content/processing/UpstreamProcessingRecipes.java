@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import xy177.farmersfuturedelight.common.registry.FFDItems;
 
 /** Reads recipes from the same user-supplied Create jar that provides the models. */
 public final class UpstreamProcessingRecipes {
@@ -469,7 +470,16 @@ public final class UpstreamProcessingRecipes {
         String[] tallFlowers = {"sunflower", "lilac", "tall_grass", "large_fern", "rose_bush", "peony"};
         for (int i = 0; i < tallFlowers.length; i++) if (id.equals("minecraft:" + tallFlowers[i])) return new ItemStack(Blocks.DOUBLE_PLANT, 1, i);
         String[] dyes = {"black", "red", "green", "brown", "blue", "purple", "cyan", "light_gray", "gray", "pink", "lime", "yellow", "light_blue", "magenta", "orange", "white"};
-        for (int i = 0; i < dyes.length; i++) if (id.equals("minecraft:" + dyes[i] + "_dye")) return new ItemStack(Items.DYE, 1, i);
+        for (int i = 0; i < dyes.length; i++) if (id.equals("minecraft:" + dyes[i] + "_dye")) {
+            // These dyes are separate from ink sacs, cocoa beans, lapis and bone meal in modern recipes.
+            return switch (i) {
+                case 0 -> new ItemStack(FFDItems.BLACK_DYE);
+                case 3 -> new ItemStack(FFDItems.BROWN_DYE);
+                case 4 -> new ItemStack(FFDItems.BLUE_DYE);
+                case 15 -> new ItemStack(FFDItems.WHITE_DYE);
+                default -> new ItemStack(Items.DYE, 1, i);
+            };
+        }
         if (id.equals("minecraft:ink_sac")) return new ItemStack(Items.DYE, 1, 0);
         if (id.equals("minecraft:cocoa_beans")) return new ItemStack(Items.DYE, 1, 3);
         if (id.equals("minecraft:lapis_lazuli")) return new ItemStack(Items.DYE, 1, 4);
