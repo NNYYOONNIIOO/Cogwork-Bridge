@@ -1,6 +1,6 @@
 package com.cogwork.cogworkbridge.core;
 
-import net.minecraft.launchwrapper.Launch;
+import net.minecraftforge.fml.relauncher.FMLInjectionData;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,10 +31,12 @@ public final class CogworkBridgeCore implements IFMLLoadingPlugin {
     private static volatile boolean isolationAttempted;
 
     public CogworkBridgeCore() {
-        gameDirectory = Launch.minecraftHome;
         try {
+            // FML sets this before discovering coremods on both sides.
+            // Launch.minecraftHome is not populated by the dedicated server.
+            gameDirectory = (File) FMLInjectionData.data()[6];
             if (gameDirectory == null) {
-                throw new IllegalStateException("Launch.minecraftHome is unavailable during early startup");
+                throw new IllegalStateException("FML game directory is unavailable during early startup");
             }
             targets = TargetJarLocator.scan(gameDirectory, null);
             boolean discoveryAlreadyStarted = false;
