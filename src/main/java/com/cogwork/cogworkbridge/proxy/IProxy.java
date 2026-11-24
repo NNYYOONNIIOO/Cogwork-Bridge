@@ -9,8 +9,11 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public interface IProxy {
+    IMessage handleClientMessage(IMessage message, MessageContext context);
     void updateLecternControl(com.cogwork.cogworkbridge.content.redstone.LecternControllerTileEntity tile);
     void updateWhistleAudio(com.cogwork.cogworkbridge.content.fluids.whistle.SteamWhistleTileEntity tile);
     void spawnFanAirFlow(EncasedFanTileEntity fan, EnumFacing facing, boolean pushing);

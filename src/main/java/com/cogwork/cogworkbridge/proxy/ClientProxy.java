@@ -2,6 +2,7 @@ package com.cogwork.cogworkbridge.proxy;
 
 import com.cogwork.cogworkbridge.CogworkBridge;
 import com.cogwork.cogworkbridge.client.ClientRenderers;
+import com.cogwork.cogworkbridge.client.ClientPacketHandlers;
 import com.cogwork.cogworkbridge.client.render.FastStateRendering;
 import com.cogwork.cogworkbridge.client.TargetResourceContainer;
 import com.cogwork.cogworkbridge.client.UpstreamModelLoader;
@@ -24,6 +25,8 @@ import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import java.util.List;
 
@@ -36,6 +39,11 @@ import java.util.List;
  * silently ignored.
  */
 public class ClientProxy extends CommonProxy {
+    @Override
+    public IMessage handleClientMessage(IMessage message, MessageContext context) {
+        return ClientPacketHandlers.handle(message, context);
+    }
+
     @Override public void spawnFluidParticle(net.minecraft.world.World world, net.minecraftforge.fluids.FluidStack fluid,
             double x, double y, double z, double vx, double vy, double vz) {
         if (fluid != null && fluid.getFluid().getStill(fluid) != null)

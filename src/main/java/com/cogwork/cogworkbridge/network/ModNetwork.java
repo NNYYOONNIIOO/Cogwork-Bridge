@@ -1,6 +1,7 @@
 package com.cogwork.cogworkbridge.network;
 
 import com.cogwork.cogworkbridge.Reference;
+import com.cogwork.cogworkbridge.CogworkBridge;
 import com.cogwork.cogworkbridge.content.contraptions.glue.GlueRemovalPacket;
 import com.cogwork.cogworkbridge.content.contraptions.glue.GlueSelectionPacket;
 import com.cogwork.cogworkbridge.content.contraptions.glue.GlueAreaUpdatePacket;
@@ -25,6 +26,7 @@ import com.cogwork.cogworkbridge.content.logistics.funnel.BrassFunnelConfigPacke
 import com.cogwork.cogworkbridge.content.logistics.tunnel.BrassTunnelConfigPacket;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.relauncher.Side;
 
 public final class ModNetwork {
@@ -45,28 +47,21 @@ public final class ModNetwork {
                 GlueSelectionPacket.class, 0, Side.SERVER);
         CHANNEL.registerMessage(GlueRemovalPacket.Handler.class,
                 GlueRemovalPacket.class, 1, Side.SERVER);
-        CHANNEL.registerMessage(GlueAreaUpdatePacket.Handler.class,
-                GlueAreaUpdatePacket.class, 2, Side.CLIENT);
-        CHANNEL.registerMessage(GlueAreaRemovedPacket.Handler.class,
-                GlueAreaRemovedPacket.class, 3, Side.CLIENT);
-        CHANNEL.registerMessage(ContraptionAnglePacket.Handler.class,
-                ContraptionAnglePacket.class, 4, Side.CLIENT);
-        CHANNEL.registerMessage(ContraptionSnapshotPacket.Handler.class,
-                ContraptionSnapshotPacket.class, 5, Side.CLIENT);
-        CHANNEL.registerMessage(ContraptionBlockChangedPacket.Handler.class,
-                ContraptionBlockChangedPacket.class, 6, Side.CLIENT);
+        registerClientMessage(GlueAreaUpdatePacket.class, 2);
+        registerClientMessage(GlueAreaRemovedPacket.class, 3);
+        registerClientMessage(ContraptionAnglePacket.class, 4);
+        registerClientMessage(ContraptionSnapshotPacket.class, 5);
+        registerClientMessage(ContraptionBlockChangedPacket.class, 6);
         CHANNEL.registerMessage(ContraptionBreakPacket.Handler.class,
                 ContraptionBreakPacket.class, 7, Side.SERVER);
         CHANNEL.registerMessage(ContraptionInteractPacket.Handler.class,
                 ContraptionInteractPacket.class, 8, Side.SERVER);
         CHANNEL.registerMessage(ContraptionMiningPacket.Handler.class,
                 ContraptionMiningPacket.class, 9, Side.SERVER);
-        CHANNEL.registerMessage(ContraptionMiningProgressPacket.Handler.class,
-                ContraptionMiningProgressPacket.class, 10, Side.CLIENT);
+        registerClientMessage(ContraptionMiningProgressPacket.class, 10);
         CHANNEL.registerMessage(KineticConfigRequestPacket.Handler.class,
                 KineticConfigRequestPacket.class, 11, Side.SERVER);
-        CHANNEL.registerMessage(KineticConfigOpenPacket.Handler.class,
-                KineticConfigOpenPacket.class, 12, Side.CLIENT);
+        registerClientMessage(KineticConfigOpenPacket.class, 12);
         CHANNEL.registerMessage(KineticConfigChangePacket.Handler.class,
                 KineticConfigChangePacket.class, 13, Side.SERVER);
         CHANNEL.registerMessage(SequencerConfigPacket.Handler.class,
@@ -79,7 +74,7 @@ public final class ModNetwork {
                 AttributeFilterOptionPacket.class, 16, Side.SERVER);
         CHANNEL.registerMessage(LogisticsAmountPacket.Handler.class, LogisticsAmountPacket.class, 17, Side.SERVER);
         CHANNEL.registerMessage(BrassFunnelConfigPacket.Handler.class, BrassFunnelConfigPacket.class, 19, Side.SERVER);
-        CHANNEL.registerMessage(ContraptionForgeGuiPacket.Handler.class, ContraptionForgeGuiPacket.class, 20, Side.CLIENT);
+        registerClientMessage(ContraptionForgeGuiPacket.class, 20);
         CHANNEL.registerMessage(BrassTunnelConfigPacket.Handler.class, BrassTunnelConfigPacket.class, 21, Side.SERVER);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.display.DisplayLinkConfigPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.display.DisplayLinkConfigPacket.class, 22, Side.SERVER);
@@ -105,8 +100,7 @@ public final class ModNetwork {
                 com.cogwork.cogworkbridge.content.redstone.DetectorConfigPacket.class, 32, Side.SERVER);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.logistics.packager.StockTickerRequestPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.logistics.packager.StockTickerRequestPacket.class, 33, Side.SERVER);
-        CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.logistics.packager.StockTickerDataPacket.Handler.class,
-                com.cogwork.cogworkbridge.content.logistics.packager.StockTickerDataPacket.class, 34, Side.CLIENT);
+        registerClientMessage(com.cogwork.cogworkbridge.content.logistics.packager.StockTickerDataPacket.class, 34);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.logistics.port.PackagePortConfigPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.logistics.port.PackagePortConfigPacket.class, 35, Side.SERVER);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.logistics.packager.StockTickerOrderPacket.Handler.class,
@@ -131,8 +125,7 @@ public final class ModNetwork {
                 com.cogwork.cogworkbridge.content.equipment.WorldshaperPacket.class, 45, Side.SERVER);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.equipment.ToolboxActionPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.equipment.ToolboxActionPacket.class, 46, Side.SERVER);
-        CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.equipment.ToolboxSyncPacket.Handler.class,
-                com.cogwork.cogworkbridge.content.equipment.ToolboxSyncPacket.class, 47, Side.CLIENT);
+        registerClientMessage(com.cogwork.cogworkbridge.content.equipment.ToolboxSyncPacket.class, 47);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.equipment.BlueprintEditPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.equipment.BlueprintEditPacket.class, 48, Side.SERVER);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.kinetics.encased.WrenchRotationPacket.Handler.class,
@@ -141,18 +134,15 @@ public final class ModNetwork {
                 com.cogwork.cogworkbridge.content.schematics.SchematicUploadPacket.class, 50, Side.SERVER);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.schematics.SchematicActionPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.schematics.SchematicActionPacket.class, 51, Side.SERVER);
-        CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.schematics.SchematicDownloadPacket.Handler.class,
-                com.cogwork.cogworkbridge.content.schematics.SchematicDownloadPacket.class, 52, Side.CLIENT);
+        registerClientMessage(com.cogwork.cogworkbridge.content.schematics.SchematicDownloadPacket.class, 52);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.schematics.SchematicInstantPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.schematics.SchematicInstantPacket.class, 53, Side.SERVER);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.schematics.SchematicEditPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.schematics.SchematicEditPacket.class, 54, Side.SERVER);
-        CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.contraptions.mounted.MinecartCouplingSyncPacket.Handler.class,
-                com.cogwork.cogworkbridge.content.contraptions.mounted.MinecartCouplingSyncPacket.class, 55, Side.CLIENT);
+        registerClientMessage(com.cogwork.cogworkbridge.content.contraptions.mounted.MinecartCouplingSyncPacket.class, 55);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.trains.track.RailwayStationPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.trains.track.RailwayStationPacket.class, 56, Side.SERVER);
-        CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.trains.track.TrainControlClientPacket.Handler.class,
-                com.cogwork.cogworkbridge.content.trains.track.TrainControlClientPacket.class, 57, Side.CLIENT);
+        registerClientMessage(com.cogwork.cogworkbridge.content.trains.track.TrainControlClientPacket.class, 57);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.trains.track.TrainControlInputPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.trains.track.TrainControlInputPacket.class, 58, Side.SERVER);
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.trains.track.TrainSchedulePacket.Handler.class,
@@ -162,5 +152,11 @@ public final class ModNetwork {
         CHANNEL.registerMessage(com.cogwork.cogworkbridge.content.trains.track.TrackConnectPacket.Handler.class,
                 com.cogwork.cogworkbridge.content.trains.track.TrackConnectPacket.class, 61, Side.SERVER);
         registered = true;
+    }
+
+    private static <T extends IMessage> void registerClientMessage(Class<T> type, int id) {
+        // Both sides need the codec mapping; only the client proxy loads its handler.
+        CHANNEL.registerMessage((message, context) -> CogworkBridge.proxy.handleClientMessage(message, context),
+                type, id, Side.CLIENT);
     }
 }

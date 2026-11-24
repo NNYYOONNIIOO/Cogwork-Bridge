@@ -17,8 +17,11 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class CommonProxy implements IProxy {
+    @Override public IMessage handleClientMessage(IMessage message, MessageContext context) { return null; }
     @Override public void updateLecternControl(com.cogwork.cogworkbridge.content.redstone.LecternControllerTileEntity tile) { }
     @Override public void updateWhistleAudio(com.cogwork.cogworkbridge.content.fluids.whistle.SteamWhistleTileEntity tile) { }
     @Override public void spawnFluidParticle(net.minecraft.world.World world, net.minecraftforge.fluids.FluidStack fluid,
