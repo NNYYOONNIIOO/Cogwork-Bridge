@@ -184,11 +184,10 @@ public final class CrushingWheelControllerTileEntity extends TileEntity implemen
 
     private void resolveProcessingEntity() {
         if (processingEntity != null || processingEntityId == null) return;
-        for (Entity entity : world.loadedEntityList) {
-            if (processingEntityId.equals(entity.getUniqueID())) {
-                processingEntity = entity;
-                return;
-            }
+        Entity entity=world instanceof net.minecraft.world.WorldServer level?level.getEntityFromUuid(processingEntityId):null;
+        if(entity!=null) {
+            processingEntity=entity;
+            return;
         }
         processingEntityId = null;
         changed();

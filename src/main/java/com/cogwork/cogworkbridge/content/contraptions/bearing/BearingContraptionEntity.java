@@ -494,6 +494,10 @@ public class BearingContraptionEntity extends EntityMovingWorld {
     @javax.annotation.Nullable
     private net.minecraft.entity.item.EntityMinecart findMountedCart(java.util.UUID id) {
         if (world == null || id == null) return null;
+        if(world instanceof net.minecraft.world.WorldServer server) {
+            Entity candidate=server.getEntityFromUuid(id);
+            return candidate instanceof net.minecraft.entity.item.EntityMinecart cart&&!cart.isDead?cart:null;
+        }
         for (Entity candidate : world.loadedEntityList)
             if (!candidate.isDead && id.equals(candidate.getUniqueID())
                     && candidate instanceof net.minecraft.entity.item.EntityMinecart cart) return cart;
@@ -4300,14 +4304,7 @@ public class BearingContraptionEntity extends EntityMovingWorld {
             restoreSnapshotAndDiscard();
             return;
         }
-        net.minecraft.entity.item.EntityMinecart minecart = null;
-        for (Entity candidate : world.loadedEntityList) {
-            if (mountedCart.equals(candidate.getUniqueID())
-                    && candidate instanceof net.minecraft.entity.item.EntityMinecart found && !found.isDead) {
-                minecart = found;
-                break;
-            }
-        }
+        net.minecraft.entity.item.EntityMinecart minecart=findMountedCart(mountedCart);
         if (minecart == null) return; // The minecart's chunk may be temporarily unloaded.
         loadedMountedCart = minecart;
         net.minecraft.entity.item.EntityMinecart secondary = findMountedCart(secondaryMountedCart);

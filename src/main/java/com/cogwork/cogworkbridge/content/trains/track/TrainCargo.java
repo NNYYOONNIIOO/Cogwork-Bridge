@@ -50,9 +50,11 @@ public final class TrainCargo {
     public static int players(RailwayCarriageEntity train) {
         Set<java.util.UUID> players=new HashSet<>();var cars=train.trainCarriages();if(cars==null)return 0;
         for(var original:cars)for(var car:original.dimensionalCopies())if(car.body()!=null)
-            for(var body:car.body().railwayPortalParts())for(var entity:car.world.loadedEntityList)
-                if(entity instanceof com.cogwork.cogworkbridge.content.decoration.SeatEntity seat&&seat.belongsTo(body))
-                    for(var passenger:seat.getPassengers())if(passenger instanceof net.minecraft.entity.player.EntityPlayer)players.add(passenger.getUniqueID());
+            for(var body:car.body().railwayPortalParts())
+                for(var seat:car.world.getEntitiesWithinAABB(com.cogwork.cogworkbridge.content.decoration.SeatEntity.class,
+                        body.getEntityBoundingBox().grow(1D)))
+                    if(seat.belongsTo(body))for(var passenger:seat.getPassengers())
+                        if(passenger instanceof net.minecraft.entity.player.EntityPlayer)players.add(passenger.getUniqueID());
         return players.size();
     }
 }

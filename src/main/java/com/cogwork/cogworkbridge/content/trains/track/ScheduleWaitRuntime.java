@@ -35,7 +35,10 @@ final class ScheduleWaitRuntime {
         var world=train.world;int elapsed=c.getInteger("Elapsed");c.setInteger("Elapsed",Math.min(TrainSchedule.MAX_WAIT,elapsed+1));
         return switch(w.type) {
             case DELAY -> elapsed>=Math.min(TrainSchedule.MAX_WAIT,w.value);
-            case REDSTONE -> train.stationPosition()!=null && train.stationWorld()!=null && train.stationWorld().isBlockLoaded(train.stationPosition()) && train.stationWorld().isBlockPowered(train.stationPosition());
+            case REDSTONE -> {
+                var stationWorld=train.stationWorld();var station=train.stationPosition();
+                yield station!=null&&stationWorld!=null&&stationWorld.isBlockLoaded(station)&&stationWorld.isBlockPowered(station);
+            }
             case PLAYER -> TrainCargo.players(train)>0;
             case CARGO_EMPTY -> TrainCargo.countItems(train,net.minecraft.item.ItemStack.EMPTY,false)==0;
             case CARGO_FULL -> train.legacyCargoFull();
@@ -48,7 +51,10 @@ final class ScheduleWaitRuntime {
                 long diff=Math.floorMod(world.getWorldTime(),rotation)-target;yield diff>=0&&diff<=40;
             }
             case WIRELESS_REDSTONE -> com.cogwork.cogworkbridge.content.redstone.RedstoneLinkNetwork.hasAnyLoadedPower(w.filter,w.second)!=(w.measure==1);
-            case STATION_UNLOADED -> train.stationPosition()!=null&&train.stationWorld()!=null&&!train.stationWorld().isBlockLoaded(train.stationPosition());
+            case STATION_UNLOADED -> {
+                var station=train.stationPosition();var stationWorld=train.stationWorld();
+                yield station!=null&&(stationWorld==null||!stationWorld.isBlockLoaded(station));
+            }
             case IDLE_CARGO -> {
                 long hash=TrainCargo.fingerprint(train);int idle=c.getInteger("Idle");
                 if(!c.hasKey("Cargo")||c.getLong("Cargo")!=hash)idle=0;else idle++;

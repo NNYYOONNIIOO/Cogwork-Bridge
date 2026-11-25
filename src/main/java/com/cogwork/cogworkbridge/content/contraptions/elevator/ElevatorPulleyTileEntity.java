@@ -3,6 +3,7 @@ package com.cogwork.cogworkbridge.content.contraptions.elevator;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraption;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraptionEntity;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.ContraptionGuiProxy;
+import com.cogwork.cogworkbridge.content.contraptions.bearing.ContraptionEntityReference;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.CarriedBearingAssembly;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.LinearContraptionController;
 import com.cogwork.cogworkbridge.kinetic.KineticTileEntity;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public final class ElevatorPulleyTileEntity extends KineticTileEntity implements LinearContraptionController, com.cogwork.cogworkbridge.content.redstone.ThresholdObservable {
     private static final int MAX_LENGTH = 384;
     private UUID contraptionId;
+    private final ContraptionEntityReference contraptionEntity=new ContraptionEntityReference();
     private BlockPos mirrorParent;
     private final List<BlockPos> mirrorChildren = new ArrayList<>();
     private BlockPos captureAnchor = BlockPos.ORIGIN;
@@ -198,12 +200,8 @@ public final class ElevatorPulleyTileEntity extends KineticTileEntity implements
     }
 
     private BearingContraptionEntity findEntity() {
-        if (world == null || contraptionId == null) return null;
-        for (net.minecraft.entity.Entity entity : world.loadedEntityList)
-            if (entity instanceof BearingContraptionEntity candidate && !candidate.isDead
-                    && contraptionId.equals(candidate.getUniqueID()) && candidate.isElevator()
-                    && pos.equals(candidate.getElevatorController())) return candidate;
-        return null;
+        BearingContraptionEntity entity=contraptionEntity.get(world,contraptionId);
+        return entity!=null&&entity.isElevator()&&pos.equals(entity.getElevatorController())?entity:null;
     }
 
     private List<RedstoneContactTileEntity> floors() {

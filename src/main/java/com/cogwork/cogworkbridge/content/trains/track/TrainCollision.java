@@ -19,8 +19,10 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /** Server-side train contacts, using the bogey centreline rather than a carriage's enclosing box. */
@@ -48,12 +50,13 @@ public final class TrainCollision {
     @Nullable static Contact findContact(RailwayCarriageEntity train) {
         List<Segment> segments = segments(train);
         Map<UUID, List<Segment>> others = new HashMap<>();
+        Map<World,List<RailwayCarriageEntity>> candidates=new HashMap<>();
         for (Segment segment : segments) {
-            for (Entity entity : segment.world.loadedEntityList) {
-                if (!(entity instanceof RailwayCarriageEntity other) || other.isDead
-                        || !other.hasCollisionBody()) continue;
+            Set<UUID> examined=new HashSet<>();
+            for (RailwayCarriageEntity other : candidates.computeIfAbsent(segment.world,TrainDimensionTransfer::loaded)) {
+                if (other.isDead||train.trainId().equals(other.trainId())) continue;
                 RailwayCarriageEntity controller = other.trainController();
-                if (controller == null || train.trainId().equals(controller.trainId())) continue;
+                if (controller == null || !other.hasCollisionBody() || !examined.add(controller.trainId())) continue;
                 // Include all carriages and coupling gaps, including present portal slices, without loading chunks.
                 for (Segment otherSegment : others.computeIfAbsent(controller.trainId(), id -> segments(controller))) {
                     Vec3d point = intersection(segment, otherSegment);

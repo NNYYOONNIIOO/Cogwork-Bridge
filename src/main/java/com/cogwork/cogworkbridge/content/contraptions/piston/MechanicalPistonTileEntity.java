@@ -4,6 +4,7 @@ import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraption
 import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraptionEntity;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.CarriedBearingAssembly;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.ContraptionGuiProxy;
+import com.cogwork.cogworkbridge.content.contraptions.bearing.ContraptionEntityReference;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.LinearContraptionController;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.SequencedTravel;
 import com.cogwork.cogworkbridge.kinetic.KineticTileEntity;
@@ -25,6 +26,7 @@ public final class MechanicalPistonTileEntity extends KineticTileEntity implemen
     private static final int MAX_POLES = 64;
     private static final int MAX_PUSH_DEPTH = BearingContraption.MAX_BLOCKS;
     private UUID contraptionId;
+    private final ContraptionEntityReference contraptionEntity=new ContraptionEntityReference();
     private final SequencedTravel sequencedTravel = new SequencedTravel();
     private int initialExtension, extensionLength, movementMode;
     private float extension, previousSpeed = Float.NaN;
@@ -61,12 +63,8 @@ public final class MechanicalPistonTileEntity extends KineticTileEntity implemen
     }
 
     private BearingContraptionEntity findEntity() {
-        if (world == null || contraptionId == null) return null;
-        for (net.minecraft.entity.Entity raw : world.loadedEntityList)
-            if (raw instanceof BearingContraptionEntity entity && !entity.isDead
-                    && contraptionId.equals(entity.getUniqueID()) && entity.isLinearContraption()
-                    && pos.equals(entity.getElevatorController())) return entity;
-        return null;
+        BearingContraptionEntity entity=contraptionEntity.get(world,contraptionId);
+        return entity!=null&&entity.isLinearContraption()&&pos.equals(entity.getElevatorController())?entity:null;
     }
 
     private static boolean isPole(IBlockState state, EnumFacing direction) {

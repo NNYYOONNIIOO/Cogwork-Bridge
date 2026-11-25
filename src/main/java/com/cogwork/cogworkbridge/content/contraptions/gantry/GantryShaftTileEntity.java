@@ -4,6 +4,7 @@ import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraption
 import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraptionEntity;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.CarriedBearingAssembly;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.ContraptionGuiProxy;
+import com.cogwork.cogworkbridge.content.contraptions.bearing.ContraptionEntityReference;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.LinearContraptionController;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.SequencedTravel;
 import com.cogwork.cogworkbridge.kinetic.KineticTileEntity;
@@ -18,10 +19,13 @@ import net.minecraft.util.math.MathHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Drives captured carriages along a connected, unpowered gantry shaft. */
 public final class GantryShaftTileEntity extends KineticTileEntity implements LinearContraptionController {
     private final List<Travel> travellers = new ArrayList<>();
+    private final Map<UUID,ContraptionEntityReference> entityReferences=new HashMap<>();
     private boolean visualLocked;
     private record Travel(UUID id, BlockPos anchor, EnumFacing mount, EnumFacing direction, SequencedTravel sequence) { }
     @Override public boolean ownsLinearContraption(UUID id) {
@@ -30,12 +34,11 @@ public final class GantryShaftTileEntity extends KineticTileEntity implements Li
     }
     @Override public void onContraptionRestored(UUID id) {
         travellers.removeIf(t -> t.id.equals(id));
+        entityReferences.remove(id);
         markDirty();
     }
     private BearingContraptionEntity find(UUID id) {
-        for (net.minecraft.entity.Entity raw : world.loadedEntityList)
-            if (raw instanceof BearingContraptionEntity entity && !entity.isDead && id.equals(entity.getUniqueID())) return entity;
-        return null;
+        return entityReferences.computeIfAbsent(id,ignored->new ContraptionEntityReference()).get(world,id);
     }
     private boolean shaftAt(BlockPos candidate, EnumFacing direction) {
         if (!world.isBlockLoaded(candidate)) return false;
@@ -123,6 +126,7 @@ public final class GantryShaftTileEntity extends KineticTileEntity implements Li
                 // Keep ownership in the same loaded chunk as the carriage.
                 // The next shaft performs its next movement step on its own tick.
                 travellers.remove(travel);
+                entityReferences.remove(travel.id);
                 if (!shaft.ownsLinearContraption(travel.id)) shaft.travellers.add(travel);
                 entity.transferLinearController(shaftPos);
                 markDirty(); shaft.markDirty();
@@ -150,7 +154,7 @@ public final class GantryShaftTileEntity extends KineticTileEntity implements Li
         tag.setTag("Travellers", list); tag.setBoolean("GantryLocked", visualLocked); return tag;
     }
     @Override public void readFromNBT(NBTTagCompound tag) {
-        super.readFromNBT(tag); visualLocked = tag.getBoolean("GantryLocked"); travellers.clear(); NBTTagList list = tag.getTagList("Travellers", 10);
+        super.readFromNBT(tag); visualLocked = tag.getBoolean("GantryLocked"); travellers.clear();entityReferences.clear(); NBTTagList list = tag.getTagList("Travellers", 10);
         for (int i = 0; i < list.tagCount(); i++) {
             NBTTagCompound entry = list.getCompoundTagAt(i);
             if (entry.hasUniqueId("Id")) {

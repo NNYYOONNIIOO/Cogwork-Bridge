@@ -4,6 +4,7 @@ import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraption
 import com.cogwork.cogworkbridge.content.contraptions.bearing.BearingContraptionEntity;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.CarriedBearingAssembly;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.ContraptionGuiProxy;
+import com.cogwork.cogworkbridge.content.contraptions.bearing.ContraptionEntityReference;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.LinearContraptionController;
 import com.cogwork.cogworkbridge.content.contraptions.bearing.SequencedTravel;
 import com.cogwork.cogworkbridge.kinetic.KineticTileEntity;
@@ -30,6 +31,7 @@ import java.util.Map;
 public final class RopePulleyTileEntity extends KineticTileEntity implements LinearContraptionController, com.cogwork.cogworkbridge.content.redstone.ThresholdObservable {
     private static final int MAX_LENGTH = 384;
     private UUID contraptionId;
+    private final ContraptionEntityReference contraptionEntity=new ContraptionEntityReference();
     private final SequencedTravel sequencedTravel = new SequencedTravel();
     private float cableOffset, previousOffset, previousSpeed = Float.NaN;
     private int initialLength;
@@ -90,12 +92,8 @@ public final class RopePulleyTileEntity extends KineticTileEntity implements Lin
     }
     private int range() { return Math.max(0, Math.min(MAX_LENGTH, pos.getY() - 1)); }
     private BearingContraptionEntity findEntity() {
-        if (world == null || contraptionId == null) return null;
-        for (net.minecraft.entity.Entity raw : world.loadedEntityList)
-            if (raw instanceof BearingContraptionEntity entity && !entity.isDead
-                    && contraptionId.equals(entity.getUniqueID()) && entity.isLinearContraption()
-                    && pos.equals(entity.getElevatorController())) return entity;
-        return null;
+        BearingContraptionEntity entity=contraptionEntity.get(world,contraptionId);
+        return entity!=null&&entity.isLinearContraption()&&pos.equals(entity.getElevatorController())?entity:null;
     }
     private int scanSegments() {
         int length = 0;

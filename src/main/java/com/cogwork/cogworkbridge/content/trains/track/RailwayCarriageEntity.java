@@ -64,6 +64,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     }
     void initializePortalCopy(RailwayCarriageEntity owner,BearingContraptionEntity copy) {
         portalProxy=true;portalPassage=owner.portalPassage;bodyId=copy.getUniqueID();portalBodyId=null;
+        TrainDimensionTransfer.updateRegistration(this);
         clearDriving();trainPath=null;route=null;copyPortalPosition(owner);
     }
     void copyPortalPosition(RailwayCarriageEntity owner) {
@@ -78,7 +79,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         Entity entity=portalBodyId==null?null:level.getEntityFromUuid(portalBodyId);
         return entity instanceof BearingContraptionEntity body&&!body.isDead?body:null;
     }
-    void clearPortal(){portalPassage=null;portalBodyId=null;portalProxy=false;portalPending=false;}
+    void clearPortal(){portalPassage=null;portalBodyId=null;portalProxy=false;portalPending=false;TrainDimensionTransfer.updateRegistration(this);}
     void markPortalReplacement(){portalPending=true;}
     boolean bogeysInDimension(int dimension) {
         var graph=RailwayNetworkData.get(world);
@@ -100,7 +101,10 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
                 double max=-Double.MAX_VALUE;
                 for(var part:structure.railwayPortalParts())for(var snapshot:part.getContraption().blocks().values())
                     max=Math.max(max,candidate.sourceDistance(part.localBlockCenterToWorld(part.localPos(snapshot))));
-                if(dimension!=world.provider.getDimension()||max>=-1.5)portalPassage=candidate;
+                if(dimension!=world.provider.getDimension()||max>=-1.5) {
+                    portalPassage=candidate;
+                    TrainDimensionTransfer.updateRegistration(this);
+                }
             }
         }
         if(dimension==world.provider.getDimension())return at;
@@ -115,7 +119,12 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     private int[] transitTimes=new int[TrainSchedule.MAX_ENTRIES];
     { java.util.Arrays.fill(transitTimes,-1); }
     public net.minecraft.util.math.BlockPos stationPosition() { return destinationStation; }
-    public World stationWorld() { return world.getMinecraftServer()==null?world:world.getMinecraftServer().getWorld(destinationDimension); }
+    @Nullable public World stationWorld() {
+        var server=world.getMinecraftServer();
+        if(server==null)return world;
+        for(WorldServer level:server.worlds)if(level.provider.getDimension()==destinationDimension)return level;
+        return null;
+    }
     public String runTitle() { return runTitle; }
     public String trainName() { return hasCustomName()?getCustomNameTag():"Train "+trainId().toString().substring(0,8); }
     public boolean schedulePaused() { return schedulePaused; }
@@ -282,10 +291,10 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         speed=motionX=motionY=motionZ=0D;
         collisionMotionTick = Long.MIN_VALUE;
         UUID id=trainId();
-        if(world.getMinecraftServer()!=null)for(WorldServer level:world.getMinecraftServer().worlds)for(Entity entity:level.loadedEntityList)
-            if(entity instanceof RailwayCarriageEntity carriage && id.equals(carriage.trainId())) {
+        if(world.getMinecraftServer()!=null)for(WorldServer level:world.getMinecraftServer().worlds)
+            for(RailwayCarriageEntity carriage:TrainDimensionTransfer.loaded(level))if(id.equals(carriage.trainId())) {
                 carriage.speed=0D;carriage.motionX=carriage.motionY=carriage.motionZ=0D;
-                carriage.collisionMotionTick = Long.MIN_VALUE;
+                carriage.collisionMotionTick=Long.MIN_VALUE;
             }
     }
     private void updateTrainOccupation(RailwayNetworkData graph,List<RailwayCarriageEntity> carriages) {
@@ -428,7 +437,10 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         List<RailwayPortals.Passage> passages = new ArrayList<>();
         for (RailwayCarriageEntity car : cars) passages.add(car.portalPassage);
         for (int attempt = 0; attempt <= 32; attempt++) {
-            for (int i = 0; i < cars.size(); i++) cars.get(i).portalPassage = passages.get(i);
+            for (int i = 0; i < cars.size(); i++) {
+                cars.get(i).portalPassage = passages.get(i);
+                TrainDimensionTransfer.updateRegistration(cars.get(i));
+            }
             double distance = attempt == 0 ? 0D : ((attempt + 1) / 2) * .5D * (attempt % 2 == 1 ? -crashDirection : crashDirection);
             trainPath = original.copy();
             double moved = trainPath.advance(world, graph, distance, 0, null, trainId(), false);
@@ -455,7 +467,10 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
             updateTrainOccupation(graph, cars);
             return true;
         }
-        for (int i = 0; i < cars.size(); i++) cars.get(i).portalPassage = passages.get(i);
+        for (int i = 0; i < cars.size(); i++) {
+            cars.get(i).portalPassage = passages.get(i);
+            TrainDimensionTransfer.updateRegistration(cars.get(i));
+        }
         trainPath = original; placeTrain(graph, cars, false);
         for (RailwayCarriageEntity car : cars) {
             RailwayCarriageEntity copy = car.portalCopy();
@@ -680,7 +695,6 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         if (trainLeader != null && !trainLeader.equals(getUniqueID())) return;
         if (damageGraceTicks > 0) damageGraceTicks--;
         if (crashed) { haltLoadedCarriages(); return; }
-        if(world.getTotalWorldTime()%20==0)RailwayDisplayData.capture(this);
         prevPosX=posX;prevPosY=posY;prevPosZ=posZ;
         if(cursor==null){motionX=motionY=motionZ=0D;return;}
         RailwayNetworkData graph=RailwayNetworkData.get(world);
@@ -727,8 +741,11 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         if(automatic) {
             desired=0D;
             if(scheduleWaiting) {
-                if(destinationStation!=null&&stationWorld()!=null&&world.getTotalWorldTime()%5==0)
-                    com.cogwork.cogworkbridge.content.logistics.port.MailboxNetwork.get(stationWorld()).exchange(stationWorld(),destinationStation,this);
+                if(destinationStation!=null&&world.getTotalWorldTime()%5==0) {
+                    World targetWorld=stationWorld();
+                    if(targetWorld!=null)
+                        com.cogwork.cogworkbridge.content.logistics.port.MailboxNetwork.get(targetWorld).exchange(targetWorld,destinationStation,this);
+                }
                 if(waitRuntime.tick(this,schedule.entries.get(scheduleIndex)))advanceSchedule();
             } else {
                 if(route!=null)ticksInTransit=Math.min(Integer.MAX_VALUE-1,ticksInTransit+1);
@@ -787,6 +804,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         if(!world.isRemote&&!portalProxy&&!portalPending&&trainId().equals(getUniqueID()))RailwayDisplayData.remove(this);
         if(!world.isRemote&&!portalProxy&&world.getMinecraftServer()!=null)for(WorldServer level:world.getMinecraftServer().worlds)RailwayNetworkData.get(level).removeOccupation(getUniqueID());
         super.setDead();
+        TrainDimensionTransfer.removed(this);
     }
     @Override public boolean canBeCollidedWith(){return false;}
     @Override public boolean processInitialInteract(EntityPlayer player,EnumHand hand){return false;}
@@ -866,8 +884,10 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
             if(entry.instruction==TrainSchedule.Instruction.RENAME){title=entry.text;continue;}
             if(entry.instruction==TrainSchedule.Instruction.THROTTLE)continue;
             String name=entry.text;
-            if(offset==0&&destinationStation!=null&&stationWorld()!=null) {
-                for(var station:RailwayNetworkData.get(stationWorld()).targets())if(station.kind().equals("station")&&station.owner().equals(destinationStation)){name=station.name();break;}
+            if(offset==0&&destinationStation!=null) {
+                World targetWorld=stationWorld();
+                if(targetWorld!=null)for(var station:RailwayNetworkData.get(targetWorld).targets())
+                    if(station.kind().equals("station")&&station.owner().equals(destinationStation)){name=station.name();break;}
                 double distance=routeDistance(RailwayNetworkData.get(world));
                 time=scheduleWaiting?0:Double.isFinite(distance)?(int)Math.min(Integer.MAX_VALUE/4,distance/Math.max(.05,Math.min(1.05*throttle,.7875))*2):-1;
                 if(!scheduleWaiting&&time>=0&&transitTimes[index]>0&&routeStartedDistance>0)

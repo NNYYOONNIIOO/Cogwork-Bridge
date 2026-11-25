@@ -53,10 +53,10 @@ public final class TrackTileEntity extends TileEntity implements ITickable {
             RailwayNetworkData graph=RailwayNetworkData.get(world);
             if(graph.hasTrack(pos)&&connections.entrySet().removeIf(entry->graph.findCurve(pos,entry.getKey())==null))markDirty();
             graph.update(world,pos);
+            RailwayPortals.discover(world,pos,true);
         }
     }
     @Override public void update() {
-        if(world!=null&&!world.isRemote&&(world.getTotalWorldTime()+pos.hashCode())%20==0)RailwayPortals.discover(world,pos);
         if(world==null || world.isRemote || (world.getTotalWorldTime()+pos.hashCode())%200!=0) return;
         for(BlockPos other:new ArrayList<>(connections.keySet())) {
             if(!world.isBlockLoaded(other)) continue;

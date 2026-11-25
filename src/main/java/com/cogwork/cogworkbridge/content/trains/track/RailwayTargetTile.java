@@ -69,12 +69,15 @@ public abstract class RailwayTargetTile extends TileEntity {
             if(shape!=TrackShape.XO&&shape!=TrackShape.ZO)return null;
             int sign=front()?1:-1;BlockPos rail=target().add(shape.x*sign,0,shape.z*sign);
             net.minecraft.util.math.Vec3d center=new net.minecraft.util.math.Vec3d(rail.getX()+.5D,rail.getY(),rail.getZ()+.5D);
-            for(net.minecraft.entity.Entity entity:world.loadedEntityList)
-                if(entity instanceof RailwayCarriageEntity carriage&&!carriage.isDead && Math.abs(carriage.speed())<.005D
+            RailwayNetworkData graph=RailwayNetworkData.get(world);
+            for(java.util.UUID id:graph.carriagesAt(rail)) {
+                RailwayCarriageEntity carriage=TrainDimensionTransfer.loaded(world,id);
+                if(carriage!=null&&Math.abs(carriage.speed())<.005D
                         && carriage.hasBogeyAt(center) && carriage.body()!=null) {
                     RailwayCarriageEntity leader=carriage.trainController();
                     if(leader!=null&&leader.trainCarriages()!=null)return leader;
                 }
+            }
             return null;
         }
         @Override public void update() {
@@ -342,12 +345,14 @@ public abstract class RailwayTargetTile extends TileEntity {
             if(world==null||world.isRemote)return;
             boolean was=poweredTicks>0;
             boolean matching=false;
-            if(hasValidTarget())for(net.minecraft.entity.Entity entity:world.loadedEntityList) {
-                if(entity instanceof RailwayCarriageEntity carriage && !entity.isDead
-                        && RailwayNetworkData.get(world).carriageOccupies(carriage.getUniqueID(),target())
-                        && carriage.hasCargo(filter)){matching=true;
-                    var leader=carriage.trainController();String name=leader==null?"":leader.trainName();
-                    if(!name.equals(observedTrainName)){observedTrainName=name;changed();}break;}
+            if(hasValidTarget()) {
+                RailwayNetworkData graph=RailwayNetworkData.get(world);
+                for(java.util.UUID id:graph.carriagesAt(target())) {
+                    RailwayCarriageEntity carriage=TrainDimensionTransfer.loaded(world,id);
+                    if(carriage!=null&&carriage.hasCargo(filter)){matching=true;
+                        var leader=carriage.trainController();String name=leader==null?"":leader.trainName();
+                        if(!name.equals(observedTrainName)){observedTrainName=name;changed();}break;}
+                }
             }
             if(matching)poweredTicks=8;else if(poweredTicks>0)poweredTicks--;
             if(was!=powered()){

@@ -234,6 +234,12 @@ public final class RailwayNetworkData extends WorldSavedData {
             if(edge.owner.equals(track))return true;
         return false;
     }
+    public Set<UUID> carriagesAt(BlockPos track) {
+        Set<UUID> result=new HashSet<>();
+        for(Map.Entry<UUID,Set<EdgeKey>> carriage:occupied.entrySet())
+            for(EdgeKey edge:carriage.getValue())if(edge.owner.equals(track)){result.add(carriage.getKey());break;}
+        return result;
+    }
     private static boolean intersects(Travel edge,AxisAlignedBB box) {
         int steps=edge.curve==null?1:Math.max(4,(int)Math.ceil(edge.length*2D));
         Vec3d previous=edge.point(0D);

@@ -13,6 +13,8 @@ import java.util.UUID;
 public final class ClockworkBearingTileEntity extends KineticTileEntity implements RotaryContraptionController {
     public static final float ASSEMBLED_STRESS_IMPACT = 4F;
     private UUID hourId, minuteId;
+    private final ContraptionEntityReference hourEntity=new ContraptionEntityReference();
+    private final ContraptionEntityReference minuteEntity=new ContraptionEntityReference();
     private float hourAngle, minuteAngle, previousSpeed = Float.NaN;
     private boolean running, requestAssembly, recoveryPending;
     private int mode;
@@ -32,18 +34,15 @@ public final class ClockworkBearingTileEntity extends KineticTileEntity implemen
     public boolean isRunning() { return running; }
     public float getHourAngle() { return hourAngle; }
     public float getHourAngle(float partialTicks) {
-        BearingContraptionEntity hand = find(hourId);
+        BearingContraptionEntity hand = find(hourId,hourEntity);
         return hand == null ? hourAngle : hand.getRenderAngle(partialTicks);
     }
     public int getMode() { return mode; }
     public void setMode(int value) { mode = Math.floorMod(value, 3); markDirty(); sync(); }
     public void toggle() { if (running) disassemble(); else requestAssembly = true; }
 
-    private BearingContraptionEntity find(UUID id) {
-        if (id == null || world == null) return null;
-        for (net.minecraft.entity.Entity raw : world.loadedEntityList)
-            if (raw instanceof BearingContraptionEntity entity && !entity.isDead && id.equals(entity.getUniqueID())) return entity;
-        return null;
+    private BearingContraptionEntity find(UUID id,ContraptionEntityReference reference) {
+        return reference.get(world,id);
     }
 
     private void assemble() {
@@ -95,7 +94,7 @@ public final class ClockworkBearingTileEntity extends KineticTileEntity implemen
 
     public void disassemble() {
         if (!running || world == null || world.isRemote) return;
-        BearingContraptionEntity hour = find(hourId), minute = find(minuteId);
+        BearingContraptionEntity hour = find(hourId,hourEntity), minute = find(minuteId,minuteEntity);
         if (hourId != null && hour == null || minuteId != null && minute == null) return;
         if (hour != null) { hour.setAngleFromServer(0); hour.restoreAndDiscard(); }
         if (minute != null) { minute.setAngleFromServer(0); minute.restoreAndDiscard(); }
@@ -134,7 +133,7 @@ public final class ClockworkBearingTileEntity extends KineticTileEntity implemen
             if (running && speed == 0) disassemble(); else if (!running && speed != 0) assemble();
         }
         if (!running || speed == 0 || !(world.getBlockState(pos).getBlock() instanceof ClockworkBearingBlock)) return;
-        BearingContraptionEntity hour = find(hourId), minute = find(minuteId);
+        BearingContraptionEntity hour = find(hourId,hourEntity), minute = find(minuteId,minuteEntity);
         if (hourId != null && hour == null || minuteId != null && minute == null) return;
         EnumFacing facing = world.getBlockState(pos).getValue(MechanicalBearingBlock.FACING);
         float angularSpeed = Math.abs(speed * .3F);

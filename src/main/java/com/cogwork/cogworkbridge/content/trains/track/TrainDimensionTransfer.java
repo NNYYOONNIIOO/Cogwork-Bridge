@@ -11,23 +11,85 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.DimensionManager;
+import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import java.util.*;
+import java.lang.ref.WeakReference;
+import javax.annotation.Nullable;
 
 /** One controller and shared cargo, with a clipped carriage body in each traversed dimension. */
 @Mod.EventBusSubscriber(modid=Reference.MOD_ID)
 public final class TrainDimensionTransfer {
+    private static final Map<World,Map<UUID,WeakReference<RailwayCarriageEntity>>> LOADED=new WeakHashMap<>();
+    private static final Map<UUID,RailwayCarriageEntity> PENDING=new LinkedHashMap<>();
     private TrainDimensionTransfer() { }
+
+    /** Registered railway entities only; UUID lookups also discard unloaded carriage instances. */
+    static List<RailwayCarriageEntity> loaded(World world) {
+        Map<UUID,WeakReference<RailwayCarriageEntity>> carriages=LOADED.get(world);
+        if(carriages==null||!(world instanceof WorldServer level))return List.of();
+        carriages.values().removeIf(reference->{
+            RailwayCarriageEntity carriage=reference.get();
+            return carriage==null||carriage.isDead||level.getEntityFromUuid(carriage.getUniqueID())!=carriage;
+        });
+        List<RailwayCarriageEntity> result=new ArrayList<>();
+        for(WeakReference<RailwayCarriageEntity> reference:carriages.values()) {
+            RailwayCarriageEntity carriage=reference.get();if(carriage!=null)result.add(carriage);
+        }
+        return result;
+    }
+
+    @Nullable static RailwayCarriageEntity loaded(World world,UUID id) {
+        if(!(world instanceof WorldServer level))return null;
+        Entity entity=level.getEntityFromUuid(id);
+        return entity instanceof RailwayCarriageEntity found&&!found.isDead?found:null;
+    }
+
+    static void removed(RailwayCarriageEntity carriage) {
+        if(carriage.world==null||carriage.world.isRemote)return;
+        Map<UUID,WeakReference<RailwayCarriageEntity>> loaded=LOADED.get(carriage.world);
+        WeakReference<RailwayCarriageEntity> reference=loaded==null?null:loaded.get(carriage.getUniqueID());
+        if(reference!=null&&reference.get()==carriage)loaded.remove(carriage.getUniqueID());
+        PENDING.remove(carriage.getUniqueID(),carriage);
+    }
+
+    static void updateRegistration(RailwayCarriageEntity carriage) {
+        if(carriage.world==null||carriage.world.isRemote)return;
+        UUID id=carriage.getUniqueID();
+        if(carriage.isDead||carriage.isPortalProxy()||carriage.portalPassage==null)PENDING.remove(id,carriage);
+        else PENDING.put(id,carriage);
+    }
+
+    @SubscribeEvent public static void entityJoined(EntityJoinWorldEvent event) {
+        if(!event.getWorld().isRemote&&event.getEntity() instanceof RailwayCarriageEntity carriage) {
+            LOADED.computeIfAbsent(event.getWorld(),ignored->new LinkedHashMap<>())
+                    .put(carriage.getUniqueID(),new WeakReference<>(carriage));
+            updateRegistration(carriage);
+        }
+    }
+
+    @SubscribeEvent public static void worldUnloaded(WorldEvent.Unload event) {
+        if(event.getWorld().isRemote)return;
+        LOADED.remove(event.getWorld());
+        PENDING.values().removeIf(carriage->carriage.world==event.getWorld());
+    }
+
     @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
-        if(event.phase!=TickEvent.Phase.END)return;
+        if(event.phase!=TickEvent.Phase.END||PENDING.isEmpty())return;
         List<RailwayCarriageEntity> owners=new ArrayList<>();
-        // Entity creation and transfer stay outside world/entity iteration.
-        for(WorldServer level:DimensionManager.getWorlds())for(Entity entity:new ArrayList<>(level.loadedEntityList))
-            if(entity instanceof RailwayCarriageEntity car&&!car.isDead&&!car.isPortalProxy()&&car.portalPassage!=null)owners.add(car);
+        Iterator<Map.Entry<UUID,RailwayCarriageEntity>> iterator=PENDING.entrySet().iterator();
+        while(iterator.hasNext()) {
+            var entry=iterator.next();RailwayCarriageEntity carriage=entry.getValue();
+            if(carriage.isDead||carriage.isPortalProxy()||carriage.portalPassage==null
+                    ||!(carriage.world instanceof WorldServer level)
+                    ||level.getEntityFromUuid(entry.getKey())!=carriage)iterator.remove();
+            else owners.add(carriage);
+        }
         Set<UUID> transferred=new HashSet<>();
         for(var owner:owners)update(owner,transferred);
     }
