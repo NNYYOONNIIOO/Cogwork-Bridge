@@ -8,6 +8,7 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.*;
@@ -91,7 +92,16 @@ public final class TrackBlock extends BlockContainer {
     }
     @Override public void onBlockAdded(World world,BlockPos pos,IBlockState state) {
         super.onBlockAdded(world,pos,state);
-        if(!world.isRemote)RailwayNetworkData.get(world).update(world,pos);
+        if(!world.isRemote) {
+            RailwayNetworkData.get(world).update(world,pos);
+            RailwayPortals.discover(world,pos,true);
+        }
+    }
+    @Override public void neighborChanged(IBlockState state,World world,BlockPos pos,net.minecraft.block.Block block,BlockPos fromPos) {
+        super.neighborChanged(state,world,pos,block,fromPos);
+        if(!world.isRemote&&fromPos.getY()==pos.getY()&&pos.distanceSq(fromPos)==1
+                &&(block==Blocks.PORTAL||world.isBlockLoaded(fromPos)&&world.getBlockState(fromPos).getBlock()==Blocks.PORTAL))
+            RailwayPortals.discover(world,pos,true);
     }
     @Override public void breakBlock(World world,BlockPos pos,IBlockState state) {
         TileEntity te=world.getTileEntity(pos);

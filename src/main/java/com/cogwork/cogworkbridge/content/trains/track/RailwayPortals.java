@@ -8,6 +8,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.*;
 import net.minecraft.world.*;
 import net.minecraft.world.storage.WorldSavedData;
+import net.minecraftforge.common.DimensionManager;
 import java.util.*;
 
 /** Portal pairing and routes between dimension-local track graphs; no portal is generated automatically. */
@@ -51,14 +52,24 @@ public final class RailwayPortals extends WorldSavedData {
         if(data==null){data=new RailwayPortals();storage.setData(NAME,data);}return data;
     }
     public static void remove(World world,BlockPos pos) {
-        Link old=get(world).links.remove(pos);get(world).markDirty();
+        RailwayPortals data=get(world);
+        Link old=data.links.remove(pos);
         setLinked(world,pos,false);
-        if(old!=null&&world.getMinecraftServer()!=null) {var other=world.getMinecraftServer().getWorld(old.dimension);if(other!=null){get(other).links.remove(old.other);get(other).markDirty();setLinked(other,old.other,false);}}
+        if(old==null)return;
+        data.markDirty();
+        WorldServer other=DimensionManager.getWorld(old.dimension);
+        if(other==null)return;
+        RailwayPortals peer=get(other);
+        Link reverse=peer.links.get(old.other);
+        if(reverse!=null&&reverse.dimension==world.provider.getDimension()&&reverse.other.equals(pos)) {
+            peer.links.remove(old.other);peer.markDirty();setLinked(other,old.other,false);
+        }
     }
     private static void setLinked(World world,BlockPos pos,boolean linked){if(world.isBlockLoaded(pos)&&world.getTileEntity(pos) instanceof TrackTileEntity tile)tile.setPortalLinked(linked);}
     private static boolean valid(World world,Link link) {
-        if(!world.isBlockLoaded(link.track))return true;
-        var state=world.getBlockState(link.track);var portal=world.getBlockState(link.track.offset(link.face));
+        BlockPos portalPos=link.track.offset(link.face);
+        if(!world.isBlockLoaded(link.track)||!world.isBlockLoaded(portalPos))return true;
+        var state=world.getBlockState(link.track);var portal=world.getBlockState(portalPos);
         return state.getBlock() instanceof TrackBlock&&(state.getValue(TrackBlock.SHAPE)==TrackShape.XO&&link.face.getAxis()==EnumFacing.Axis.X
                 ||state.getValue(TrackBlock.SHAPE)==TrackShape.ZO&&link.face.getAxis()==EnumFacing.Axis.Z)
                 &&portal.getBlock()==Blocks.PORTAL&&portal.getValue(BlockPortal.AXIS)!=link.face.getAxis();
@@ -86,27 +97,42 @@ public final class RailwayPortals extends WorldSavedData {
         }
         return best;
     }
-    public static void discover(World world,BlockPos pos) {
-        if(world.isRemote||connecting||!(world instanceof WorldServer source))return;
+    /** Periodic maintenance must not initialize dimensions or keep them loaded. */
+    public static void discover(World world,BlockPos pos) {discover(world,pos,false);}
+    static void discover(World world,BlockPos pos,boolean allowDimensionLoad) {
+        if(world.isRemote||connecting||!(world instanceof WorldServer source)||!world.isBlockLoaded(pos))return;
         Link linked=get(world).links.get(pos);
         if(linked!=null) {
-            var peer=world.getMinecraftServer().getWorld(linked.dimension);var reverse=peer==null?null:get(peer).links.get(linked.other);
-            if(!valid(world,linked)||peer==null||reverse==null||!valid(peer,reverse))remove(world,pos);
-            else {setLinked(world,pos,true);setLinked(peer,linked.other,true);return;}
+            if(!valid(world,linked))remove(world,pos);
+            else {
+                setLinked(world,pos,true);
+                WorldServer peer=DimensionManager.getWorld(linked.dimension);
+                // An unloaded world or portal chunk is not a broken connection.
+                if(peer==null||!peer.isBlockLoaded(linked.other)||!peer.isBlockLoaded(linked.other.offset(linked.otherFace)))return;
+                Link reverse=get(peer).links.get(linked.other);
+                if(reverse==null||reverse.dimension!=world.provider.getDimension()||!reverse.other.equals(pos)||!valid(peer,reverse))remove(world,pos);
+                else {setLinked(peer,linked.other,true);return;}
+            }
         }
         var state=world.getBlockState(pos);if(!(state.getBlock() instanceof TrackBlock))return;
         TrackShape shape=state.getValue(TrackBlock.SHAPE);if(shape!=TrackShape.XO&&shape!=TrackShape.ZO)return;
         int dim=world.provider.getDimension();if(dim!=0&&dim!=-1)return;
-        WorldServer other=world.getMinecraftServer().getWorld(dim==0?-1:0);if(other==null)return;
         for(EnumFacing face:EnumFacing.HORIZONTALS) {
-            if(face.getAxis()!=(shape==TrackShape.XO?EnumFacing.Axis.X:EnumFacing.Axis.Z)
-                    ||world.getBlockState(pos.offset(face)).getBlock()!=Blocks.PORTAL
-                    ||world.getBlockState(pos.offset(face)).getValue(BlockPortal.AXIS)==face.getAxis())continue;
+            if(face.getAxis()!=(shape==TrackShape.XO?EnumFacing.Axis.X:EnumFacing.Axis.Z))continue;
+            BlockPos portalPos=pos.offset(face);
+            if(!world.isBlockLoaded(portalPos))continue;
+            var portalState=world.getBlockState(portalPos);
+            if(portalState.getBlock()!=Blocks.PORTAL||portalState.getValue(BlockPortal.AXIS)==face.getAxis())continue;
             connecting=true;
             try {
+                int targetDimension=dim==0?-1:0;
+                WorldServer other=DimensionManager.getWorld(targetDimension);
+                // Only placement/portal changes may load a world to create a real link.
+                if(other==null&&allowDimensionLoad)other=source.getMinecraftServer().getWorld(targetDimension);
+                if(other==null)return;
                 EntityMinecartEmpty probe=new EntityMinecartEmpty(world);
                 probe.setLocationAndAngles(pos.getX()+.5,pos.getY(),pos.getZ()+.5,face.getHorizontalAngle(),0);
-                probe.setPortal(pos.offset(face));
+                probe.setPortal(portalPos);
                 double factor=world.provider.getMovementFactor()/other.provider.getMovementFactor();
                 probe.setWorld(other);probe.dimension=other.provider.getDimension();
                 probe.setLocationAndAngles(MathHelper.clamp(probe.posX*factor,-29999872,29999872),probe.posY,
