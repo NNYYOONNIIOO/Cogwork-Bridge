@@ -1,6 +1,7 @@
 package com.cogwork.cogworkbridge.content.decoration;
 
 import com.cogwork.cogworkbridge.content.contraptions.chassis.ChassisBlock;
+import com.cogwork.cogworkbridge.content.decoration.palette.PaletteBlocks;
 import com.cogwork.cogworkbridge.content.fluids.FluidPipeTileEntity;
 import com.cogwork.cogworkbridge.content.kinetics.cogwheel.CogwheelBlock;
 import com.cogwork.cogworkbridge.content.kinetics.encased.EncasedCogwheelBlock;
@@ -14,6 +15,7 @@ import com.cogwork.cogworkbridge.content.processing.crafter.MechanicalCrafterTil
 import com.cogwork.cogworkbridge.kinetic.KineticBlock;
 import com.cogwork.cogworkbridge.registry.AllBlocks;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRotatedPillar;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -82,6 +84,13 @@ public final class ConnectedTextureData {
             EnumFacing.Axis axis = state.getValue(ChassisBlock.AXIS);
             if (face.getAxis() != axis) return EnumFacing.getFacingFromAxis(EnumFacing.AxisDirection.POSITIVE, axis);
         }
+        if (state.getBlock() instanceof PaletteBlocks.Pillar) {
+            EnumFacing.Axis axis = state.getValue(BlockRotatedPillar.AXIS);
+            if (axis == EnumFacing.Axis.X && face.getAxis().isVertical()) return EnumFacing.EAST;
+            if (axis.isHorizontal() && face.getAxis().isHorizontal() && face.getAxis() != axis)
+                return EnumFacing.getFacingFromAxis(axis == EnumFacing.Axis.X
+                        ? EnumFacing.AxisDirection.POSITIVE : EnumFacing.AxisDirection.NEGATIVE, axis);
+        }
         return face.getAxis().isHorizontal() ? EnumFacing.UP : EnumFacing.NORTH;
     }
 
@@ -91,11 +100,24 @@ public final class ConnectedTextureData {
             if (axis != face.getAxis() && axis.isHorizontal())
                 return face.getAxis().isHorizontal() ? EnumFacing.DOWN : axis == EnumFacing.Axis.X ? EnumFacing.NORTH : EnumFacing.EAST;
         }
+        if (state.getBlock() instanceof PaletteBlocks.Pillar) {
+            EnumFacing.Axis axis = state.getValue(BlockRotatedPillar.AXIS);
+            if (axis == EnumFacing.Axis.X && face.getAxis().isVertical()) return EnumFacing.NORTH;
+            if (axis.isHorizontal() && face.getAxis().isHorizontal() && face.getAxis() != axis)
+                return EnumFacing.getFacingFromAxis(face.getAxisDirection(), EnumFacing.Axis.Y);
+        }
         return face.getAxis() == EnumFacing.Axis.X ? EnumFacing.SOUTH : EnumFacing.WEST;
     }
 
     private static boolean reverse(IBlockState state, EnumFacing face) {
         if (state.getBlock() == AllBlocks.BRASS_TUNNEL) return true;
+        if (state.getBlock() instanceof PaletteBlocks.Pillar) {
+            EnumFacing.Axis axis = state.getValue(BlockRotatedPillar.AXIS);
+            if (axis == EnumFacing.Axis.X)
+                return face.getAxisDirection() == EnumFacing.AxisDirection.NEGATIVE && face.getAxis() != axis;
+            if (axis == EnumFacing.Axis.Z)
+                return face != EnumFacing.NORTH && face.getAxisDirection() == EnumFacing.AxisDirection.NEGATIVE;
+        }
         if (state.getBlock() instanceof ChassisBlock chassis && !chassis.isRadial()) {
             EnumFacing.Axis axis = state.getValue(ChassisBlock.AXIS);
             return axis.isHorizontal() && (face.getAxis() == axis
@@ -127,6 +149,11 @@ public final class ConnectedTextureData {
     }
 
     private static boolean flipVertical(IBlockState state, EnumFacing face) {
+        if (state.getBlock() instanceof PaletteBlocks.Pillar) {
+            EnumFacing.Axis axis = state.getValue(BlockRotatedPillar.AXIS);
+            if (axis == EnumFacing.Axis.X && face == EnumFacing.NORTH
+                    || axis == EnumFacing.Axis.Z && face == EnumFacing.WEST) return false;
+        }
         if (state.getBlock() instanceof EncasedCogwheelBlock cog && !cog.isLarge()
                 && state.getValue(KineticBlock.AXIS) == EnumFacing.Axis.X && face.getAxis() == EnumFacing.Axis.Z)
             return face != EnumFacing.SOUTH;
@@ -147,13 +174,18 @@ public final class ConnectedTextureData {
             IBlockState above = world.getBlockState(otherPos.up());
             return !above.getMaterial().isReplaceable() && above.getBoundingBox(world, otherPos.up()).maxY > 0;
         }
+        if (block instanceof PaletteBlocks.Pillar) {
+            EnumFacing.Axis axis = state.getValue(BlockRotatedPillar.AXIS);
+            if (other.getBlock() != block || other.getValue(BlockRotatedPillar.AXIS) != axis) return false;
+            // RotatedPillarCTBehaviour only lets a matching column obscure an end face.
+            if (face.getAxis() != axis) return true;
+            IBlockState blocking = world.getBlockState(otherPos.offset(face));
+            return blocking.getBlock() != block || blocking.getValue(BlockRotatedPillar.AXIS) != axis;
+        }
         if (block instanceof com.cogwork.cogworkbridge.content.decoration.palette.PaletteBlocks.Glass
                 || block instanceof com.cogwork.cogworkbridge.content.decoration.palette.PaletteBlocks.Pane
-                || block instanceof com.cogwork.cogworkbridge.content.decoration.palette.PaletteBlocks.Layered
-                || block instanceof com.cogwork.cogworkbridge.content.decoration.palette.PaletteBlocks.Pillar) {
+                || block instanceof com.cogwork.cogworkbridge.content.decoration.palette.PaletteBlocks.Layered) {
             if (other.getBlock() != block) return false;
-            if (block instanceof com.cogwork.cogworkbridge.content.decoration.palette.PaletteBlocks.Pillar
-                    && state.getValue(net.minecraft.block.BlockRotatedPillar.AXIS) != other.getValue(net.minecraft.block.BlockRotatedPillar.AXIS)) return false;
             return world.getBlockState(otherPos.offset(face)).getBlock() != block;
         }
         if (block instanceof ChassisBlock chassis && !chassis.isRadial())

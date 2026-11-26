@@ -315,7 +315,7 @@ public final class TargetResourcePack extends FMLFileResourcePack {
         String mapped = switch (parent) {
             case "minecraft:block/slab" -> "minecraft:block/half_slab";
             case "minecraft:block/slab_top" -> "minecraft:block/upper_slab";
-            case "minecraft:block/cube_column_horizontal" -> "minecraft:block/cube_column";
+            case "minecraft:block/cube_column_horizontal" -> "cogworkbridge:block/cube_column_horizontal";
             case "minecraft:block/template_wall_post" -> "minecraft:block/wall_post";
             case "minecraft:block/template_wall_side" -> "minecraft:block/wall_side";
             case "minecraft:block/template_glass_pane_post" -> "minecraft:block/pane_post";
