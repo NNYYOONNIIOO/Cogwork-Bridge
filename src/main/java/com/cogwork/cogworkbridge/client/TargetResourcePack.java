@@ -272,7 +272,8 @@ public final class TargetResourcePack extends FMLFileResourcePack {
             String path = location.getPath();
             if (!path.contains("/fluid_pipe/") && !path.contains("/mechanical_pump/")
                     && !path.contains("/funnel/") && !path.contains("/toolbox/")
-                    && !path.contains("/item/potato_cannon/") && !path.contains("/block/track/")) {
+                    && !path.contains("/item/potato_cannon/") && !path.contains("/block/track/")
+                    && !path.contains("/block/track_overlay/")) {
                 normalizeFaceUvs(location, model);
             }
             model.remove("texture_size");

@@ -45,6 +45,11 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     private int automaticDirection;
     private long nextRouteAttempt;
     private int destinationDimension;
+    private boolean manualDocking;
+    @Nullable private TrainStationNavigation.Approach nearbyStation;
+    private long nextManualStationSearch;
+    @Nullable private BlockPos dockedStation;
+    private int dockedDimension;
     private boolean portalPending;
     @Nullable RailwayPortals.Passage portalPassage;
     private boolean portalProxy;
@@ -231,6 +236,9 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         speed=old.speed;portalPending=false;route=old.route;destination=old.destination;automaticDirection=old.automaticDirection;nextRouteAttempt=0;
         driver=old.driver;driverCarriage=old.driverCarriage;controls=old.controls;lastInput=world.getTotalWorldTime();secondBogeyCursor=old.secondBogeyCursor;
         driverDirection=old.driverDirection;driverControls=old.driverControls;
+        manualDocking=old.manualDocking;nearbyStation=old.nearbyStation;
+        dockedStation=old.dockedStation;dockedDimension=old.dockedDimension;
+        destinationStation=old.destinationStation;destinationDimension=old.destinationDimension;
         crashed=old.crashed;crashDirection=old.crashDirection;damageGraceTicks=10;
         routeStartedDistance=old.routeStartedDistance;previousTrainPath=old.previousTrainPath;
         previousRoute=old.previousRoute;
@@ -523,8 +531,16 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         leader.driverDirection=forward.dotProduct(heading)<0D?-1:1;
         leader.driverControls=controlsPos.toImmutable();
         leader.driver=player.getUniqueID();leader.driverCarriage=getUniqueID();leader.controls=0;
-        if(leader.schedule!=null)leader.schedulePaused=true;
-        leader.route=null;leader.destination=null;leader.lastInput=world.getTotalWorldTime();return true;
+        leader.cancelManualDocking();leader.nearbyStation=null;leader.nextManualStationSearch=0;
+        if(leader.schedule!=null) {
+            leader.schedulePaused=true;leader.scheduleWaiting=false;leader.waitTicks=0;leader.waitRuntime.reset();
+        }
+        leader.route=null;leader.destination=null;leader.destinationStation=null;
+        if(leader.dockedStation==null&&Math.abs(leader.speed)<.005D) {
+            var station=TrainStationNavigation.parkedAt(leader.world,leader);
+            if(station!=null)leader.dockAt(station);
+        }
+        leader.lastInput=world.getTotalWorldTime();return true;
     }
     public boolean input(EntityPlayerMP player,int mask) {
         RailwayCarriageEntity leader = trainController();
@@ -535,8 +551,8 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         if(structure==null||!structure.getEntityBoundingBox().grow(4D).contains(player.getPositionVector())||player.isSpectator()){
             leader.clearDriving();return false;
         }
-        leader.controls=mask&31;
-        if ((mask & 16) != 0 && world.getTotalWorldTime() - leader.lastHonk >= 10) {
+        leader.controls=mask&63;
+        if ((mask & 32) != 0 && world.getTotalWorldTime() - leader.lastHonk >= 10) {
             leader.lastHonk = world.getTotalWorldTime();
             leader.honk(player);
         }
@@ -569,7 +585,85 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         }
     }
     private void clearDriving(){
+        cancelManualDocking();nearbyStation=null;nextManualStationSearch=0;
         driver=null;driverCarriage=null;driverControls=null;driverDirection=1;controls=0;
+    }
+    private void cancelManualDocking() {
+        if(manualDocking){route=null;destination=null;destinationStation=null;}
+        manualDocking=false;
+    }
+    void dockAt(RailwayTargetTile.Station station) {
+        dockedStation=station.getPos().toImmutable();dockedDimension=station.getWorld().provider.getDimension();
+    }
+    private void stationPrompt(String key,Object... arguments) {
+        EntityPlayerMP player=world.getMinecraftServer().getPlayerList().getPlayerByUUID(driver);
+        if(player!=null)player.sendStatusMessage(new net.minecraft.util.text.TextComponentTranslation(
+                "cogworkbridge.train."+key,arguments),true);
+    }
+    private double manualStationControl(RailwayNetworkData graph,double desired,double maximum,int steering) {
+        if(driver==null)return desired;
+        long now=world.getTotalWorldTime();boolean hold=(controls&16)!=0;
+        if(dockedStation!=null) {
+            var tile=dockedDimension==world.provider.getDimension()&&world.isBlockLoaded(dockedStation)
+                    ?world.getTileEntity(dockedStation):null;
+            if(!(tile instanceof RailwayTargetTile.Station station)||station.stoppedTrain()!=this)dockedStation=null;
+            else if(!hold&&((controls&1)!=0||(controls&2)!=0)) {
+                stationPrompt("departing_from",station.name());dockedStation=null;
+            } else {
+                if(now%5==0)stationPrompt("arrived_at",station.name());
+                speed=0D;return 0D;
+            }
+        }
+        if(manualDocking) {
+            var level=stationWorld();
+            if(!hold||level==null||destinationStation==null||!level.isBlockLoaded(destinationStation)
+                    ||!(level.getTileEntity(destinationStation) instanceof RailwayTargetTile.Station station)
+                    ||station.assembling()||!station.hasValidTarget()
+                    ||nearbyStation==null||!nearbyStation.station().track().equals(station.target())
+                    ||nearbyStation.station().front()!=station.front()) {
+                cancelManualDocking();nearbyStation=null;nextManualStationSearch=0;
+            } else {
+                RailwayCarriageEntity present=station.stoppedTrain();
+                if(present!=null&&present!=this){cancelManualDocking();nearbyStation=null;}
+            }
+        }
+        if(!manualDocking&&now>=nextManualStationSearch) {
+            nextManualStationSearch=now+5;
+            int direction=Math.abs(speed)>1E-5D?(speed>0D?1:-1):desired!=0D?(desired>0D?1:-1):driverDirection;
+            TrackCursor leading=trainPath==null?cursor:trainPath.at(graph,direction>0?trainPath.span():0D);
+            boolean hadStation=nearbyStation!=null;
+            nearbyStation=leading==null?null:TrainStationNavigation.find(world,graph,leading,direction,steering,speed,trainId());
+            if(nearbyStation==null&&hadStation)stationPrompt("station_canceled");
+        }
+        if(!manualDocking&&nearbyStation!=null&&hold) {
+            // Refresh immediately: the preview may be a few input ticks old.
+            nextManualStationSearch=now;
+            int direction=nearbyStation.direction();
+            TrackCursor leading=trainPath==null?cursor:trainPath.at(graph,direction>0?trainPath.span():0D);
+            nearbyStation=leading==null?null:TrainStationNavigation.find(world,graph,leading,direction,steering,speed,trainId());
+            if(nearbyStation!=null) {
+                route=new ArrayList<>(nearbyStation.route());destination=nearbyStation.arrival();
+                destinationStation=nearbyStation.station().owner();destinationDimension=world.provider.getDimension();
+                automaticDirection=nearbyStation.direction();manualDocking=true;
+            }
+        }
+        if(manualDocking) {
+            double remaining=routeDistance(graph);
+            if(!Double.isFinite(remaining)) {
+                cancelManualDocking();nearbyStation=null;nextManualStationSearch=0;
+                stationPrompt("station_canceled");return 0D;
+            }
+            if(remaining<1E-6D) {
+                speed=0D;dockedStation=destinationStation;dockedDimension=destinationDimension;
+                stationPrompt("arrived_at",nearbyStation.station().name());
+                cancelManualDocking();nearbyStation=null;return 0D;
+            }
+            if(now%5==0)stationPrompt("approaching_station",nearbyStation.station().name(),(int)Math.ceil(remaining));
+            return automaticDirection*Math.min(maximum,Math.sqrt(2D*.0075D*remaining));
+        }
+        if(nearbyStation!=null&&now%5==0)stationPrompt("approach_station",
+                new net.minecraft.util.text.TextComponentKeybind("key.jump"),nearbyStation.station().name());
+        return hold?0D:desired;
     }
     public boolean installSchedule(net.minecraft.item.ItemStack stack) {
         RailwayCarriageEntity leader = trainController();
@@ -596,10 +690,13 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         double best=Double.POSITIVE_INFINITY;List<RailwayNetworkData.Travel> chosen=null;
         RailwayNetworkData.Node goal=null;net.minecraft.util.math.BlockPos chosenStation=null;int direction=0,chosenDimension=world.provider.getDimension();
         for(WorldServer level:world.getMinecraftServer().worlds)for(RailwayNetworkData.Target station:RailwayNetworkData.get(level).targets()) {
+            if(!"station".equals(station.kind()))continue;
+            if(level.isBlockLoaded(station.owner())&&level.getTileEntity(station.owner()) instanceof RailwayTargetTile.Station tile
+                    &&(tile.assembling()||tile.trainPresent()&&tile.stoppedTrain()!=this))continue;
             var mail=com.cogwork.cogworkbridge.content.logistics.port.MailboxNetwork.get(level);
             if(entry.instruction==TrainSchedule.Instruction.FETCH_PACKAGES&&!mail.offers(station.owner(),filter))continue;
             if(entry.instruction==TrainSchedule.Instruction.DELIVER_PACKAGES&&!mail.accepts(station.owner(),this))continue;
-            if(!"station".equals(station.kind())||entry.instruction==TrainSchedule.Instruction.DESTINATION&&!TrainSchedule.matches(filter,station.name()))continue;
+            if(entry.instruction==TrainSchedule.Instruction.DESTINATION&&!TrainSchedule.matches(filter,station.name()))continue;
             RailwayNetworkData.Node end=RailwayNetworkData.get(level).stationArrival(station);if(end==null)continue;
             for(int sign:new int[]{1,-1}) {
                 if(!hasConductor(sign))continue;
@@ -607,13 +704,20 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
                 if (leading == null) continue;
                 RailwayNetworkData.Travel current=leading.edge(graph);if(current==null)continue;
                 RailwayNetworkData.Node start=sign>0?leading.to():leading.from();
-                List<RailwayNetworkData.Travel> candidate=RailwayPortals.route(world,current.dimension(),start,level.provider.getDimension(),end);
+                RailwayNetworkData.Travel initial=sign>0?current:TrainStationNavigation.reverse(current);
+                List<RailwayNetworkData.Travel> candidate=current.dimension()==level.provider.getDimension()
+                        ?RailwayNetworkData.get(level).route(start,end,initial,station)
+                        :RailwayPortals.route(world,current.dimension(),start,level.provider.getDimension(),end);
+                if(candidate.isEmpty()&&current.dimension()==level.provider.getDimension()&&!start.equals(end))
+                    candidate=RailwayPortals.route(world,current.dimension(),start,level.provider.getDimension(),end);
                 if(candidate.isEmpty()&&(!start.equals(end)||current.dimension()!=level.provider.getDimension()))continue;
                 if(!candidate.isEmpty()) {
                     RailwayNetworkData.Travel first=candidate.get(0);
                     RailwayNetworkData.Node previous=sign>0?leading.from():leading.to();
                     if(first.dimension()==current.dimension()&&first.to().equals(previous)&&first.track().equals(current.track()))continue;
                 }
+                RailwayNetworkData.Travel incoming=candidate.isEmpty()?initial:candidate.get(candidate.size()-1);
+                if(!RailwayNetworkData.get(level).stationApproach(station,incoming))continue;
                 double distance=current.length()*(sign>0?1D-leading.progress():leading.progress());
                 for(RailwayNetworkData.Travel edge:candidate)distance+=edge.length();
                 if(distance<best){best=distance;chosen=new ArrayList<>(candidate);goal=end;chosenStation=station.owner();direction=sign;chosenDimension=level.provider.getDimension();}
@@ -636,6 +740,10 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
                 : trainPath.at(graph, automaticDirection > 0 ? trainPath.span() : 0D);
         if (leading == null) return Double.POSITIVE_INFINITY;
         RailwayNetworkData.Travel edge=leading.edge(graph);if(edge==null)return Double.POSITIVE_INFINITY;
+        if(route.isEmpty()&&edge.dimension()==destinationDimension) {
+            Vec3d position=leading.position(graph);
+            if(position!=null&&position.squareDistanceTo(destination.position())<1E-10D)return 0D;
+        }
         double distance=edge.length()*(automaticDirection>0?1D-leading.progress():leading.progress());
         for(RailwayNetworkData.Travel part:route)distance+=part.length();
         return distance;
@@ -734,6 +842,9 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
         TrackCursor speedCursor = trainPath == null ? cursor : trainPath.at(graph, speed >= 0D ? trainPath.span() : 0D);
         double max=speedCursor!=null&&speedCursor.edge(graph)!=null&&speedCursor.edge(graph).curve()!=null?.525D:1.05D;
         double desired=direction*max;
+        int steering=driverDirection*(((controls&8)!=0?1:0)-((controls&4)!=0?1:0));
+        if(speed<0D||speed==0D&&direction<0)steering=-steering;
+        desired=manualStationControl(graph,desired,max,steering);
         if(driver==null&&schedule!=null&&!schedulePaused)immediateInstructions();
         boolean automatic=driver==null&&schedule!=null&&!schedulePaused;
         if(automatic)max*=throttle;
@@ -757,24 +868,26 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
                 if(remaining<1E-6D) {
                     if(ticksInTransit>0)transitTimes[scheduleIndex]=transitTimes[scheduleIndex]>0?(transitTimes[scheduleIndex]+ticksInTransit)/2:ticksInTransit;
                     speed=0D;scheduleWaiting=true;waitTicks=0;waitRuntime.reset();
+                    dockedStation=destinationStation;dockedDimension=destinationDimension;
                 } else if(Double.isFinite(remaining))
                     desired=automaticDirection*Math.min(max,Math.sqrt(2D*.0075D*remaining));
             }
             if(!hasConductor(automaticDirection==0?1:automaticDirection))desired=0D;
         }
         speed+=Math.max(-.0075D,Math.min(.0075D,desired-speed));
-        if(automatic&&!Double.isFinite(remaining))speed=0D;
+        boolean navigating=automatic||manualDocking;
+        if(manualDocking)remaining=routeDistance(graph);
+        if(navigating&&!Double.isFinite(remaining))speed=0D;
         if(Math.abs(speed)<1E-5D)speed=0D;
+        if(speed!=0D)dockedStation=null;
         previousCursor=cursor.copy();
         previousRoute=route==null?null:new ArrayList<>(route);
-        int steering=driverDirection*(((controls&8)!=0?1:0)-((controls&4)!=0?1:0));
         // Junction tangents follow motion, but left/right stay relative to the cab.
-        if(speed<0D)steering=-steering;
-        double requested=automatic&&Double.isFinite(remaining)
+        double requested=navigating&&Double.isFinite(remaining)
                 ?Math.copySign(Math.min(Math.abs(speed),remaining),speed):speed;
         if (trainPath != null) {
             previousTrainPath = trainPath.copy();
-            double moved = trainPath.advance(world, graph, requested, steering, automatic ? route : null, trainId());
+            double moved = trainPath.advance(world, graph, requested, steering, navigating ? route : null, trainId());
             if (Math.abs(moved-requested)>1E-6D) speed=0D;
             if (!placeTrain(graph, carriages, Math.abs(moved)>1E-8D)) {
                 trainPath=previousTrainPath;previousTrainPath=null;speed=0D;
@@ -786,7 +899,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
             TrainCollision.tick(this);
             return;
         }
-        double moved=cursor.advance(world,graph,requested,steering,automatic?route:null,getUniqueID());
+        double moved=cursor.advance(world,graph,requested,steering,navigating?route:null,getUniqueID());
         if(Math.abs(moved-requested)>1E-6D)speed=0D;
         Vec3d next=cursor.position(graph);
         if(next==null){cursor=previousCursor;speed=0D;next=at;}
@@ -812,6 +925,7 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
     @Override protected void writeEntityToNBT(NBTTagCompound tag){
         super.writeEntityToNBT(tag);if(cursor!=null)tag.setTag("TrackCursor",cursor.write());
         tag.setBoolean("TrainCrashed", crashed); tag.setInteger("CrashDirection", crashDirection);
+        if(dockedStation!=null){tag.setLong("DockedStation",dockedStation.toLong());tag.setInteger("DockedDimension",dockedDimension);}
         if(bodyId!=null)tag.setUniqueId("CarriageBody",bodyId);
         if(portalPassage!=null)tag.setTag("PortalPassage",portalPassage.write());
         tag.setBoolean("PortalProxy",portalProxy);if(portalBodyId!=null)tag.setUniqueId("PortalBody",portalBodyId);
@@ -874,6 +988,8 @@ public final class RailwayCarriageEntity extends EntityMinecartEmpty {
             destinationStation=tag.hasKey("ScheduleStation")?net.minecraft.util.math.BlockPos.fromLong(tag.getLong("ScheduleStation")):null;
         }
         route=null;destination=null;
+        dockedStation=tag.hasKey("DockedStation")?BlockPos.fromLong(tag.getLong("DockedStation")):null;
+        dockedDimension=tag.getInteger("DockedDimension");
     }
     NBTTagList displayPredictions() {
         NBTTagList result=new NBTTagList();if(schedule==null||schedulePaused)return result;

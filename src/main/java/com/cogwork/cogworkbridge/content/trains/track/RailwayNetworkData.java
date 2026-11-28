@@ -289,6 +289,15 @@ public final class RailwayNetworkData extends WorldSavedData {
         return Node.at(new Vec3d(arrival.getX()+.5D,arrival.getY(),arrival.getZ()+.5D));
     }
 
+    /** A platform is approached against the direction in which its train is assembled. */
+    public boolean stationApproach(Target station,Travel incoming) {
+        Node arrival=stationArrival(station);
+        TrackRecord record=tracks.get(station.track);
+        if(arrival==null||!incoming.to.equals(arrival)||incoming.dimension!=dimension())return false;
+        Vec3d outward=record.shape.axis().scale(station.front?1D:-1D);
+        return incoming.tangent(1D).normalize().dotProduct(outward)<-.5D;
+    }
+
     private void ensureGraph(){
         if(!rebuild)return;
         graph.clear();spatialEdges.clear();
@@ -335,22 +344,26 @@ public final class RailwayNetworkData extends WorldSavedData {
     }
     /** Shortest route across straight segments, junctions and saved curves. */
     public List<Travel> route(Node source,Node destination) {
+        return route(source,destination,null,null);
+    }
+    /** Station routing retains entry direction so a longer valid approach can beat a wrong-side shortcut. */
+    List<Travel> route(Node source,Node destination,@Nullable Travel incoming,@Nullable Target station) {
         ensureGraph();
-        if(source.equals(destination))return Collections.emptyList();
+        if(source.equals(destination)&&(station==null||incoming!=null&&stationApproach(station,incoming)))return Collections.emptyList();
         record State(Node node,Travel incoming) { }
         record Previous(State state,Travel edge) { }
         Map<State,Double> distance=new HashMap<>();
         Map<State,Previous> previous=new HashMap<>();
         record Candidate(State state,double distance){}
         PriorityQueue<Candidate> queue=new PriorityQueue<>(Comparator.comparingDouble(Candidate::distance));
-        State origin=new State(source,null),goal=null;
+        State origin=new State(source,incoming),goal=null;
         distance.put(origin,0D);queue.add(new Candidate(origin,0D));
         int visited=0;
         while(!queue.isEmpty()&&visited++<MAX_TRACKS*8) {
             Candidate current=queue.poll();
             State state=current.state;
             if(current.distance>distance.getOrDefault(state,Double.POSITIVE_INFINITY))continue;
-            if(state.node.equals(destination)){goal=state;break;}
+            if(state.node.equals(destination)&&(station==null||state.incoming!=null&&stationApproach(station,state.incoming))){goal=state;break;}
             for(Travel edge:graph.getOrDefault(state.node,Collections.emptyList())) {
                 if(state.incoming!=null) {
                     if(edge.to.equals(state.incoming.from)&&edge.track.equals(state.incoming.track))continue;

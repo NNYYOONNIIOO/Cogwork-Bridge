@@ -16,6 +16,13 @@ public final class RailwayTargetItem extends ItemBlock {
     private static final String SELECTION="RailwayTarget";
     private final String kind;
     public RailwayTargetItem(Block block,String kind){super(block);this.kind=kind;}
+    public String kind(){return kind;}
+    @javax.annotation.Nullable public static BlockPos selectedTrack(ItemStack stack,World world) {
+        if(!selected(stack))return null;
+        NBTTagCompound data=stack.getTagCompound().getCompoundTag(SELECTION);
+        return data.getInteger("Dimension")==world.provider.getDimension()?BlockPos.fromLong(data.getLong("Pos")):null;
+    }
+    public static boolean selectedFront(ItemStack stack){return selected(stack)&&stack.getTagCompound().getCompoundTag(SELECTION).getBoolean("Front");}
     @Override public boolean hasEffect(ItemStack stack){return selected(stack)||super.hasEffect(stack);}
     private static boolean selected(ItemStack stack){return stack.hasTagCompound()&&stack.getTagCompound().hasKey(SELECTION,10);}
     private static void clear(ItemStack stack){

@@ -40,7 +40,8 @@ public final class TrainControlClient {
         if(!(mc.world.getEntityByID(carriage) instanceof RailwayCarriageEntity)){if(spawnGrace-->0)return;stop();return;}
         spawnGrace=0;
         int mask=(pressed(mc.gameSettings.keyBindForward)?1:0)|(pressed(mc.gameSettings.keyBindBack)?2:0)
-                |(pressed(mc.gameSettings.keyBindLeft)?4:0)|(pressed(mc.gameSettings.keyBindRight)?8:0)|(pressed(mc.gameSettings.keyBindJump)?16:0);
+                |(pressed(mc.gameSettings.keyBindLeft)?4:0)|(pressed(mc.gameSettings.keyBindRight)?8:0)|(pressed(mc.gameSettings.keyBindJump)?16:0)
+                |(pressed(mc.gameSettings.keyBindSprint)?32:0);
         if(mask!=lastMask||++refresh>=5){ModNetwork.CHANNEL.sendToServer(new TrainControlInputPacket(carriage,mask,false));lastMask=mask;refresh=0;}
     }
     @SubscribeEvent public static void preventMovement(InputUpdateEvent event){
@@ -50,8 +51,13 @@ public final class TrainControlClient {
     @SubscribeEvent public static void hint(RenderGameOverlayEvent.Post event){
         if(carriage<0||event.getType()!=RenderGameOverlayEvent.ElementType.ALL)return;
         Minecraft mc=Minecraft.getMinecraft();
-        String hint=I18n.format("cogworkbridge.train.controls_hint");
-        mc.fontRenderer.drawStringWithShadow(hint,(event.getResolution().getScaledWidth()-mc.fontRenderer.getStringWidth(hint))/2F,
-                event.getResolution().getScaledHeight()-55,0xffffff);
+        String hint=I18n.format("cogworkbridge.train.controls_hint",mc.gameSettings.keyBindJump.getDisplayName(),
+                mc.gameSettings.keyBindSprint.getDisplayName(),mc.gameSettings.keyBindSneak.getDisplayName());
+        var lines=mc.fontRenderer.listFormattedStringToWidth(hint,Math.max(1,event.getResolution().getScaledWidth()-20));
+        int y=event.getResolution().getScaledHeight()-55-(lines.size()-1)*mc.fontRenderer.FONT_HEIGHT;
+        for(String line:lines) {
+            mc.fontRenderer.drawStringWithShadow(line,(event.getResolution().getScaledWidth()-mc.fontRenderer.getStringWidth(line))/2F,y,0xffffff);
+            y+=mc.fontRenderer.FONT_HEIGHT;
+        }
     }
 }

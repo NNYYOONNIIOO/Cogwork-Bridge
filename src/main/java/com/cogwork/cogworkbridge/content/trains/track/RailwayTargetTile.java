@@ -128,7 +128,7 @@ public abstract class RailwayTargetTile extends TileEntity {
             for(int i=0;i<tracks.size();i++)
                 if(world.getBlockState(tracks.get(i).up()).getBlock() instanceof BogeyBlock)occupied.add(i);
             for(int i=0;i<tracks.size();i++) {
-                if(occupied.isEmpty()&&i!=0||occupied.size()>=20)continue;
+                if((i<3||occupied.isEmpty())&&i!=0||occupied.size()>=20)continue;
                 boolean near=false;
                 for(int existing:occupied)if(Math.abs(existing-i)<3){near=true;break;}
                 if(!near)result.add(tracks.get(i));
@@ -137,6 +137,10 @@ public abstract class RailwayTargetTile extends TileEntity {
         }
         /** The assembly area follows the straight track away from the selected station point. */
         public boolean tryBogey(net.minecraft.entity.player.EntityPlayer player,net.minecraft.util.EnumHand hand,BlockPos clicked) {
+            net.minecraft.item.ItemStack heldItem=player.getHeldItem(hand);
+            if(heldItem.getItem()!=com.cogwork.cogworkbridge.registry.AllItems.WRENCH
+                    &&heldItem.getItem()!=net.minecraft.item.Item.getItemFromBlock(
+                    com.cogwork.cogworkbridge.registry.BlockFamily.get("railway_casing")))return false;
             if(!assembling||!hasValidTarget()||target()==null)return false;
             TrackShape shape=world.getBlockState(target()).getValue(TrackBlock.SHAPE);
             if(shape!=TrackShape.XO&&shape!=TrackShape.ZO)return false;
@@ -157,6 +161,7 @@ public abstract class RailwayTargetTile extends TileEntity {
                 }
                 return false;
             }
+            if(heldItem.getItem()==com.cogwork.cogworkbridge.registry.AllItems.WRENCH)return false;
             BlockPos bogeyPos=clicked.up();
             net.minecraft.item.ItemStack held=player.getHeldItem(hand);
             if(!player.capabilities.isCreativeMode && held.getItem()!=net.minecraft.item.Item.getItemFromBlock(
@@ -280,6 +285,7 @@ public abstract class RailwayTargetTile extends TileEntity {
                         +(plan.second().getZ()-origin.getZ())*dz));
             }
             RailwayCarriageEntity.configureTrain(carriages,path,offsets,secondOffsets);
+            carriages.get(0).dockAt(this);
             com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "train");
             if (carriages.size() >= 6) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "long_train");
             for (var plan : plans) com.cogwork.cogworkbridge.content.advancement.AllAdvancements.assembled(world, pos, plan.structure());

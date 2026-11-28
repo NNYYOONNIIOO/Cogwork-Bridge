@@ -138,7 +138,13 @@ public final class FastStateRendering implements ISelectiveResourceReloadListene
     /** Transient vertex tint for animated arm bodies; do not cache every rainbow colour. */
     public void renderTinted(IBlockState state, int rgb) {
         if ((rgb & 0xFFFFFF) == 0xFFFFFF) { renderFast(state); return; }
-        Geometry geometry = geometry(state);
+        renderTinted(model(state), state, rgb);
+    }
+
+    /** Fixed baked overlay geometry with a transient colour, without a display list per tint. */
+    public void renderTinted(IBakedModel model, IBlockState state, int rgb) {
+        if (model == null) return;
+        Geometry geometry = geometry(model, state);
         minecraft.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(7, DefaultVertexFormats.ITEM);
