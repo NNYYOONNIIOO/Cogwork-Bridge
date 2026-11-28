@@ -54,11 +54,12 @@ public final class ItemDrainBlock extends BlockContainer {
     }
 
     @Override
-    public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
-        if (!world.isRemote && entity instanceof net.minecraft.entity.item.EntityItem item
-                && world.getTileEntity(pos) instanceof ItemDrainTileEntity drain) {
-            drain.tryInsertItemEntity(item);
-        }
+    public void onLanded(World world, Entity entity) {
+        super.onLanded(world, entity);
+        if (world.isRemote || !(entity instanceof net.minecraft.entity.item.EntityItem item)) return;
+        BlockPos landed = entity.getPosition();
+        if (world.getBlockState(landed).getBlock() != this) landed = landed.down();
+        if (world.getTileEntity(landed) instanceof ItemDrainTileEntity drain) drain.tryInsertItemEntity(item);
     }
 
     @Override

@@ -37,12 +37,13 @@ public final class MechanicalSawTileEntity extends KineticTileEntity {
     private final java.util.List<ItemStack> pendingOutputs = new java.util.ArrayList<>();
     private boolean changingInventory;
     private final net.minecraftforge.items.ItemStackHandler cuttingInventory = new net.minecraftforge.items.ItemStackHandler(2) {
-        @Override public boolean isItemValid(int slot, ItemStack stack) { return slot == 0 && !SawRecipes.matching(stack, filter).isEmpty(); }
+        @Override public boolean isItemValid(int slot, ItemStack stack) { return slot == 0; }
+        @Override public int getSlotLimit(int slot) { return slot == 0 ? 1 : super.getSlotLimit(slot); }
         @Override public net.minecraft.item.ItemStack extractItem(int slot, int amount, boolean simulate) {
             return slot == 1 ? super.extractItem(slot, amount, simulate) : net.minecraft.item.ItemStack.EMPTY;
         }
         @Override public net.minecraft.item.ItemStack insertItem(int slot, net.minecraft.item.ItemStack stack, boolean simulate) {
-            return slot == 0 && getStackInSlot(0).isEmpty() && getStackInSlot(1).isEmpty()
+            return slot == 0 && canProcessItems() && getStackInSlot(0).isEmpty() && getStackInSlot(1).isEmpty()
                     && pendingOutputs.isEmpty() && isItemValid(slot, stack) ? super.insertItem(slot, stack, simulate) : stack;
         }
         @Override protected void onContentsChanged(int slot) {
@@ -57,9 +58,15 @@ public final class MechanicalSawTileEntity extends KineticTileEntity {
                 ? net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(cuttingInventory) : super.getCapability(capability, side);
     }
     public void acceptItem(EntityItem entity) {
-        if (world == null || world.isRemote || getSpeed() == 0 || entity.isDead || world.getBlockState(pos).getValue(MechanicalSawBlock.FACING) != EnumFacing.UP) return;
+        if (world == null || world.isRemote || getSpeed() == 0 || entity.isDead || !canProcessItems()) return;
+        int count = entity.getItem().getCount();
         net.minecraft.item.ItemStack rest = cuttingInventory.insertItem(0, entity.getItem(), false);
-        if (rest.isEmpty()) entity.setDead(); else entity.setItem(rest);
+        if (rest.isEmpty()) entity.setDead(); else if (rest.getCount() != count) entity.setItem(rest);
+    }
+    private boolean canProcessItems() {
+        if (world == null) return false;
+        IBlockState state = world.getBlockState(pos);
+        return state.getBlock() instanceof MechanicalSawBlock && state.getValue(MechanicalSawBlock.FACING) == EnumFacing.UP;
     }
     private void tickCutting() {
         fillOutput();

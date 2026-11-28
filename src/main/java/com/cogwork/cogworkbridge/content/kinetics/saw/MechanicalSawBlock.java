@@ -185,11 +185,17 @@ public final class MechanicalSawBlock extends KineticBlock {
     }
 
     @Override
+    public void onLanded(World world, Entity entity) {
+        super.onLanded(world, entity);
+        if (world.isRemote || !(entity instanceof EntityItem item)) return;
+        BlockPos landed = entity.getPosition();
+        if (world.getBlockState(landed).getBlock() != this) landed = landed.down();
+        if (world.getTileEntity(landed) instanceof MechanicalSawTileEntity saw) saw.acceptItem(item);
+    }
+
+    @Override
     public void onEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity) {
-        if (entity instanceof EntityItem item) {
-            if (!world.isRemote && world.getTileEntity(pos) instanceof MechanicalSawTileEntity saw) saw.acceptItem(item);
-            return;
-        }
+        if (entity instanceof EntityItem) return;
         if (world.isRemote || world instanceof FakeWorld
                 || !new AxisAlignedBB(pos).shrink(0.1D).intersects(entity.getEntityBoundingBox())) {
             return;

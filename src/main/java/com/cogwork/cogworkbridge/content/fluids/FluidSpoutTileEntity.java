@@ -6,7 +6,6 @@ import net.minecraft.block.BlockCauldron;
 import net.minecraft.block.BlockFarmland;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
@@ -23,13 +22,10 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.UUID;
 
 public final class FluidSpoutTileEntity extends FluidTankTileEntity implements TransportedItemProcessor {
     private static final int PROCESSING_TIME = 20;
     private int processingTicks = -1;
-    @Nullable private UUID targetItem;
     private boolean targetBlock;
     private boolean targetTransport;
     private ItemStack targetTransportItem = ItemStack.EMPTY;
@@ -43,14 +39,6 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
         if (world == null) return;
         if (processingTicks >= 0) {
             if (!world.isRemote) {
-                if (targetItem != null) {
-                    EntityItem item = findItem(targetItem);
-                    if (item != null) {
-                        item.motionX = 0;
-                        item.motionZ = 0;
-                        item.setPickupDelay(10);
-                    }
-                }
                 if (processingTicks == 5) finishProcessing();
                 markDirty();
             } else if (processingTicks >= 8) {
@@ -58,7 +46,6 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
             }
             processingTicks--;
             if (processingTicks < 0) {
-                targetItem = null;
                 targetBlock = false;
                 targetTransport = false;
                 targetTransportItem = ItemStack.EMPTY;
@@ -78,13 +65,6 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
             targetTransportItem = holder.getTransportedItem().copy();
             startProcessing();
             return;
-        }
-        for (EntityItem item : itemsInWorkArea()) {
-            if (!item.isDead && canFill(item.getItem())) {
-                targetItem = item.getUniqueID();
-                startProcessing();
-                return;
-            }
         }
     }
 
@@ -159,24 +139,6 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
             }
             return;
         }
-
-        EntityItem item = targetItem == null ? null : findItem(targetItem);
-        if (item == null || !canFill(item.getItem())) return;
-        ItemStack original = item.getItem();
-        ItemStack result = fillItem(original);
-        if (result == null) return;
-        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.food(this, result);
-        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "spout");
-        if (original.getCount() == 1) {
-            item.setItem(result);
-        } else {
-            original.shrink(1);
-            item.setItem(original);
-            EntityItem output = new EntityItem(world, item.posX, item.posY, item.posZ, result);
-            output.setDefaultPickupDelay();
-            world.spawnEntity(output);
-        }
-        syncProcessing();
     }
 
     private boolean canFill(ItemStack stack) {
@@ -223,18 +185,6 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
         return 0;
     }
 
-    private List<EntityItem> itemsInWorkArea() {
-        return world.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(pos.down(2)).grow(0.35D, 0.15D, 0.35D));
-    }
-
-    @Nullable
-    private EntityItem findItem(UUID id) {
-        for (EntityItem item : itemsInWorkArea()) {
-            if (!item.isDead && item.getUniqueID().equals(id)) return item;
-        }
-        return null;
-    }
-
     private void spawnFluidParticle() {
         FluidStack fluid = tank.getFluid();
         if (fluid == null) return;
@@ -270,7 +220,6 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
         tag.setBoolean("ProcessingTransport", targetTransport);
         if (!targetTransportItem.isEmpty())
             tag.setTag("ProcessingTransportItem", targetTransportItem.writeToNBT(new NBTTagCompound()));
-        if (targetItem != null) tag.setUniqueId("ProcessingItem", targetItem);
         return tag;
     }
 
@@ -282,6 +231,5 @@ public final class FluidSpoutTileEntity extends FluidTankTileEntity implements T
         targetTransport = tag.getBoolean("ProcessingTransport");
         targetTransportItem = tag.hasKey("ProcessingTransportItem", 10)
                 ? new ItemStack(tag.getCompoundTag("ProcessingTransportItem")) : ItemStack.EMPTY;
-        targetItem = tag.hasUniqueId("ProcessingItem") ? tag.getUniqueId("ProcessingItem") : null;
     }
 }

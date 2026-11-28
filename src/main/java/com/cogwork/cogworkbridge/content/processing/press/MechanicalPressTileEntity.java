@@ -6,11 +6,15 @@ import com.cogwork.cogworkbridge.content.logistics.transport.TransportedItemHold
 import com.cogwork.cogworkbridge.content.logistics.transport.TransportedItemProcessor;
 import com.cogwork.cogworkbridge.kinetic.KineticTileEntity;
 import com.cogwork.cogworkbridge.vendor.movingworld.common.chunk.mobilechunk.world.FakeWorld;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.WorldServer;
 
 public final class MechanicalPressTileEntity extends KineticTileEntity implements TransportedItemProcessor {
     private static final String UPSTREAM_PREFIX = "upstream:";
@@ -22,6 +26,7 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
     private boolean renderOffsetInitialized;
     private boolean running;
     private boolean transportMode;
+    private boolean worldMode;
     private ItemStack expectedInput = ItemStack.EMPTY;
     private String recipeId = "";
     private int inputCount;
@@ -55,20 +60,26 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
         if (!running) {
             if (world.getTotalWorldTime() % 10L != 0L) return;
             TileEntity target = world.getTileEntity(pos.down(2));
-            if (target instanceof TransportedItemHolder holder && holdTransportedItem(holder)) return;
-            BasinTileEntity basin = findBasin();
-            BasinPlan upstream = basin == null ? null : findUpstream(basin, null);
+            if (target instanceof TransportedItemHolder holder) {
+                holdTransportedItem(holder);
+                return;
+            }
+            if (!(target instanceof BasinTileEntity basin)) {
+                tryStartInWorld();
+                return;
+            }
+            BasinPlan upstream = findUpstream(basin, null);
             if (upstream != null) {
                 expectedInput = ItemStack.EMPTY; recipeId = UPSTREAM_PREFIX + upstream.recipe().id(); inputCount = 0;
-                transportMode = false; progress = previousProgress = 0.0F; running = true;
+                transportMode = worldMode = false; progress = previousProgress = 0.0F; running = true;
                 markDirty(); sync(); return;
             }
-            CompactingCraft.Plan plan = basin == null ? null : CompactingCraft.find(world, basin);
+            CompactingCraft.Plan plan = CompactingCraft.find(world, basin);
             if (plan == null) return;
             expectedInput = plan.input().copy();
             recipeId = plan.recipe().toString();
             inputCount = plan.count();
-            transportMode = false;
+            transportMode = worldMode = false;
             progress = previousProgress = 0.0F;
             running = true;
             markDirty();
@@ -83,13 +94,13 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
                     .75F + Math.min(speed, 256F) / 1024F);
             world.playSound(null, pos, net.minecraft.init.SoundEvents.ENTITY_ITEM_BREAK,
                     net.minecraft.util.SoundCategory.BLOCKS, .25F, transportMode ? .75F : 1F);
-            if (transportMode) applyTransported(); else applyCompacting();
+            if (transportMode) applyTransported(); else if (worldMode) applyInWorld(); else applyCompacting();
             markDirty();
             sync();
         }
         if (progress >= 2000.0F) {
             running = false;
-            transportMode = false;
+            transportMode = worldMode = false;
             progress = previousProgress = 0.0F;
             expectedInput = ItemStack.EMPTY;
             recipeId = "";
@@ -106,6 +117,53 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
         return tile instanceof BasinTileEntity basin ? basin : null;
     }
 
+    private void tryStartInWorld() {
+        for (EntityItem entity : world.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(pos.down()).grow(-.125D))) {
+            if (!entity.isEntityAlive() || !entity.onGround || PressingRecipes.result(entity.getItem()).isEmpty()) continue;
+            expectedInput = ItemStack.EMPTY;
+            recipeId = "";
+            inputCount = 0;
+            transportMode = false;
+            worldMode = true;
+            progress = previousProgress = 0.0F;
+            running = true;
+            markDirty();
+            sync();
+            return;
+        }
+    }
+
+    private void applyInWorld() {
+        TileEntity target = world.getTileEntity(pos.down(2));
+        if (target instanceof TransportedItemHolder || target instanceof BasinTileEntity) return;
+        for (EntityItem entity : world.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(pos.down()))) {
+            if (!entity.isEntityAlive() || !entity.onGround) continue;
+            ItemStack input = entity.getItem().copy();
+            if (PressingRecipes.result(input).isEmpty()) continue;
+            ItemStack result = PressingRecipes.finish(input, world.rand);
+            if (result.isEmpty()) continue;
+            if (input.getCount() == 1) {
+                entity.setItem(result);
+            } else {
+                EntityItem output = new EntityItem(world, entity.posX, entity.posY, entity.posZ, result);
+                output.setDefaultPickupDelay();
+                output.motionX = (world.rand.nextDouble() - .5D) * .1D;
+                output.motionY = (world.rand.nextDouble() - .5D) * .1D;
+                output.motionZ = (world.rand.nextDouble() - .5D) * .1D;
+                if (!world.spawnEntity(output)) continue;
+                ItemStack remaining = input.copy();
+                remaining.shrink(1);
+                entity.setItem(remaining);
+            }
+            if (world instanceof WorldServer server) {
+                server.spawnParticle(EnumParticleTypes.ITEM_CRACK, entity.posX, entity.posY + .125D, entity.posZ,
+                        15, .125D, 0D, .125D, .1D, Item.getIdFromItem(input.getItem()), input.getMetadata());
+            }
+            onItemPressed(result);
+            return;
+        }
+    }
+
     @Override public boolean holdTransportedItem(TransportedItemHolder holder) {
         if (world == null || world.isRemote) return false;
         ItemStack input = holder.getTransportedItem();
@@ -118,6 +176,7 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
         recipeId = "";
         inputCount = 1;
         transportMode = true;
+        worldMode = false;
         progress = previousProgress = 0.0F;
         running = true;
         markDirty();
@@ -134,10 +193,14 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
         ItemStack result = PressingRecipes.finish(input, world.rand);
         if (!result.isEmpty()) {
             holder.replaceOneWith(result);
-            if (result.getItem() == net.minecraft.item.Item.getItemFromBlock(com.cogwork.cogworkbridge.registry.AllBlocks.TRACK))
-                com.cogwork.cogworkbridge.content.advancement.AllAdvancements.count(this, "TracksCreated", result.getCount(), 1000, "track_crafting_factory");
-            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "mechanical_press");
+            onItemPressed(result);
         }
+    }
+
+    private void onItemPressed(ItemStack result) {
+        if (result.getItem() == Item.getItemFromBlock(com.cogwork.cogworkbridge.registry.AllBlocks.TRACK))
+            com.cogwork.cogworkbridge.content.advancement.AllAdvancements.count(this, "TracksCreated", result.getCount(), 1000, "track_crafting_factory");
+        com.cogwork.cogworkbridge.content.advancement.AllAdvancements.awardAt(world, pos, "mechanical_press");
     }
 
     private void applyCompacting() {
@@ -186,9 +249,9 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
         return offsetFor(phase);
     }
 
-    private static float offsetFor(float phase) {
+    private float offsetFor(float phase) {
         float factor = phase <= 1000.0F ? phase / 1000.0F : (2000.0F - phase) / 1000.0F;
-        return 1.25F * factor;
+        return (worldMode ? 1F : 1.25F) * factor;
     }
 
     private void initializeRenderOffset() {
@@ -204,6 +267,7 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
         tag.setFloat("PressProgress", progress);
         tag.setBoolean("PressRunning", running);
         tag.setBoolean("PressTransport", transportMode);
+        tag.setBoolean("PressWorld", worldMode);
         tag.setString("PressRecipe", recipeId);
         tag.setInteger("PressCount", inputCount);
         if (!expectedInput.isEmpty()) tag.setTag("PressInput", expectedInput.writeToNBT(new NBTTagCompound()));
@@ -214,9 +278,10 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         progress = previousProgress = MathHelper.clamp(tag.getFloat("PressProgress"), 0.0F, 2000.0F);
-        initializeRenderOffset();
         running = tag.getBoolean("PressRunning");
         transportMode = tag.getBoolean("PressTransport");
+        worldMode = tag.getBoolean("PressWorld");
+        initializeRenderOffset();
         recipeId = tag.getString("PressRecipe");
         inputCount = tag.getInteger("PressCount");
         expectedInput = tag.hasKey("PressInput", 10) ? new ItemStack(tag.getCompoundTag("PressInput")) : ItemStack.EMPTY;
@@ -227,6 +292,7 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
         NBTTagCompound tag = super.getUpdateTag();
         tag.setFloat("PressProgress", progress);
         tag.setBoolean("PressRunning", running);
+        tag.setBoolean("PressWorld", worldMode);
         return tag;
     }
 
@@ -234,6 +300,7 @@ public final class MechanicalPressTileEntity extends KineticTileEntity implement
     public void handleUpdateTag(NBTTagCompound tag) {
         super.handleUpdateTag(tag);
         progress = previousProgress = MathHelper.clamp(tag.getFloat("PressProgress"), 0.0F, 2000.0F);
+        worldMode = tag.getBoolean("PressWorld");
         if (!renderOffsetInitialized) initializeRenderOffset();
         running = tag.getBoolean("PressRunning");
     }

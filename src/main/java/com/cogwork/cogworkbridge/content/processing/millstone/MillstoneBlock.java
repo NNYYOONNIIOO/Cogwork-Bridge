@@ -52,15 +52,12 @@ public final class MillstoneBlock extends KineticBlock {
     }
 
     @Override
-    public void onEntityWalk(World world, BlockPos pos, Entity entity) {
-        super.onEntityWalk(world, pos, entity);
-        acceptItem(world, pos, entity);
-    }
-
-    @Override
-    public void onFallenUpon(World world, BlockPos pos, Entity entity, float distance) {
-        super.onFallenUpon(world, pos, entity, distance);
-        acceptItem(world, pos, entity);
+    public void onLanded(World world, Entity entity) {
+        super.onLanded(world, entity);
+        if (world.isRemote || !(entity instanceof EntityItem)) return;
+        BlockPos landed = entity.getPosition();
+        if (world.getBlockState(landed).getBlock() != this) landed = landed.down();
+        acceptItem(world, landed, entity);
     }
 
     private static void acceptItem(World world, BlockPos pos, Entity entity) {
